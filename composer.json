@@ -1,0 +1,16 @@
+{
+    "name": "fabva/sistema-joalheria",
+    "description": "Sistema Para Joalheria",
+    "autoload": {
+        "psr-4": {
+            "App\\": "App/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Fábio Valério & Bovolato",
+            "email": "valerio.fabio@gmail.com"
+        }
+    ],
+    "require": {}
+}
