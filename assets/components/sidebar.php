@@ -86,6 +86,7 @@
                 <a class="collapse-item" href="<?php echo "{$url}!/Clientes/listar" ?>">Clientes</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/GrupoClientes/listar" ?>">Grupo de Clientes</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/GrupoProdutos/listar" ?>">Grupo de Produtos</a>
+                <a class="collapse-item" href="<?php echo "{$url}!/SubGrupoProdutos/listar" ?>">Subgrupo de Produtos</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Fornecedores/listar" ?>">Fornecedores</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Usuarios/listar" ?>">Usuários</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Feriados/listar" ?>">Feriados</a>
