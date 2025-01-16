@@ -87,6 +87,7 @@
                 <a class="collapse-item" href="<?php echo "{$url}!/Fornecedores/listar" ?>">Fornecedores</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Usuarios/listar" ?>">Usuários</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Feriados/listar" ?>">Feriados</a>
+                <a class="collapse-item" href="<?php echo "{$url}!/Cargos/listar" ?>">Cargos</a>
             </div>
         </div>
     </li>

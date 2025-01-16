@@ -99,6 +99,18 @@ $action = $_GET['action'] ?? 'index';
     <script src="<?php $url; ?>assets/js/demo/chart-area-demo.js?v=1"></script>
     <script src="<?php $url; ?>assets/js/demo/chart-pie-demo.js?v=1"></script>
 
+    <!-- VIACEPN API  -->
+    <script src="<?php echo $url;?>assets/js/viacep.js"></script>
+
+    <!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- jQuery Mask Plugin -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+
+
+  
+
+
 </body>
 
 </html>
