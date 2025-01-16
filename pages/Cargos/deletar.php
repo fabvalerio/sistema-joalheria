@@ -17,6 +17,7 @@ if ($link['4'] == 'deletar') {
 
     if ($returnDelete) {
         echo notify('success', "Cargo excluído com sucesso!");
+        echo '<meta http-equiv="refresh" content="2; url=' . $url . '!/' . $link[1] . '/listar">';
     } else {
         echo notify('danger', "Erro ao excluir o cargo.");
     }

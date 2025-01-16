@@ -12,9 +12,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if ($return) {
         echo notify('success', "Cargo cadastrado com sucesso!");
+        echo '<meta http-equiv="refresh" content="2; url=' . $url . '!/' . $link[1] . '/listar">';
     } else {
         echo notify('danger', "Erro ao cadastrar o cargo.");
     }
+    
 }
 
 ?>

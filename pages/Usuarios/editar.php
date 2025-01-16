@@ -49,6 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if ($returnUpdate) {
         echo notify('success', "Usuário atualizado com sucesso!");
+        echo '<meta http-equiv="refresh" content="2; url=' . $url . '!/' . $link[1] . '/listar">';
     } else {
         echo notify('danger', "Erro ao atualizar o usuário.");
     }

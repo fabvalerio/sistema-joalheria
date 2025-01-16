@@ -24,6 +24,7 @@ if (isset($link['4']) && $link['4'] == 'deletar') {
     // Verificar se a exclusão foi realizada
     if ($return) {
         echo notify('success', "Usuário deletado com sucesso!");
+        echo '<meta http-equiv="refresh" content="2; url=' . $url . '!/' . $link[1] . '/listar">';
     } else {
         echo notify('danger', "Erro ao deletar usuário.");
     }
