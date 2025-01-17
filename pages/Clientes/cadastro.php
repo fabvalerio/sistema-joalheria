@@ -63,8 +63,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
 
                 <!-- Campos para Pessoa Física -->
+                <h4 class="card-title pessoa-fisica">Campos de Pessoa Física</h4>
                 <div class="col-lg-6 pessoa-fisica">
-                    <label for="" class="form-label">Nome</label>
+                    <label for="" class="form-label">Nome Completo</label>
                     <input type="text" class="form-control" name="nome_pf">
                 </div>
                 <div class="col-lg-6 pessoa-fisica">
@@ -83,26 +84,36 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <label for="" class="form-label">Estado Civil</label>
                     <input type="text" class="form-control" name="estado_civil">
                 </div>
+                <!-- separador -->
+                <div class="col-12 pessoa-fisica">
+                    <hr>
+                </div>
 
                 <!-- Campos para Pessoa Jurídica -->
+                <h4 class="card-title pessoa-juridica">Campos de Pessoa Física</h4>
                 <div class="col-lg-6 pessoa-juridica">
-                    <label for="" class="form-label">Razão Social PJ</label>
+                    <label for="" class="form-label">Razão Social</label>
                     <input type="text" class="form-control" name="razao_social_pj">
                 </div>
                 <div class="col-lg-6 pessoa-juridica">
-                    <label for="" class="form-label">Nome Fantasia PJ</label>
+                    <label for="" class="form-label">Nome Fantasia</label>
                     <input type="text" class="form-control" name="nome_fantasia_pj">
                 </div>
                 <div class="col-lg-6 pessoa-juridica">
-                    <label for="" class="form-label">CNPJ PJ</label>
+                    <label for="" class="form-label">CNPJ</label>
                     <input type="text" class="form-control" name="cnpj_pj">
                 </div>
                 <div class="col-lg-6 pessoa-juridica">
-                    <label for="" class="form-label">IE PJ</label>
+                    <label for="" class="form-label">IE</label>
                     <input type="text" class="form-control" name="ie_pj">
+                </div>
+                <!-- separador -->
+                <div class="col-12 pessoa-juridica">
+                    <hr>
                 </div>
 
                 <!-- Campos comuns -->
+                <h4 class="card-title">Campos Comuns</h4>
                 <div class="col-lg-6">
                     <label for="" class="form-label">Perfil</label>
                     <input type="text" class="form-control" name="perfil">
