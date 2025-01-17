@@ -1,6 +1,6 @@
 :root{
-  --verde-escuro: #45616B;
-  --verde: #00A4A4;
+  --tema-escuro: #838383;
+  --tema-claro: #b1b1b1;
 }
 
 
@@ -125,16 +125,16 @@ a:focus {
 }
 
 .bg-primary {
-  background-color: var(--verde-escuro)!important;
+  background-color: var(--tema-escuro)!important;
 }
 
 .bg-success {
-  background-color: var(--verde)!important;
+  background-color: var(--tema-claro)!important;
 }
 
 .bg-gradient-primary {
-  background-color: var(--verde-escuro);
-  background-image: linear-gradient(180deg, var(--verde-escuro) 10%, var(--verde-escuro) 100%);
+  background-color: var(--tema-escuro);
+  background-image: linear-gradient(180deg, var(--tema-escuro) 10%, var(--tema-escuro) 100%);
   background-size: cover;
 }
 
@@ -145,8 +145,8 @@ a:focus {
 }
 
 .bg-gradient-success {
-  background-color: var(--verde);
-  background-image: linear-gradient(180deg, var(--verde) 10%, var(--verde) 100%);
+  background-color: var(--tema-claro);
+  background-image: linear-gradient(180deg, var(--tema-claro) 10%, var(--tema-claro) 100%);
   background-size: cover;
 }
 
@@ -221,7 +221,7 @@ a:focus {
 }
 
 .text-primary{
-  color: var(--verde-escuro)!important;
+  color: var(--tema-escuro)!important;
 }
 
 .text-xs {
@@ -278,11 +278,11 @@ a:focus {
 }
 
 .border-left-primary {
-  border-left: 0.25rem solid var(--verde) !important;
+  border-left: 0.25rem solid var(--tema-claro) !important;
 }
 
 .border-bottom-primary {
-  border-bottom: 0.25rem solid var(--verde-escuro) !important;
+  border-bottom: 0.25rem solid var(--tema-escuro) !important;
 }
 
 .border-left-secondary {
@@ -468,8 +468,8 @@ a:focus {
 }
 
 .topbar .dropdown-list .dropdown-header {
-  background-color: var(--verde-escuro);
-  border: 1px solid var(--verde-escuro);
+  background-color: var(--tema-escuro);
+  border: 1px solid var(--tema-escuro);
   padding-top: 0.75rem;
   padding-bottom: 0.75rem;
   color: #fff;
@@ -643,7 +643,7 @@ a:focus {
 
 .sidebar .nav-item .collapse .collapse-inner .collapse-item.active,
 .sidebar .nav-item .collapsing .collapse-inner .collapse-item.active {
-  color: var(--verde-escuro);
+  color: var(--tema-escuro);
   font-weight: 700;
 }
 
@@ -1494,7 +1494,7 @@ form.user .btn-user {
   content: attr(data-text);
   position: absolute;
   left: -2px;
-  text-shadow: 1px 0 var(--verde-escuro);
+  text-shadow: 1px 0 var(--tema-escuro);
   top: 0;
   color: #5a5c69;
   background: #f8f9fc;
@@ -1504,7 +1504,7 @@ form.user .btn-user {
 }
 
 footer.sticky-footer {
-  padding: 2rem 0;
+  padding: 1rem 0;
   flex-shrink: 0;
 }
 

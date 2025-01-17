@@ -28,7 +28,7 @@ services:
       - db_data:/var/lib/mysql  # Adicionado volume para persistência
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
-    container_name: allivo_phpmyadmin
+    container_name: joalheria_phpmyadmin
     ports:
       - "8081:80"
     environment:
