@@ -97,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <?php endforeach; ?>
           </select>
         </div>
-        <div class="col-12 pessoa-fisica" style="">
+        <div class="col-12">
           <hr>
         </div>
         <!-- Campos adicionais aparecem após seleção -->
@@ -347,7 +347,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
               <label class="form-label">Quantidade</label>
               <input type="number" step="0.001" class="form-control" name="estoque_princ" id="estoque_princ">
             </div>
-            <div class="col-12 pessoa-fisica" style="">
+            <div class="col-12">
               <hr>
             </div>
             <!-- Cotação -->
@@ -380,7 +380,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
                 <div class="col-lg-2">
                   <label class="form-label">Custo</label>
-                  <input type="number" step="0.01" class="form-control bg-secondary" name="custo" id="custo" readonly>
+                  <input type="number" step="0.01" class="form-control bg-gray" name="custo" id="custo" readonly>
                 </div>
                 <div class="col-lg-4">
                   <label class="form-label">Em Reais</label>
