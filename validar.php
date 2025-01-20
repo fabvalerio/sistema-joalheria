@@ -6,15 +6,14 @@ session_start();
 include 'db/db.class.php';
 include 'app/php/htaccess.php';
 
-$_email = trim($_POST['email']);
-// $_email = generateHash(trim($_POST['email']));
-$_senha = md5(trim($_POST['senha']));
+$_cpf = trim($_POST['cpf']);
+$_senha = password_hash($_POST['senha'], PASSWORD_DEFAULT);
 
 try {
 
-	$LoginSql = "SELECT u.id
-			    	FROM Usuarios as u
-					WHERE u.email = '{$_email}'
+	$LoginSql = "SELECT u.id, nivel_acesso
+			    	FROM usuarios as u
+					WHERE u.cpf = '{$_cpf}'
 					AND u.senha = '{$_senha}'
 					AND u.status = 1
 					";
@@ -27,10 +26,9 @@ try {
 	if (!empty($resultLogin->id)) {
 
 		//3600 dias * 24 horas
-		setcookie("admin_user", $resultLogin->id, time() + ((3600 * 24) * 7));
-		// setcookie("admin_nivel", $resultLogin->nivel, time() + ((3600 * 24) * 7));
+		setcookie("id", $resultLogin->id, time() + ((3600 * 24) * 7));
+		setcookie("nivel_acesso", $resultLogin->nivel, time() + ((3600 * 24) * 7));
 
-		echo 'logado';
 		header('location: ' . $url . '/');
 	} else {
 		echo 'erro';
