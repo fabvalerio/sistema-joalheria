@@ -90,28 +90,49 @@ class Controller
 
     // Editar uma conta
     public function editar($id, $dados)
-    {
-        $db = new db();
-        $db->query("UPDATE financeiro_contas SET
-                        fornecedor_id = :fornecedor_id, cliente_id = :cliente_id, categoria_id = :categoria_id,
-                        data_vencimento = :data_vencimento, valor = :valor, data_pagamento = :data_pagamento,
-                        status = :status, observacao = :observacao, recorrente = :recorrente, tipo = :tipo,
-                        num_parcelas = :num_parcelas,
-                        dt_par1 = :dt_par1, val_par1 = :val_par1, dt_par2 = :dt_par2, val_par2 = :val_par2,
-                        dt_par3 = :dt_par3, val_par3 = :val_par3, dt_par4 = :dt_par4, val_par4 = :val_par4,
-                        dt_par5 = :dt_par5, val_par5 = :val_par5, dt_par6 = :dt_par6, val_par6 = :val_par6,
-                        dt_par7 = :dt_par7, val_par7 = :val_par7, dt_par8 = :dt_par8, val_par8 = :val_par8,
-                        dt_par9 = :dt_par9, val_par9 = :val_par9, dt_par10 = :dt_par10, val_par10 = :val_par10,
-                        dt_par11 = :dt_par11, val_par11 = :val_par11, dt_par12 = :dt_par12, val_par12 = :val_par12
-                    WHERE id = :id");
+{
+    $db = new db();
 
-        foreach ($dados as $key => $value) {
-            $db->bind(":$key", $value);
+    // Lista de campos esperados na tabela
+    $campos = [
+        'fornecedor_id', 'cliente_id', 'categoria_id', 'data_vencimento', 'valor', 'data_pagamento',
+        'status', 'observacao', 'recorrente', 'tipo', 'num_parcelas',
+        'val_par1', 'dt_par1', 'val_par2', 'dt_par2', 'val_par3', 'dt_par3', 'val_par4', 'dt_par4',
+        'val_par5', 'dt_par5', 'val_par6', 'dt_par6', 'val_par7', 'dt_par7', 'val_par8', 'dt_par8',
+        'val_par9', 'dt_par9', 'val_par10', 'dt_par10', 'val_par11', 'dt_par11', 'val_par12', 'dt_par12'
+    ];
+
+    // Garantir que todos os campos tenham valor (ou NULL)
+    foreach ($campos as $campo) {
+        if (!isset($dados[$campo]) || $dados[$campo] === '') {
+            $dados[$campo] = null; // Valores vazios tratados como NULL
         }
-        $db->bind(":id", $id);
-
-        return $db->execute();
     }
+
+    // Query de atualização
+    $db->query("UPDATE financeiro_contas SET
+                    fornecedor_id = :fornecedor_id, cliente_id = :cliente_id, categoria_id = :categoria_id,
+                    data_vencimento = :data_vencimento, valor = :valor, data_pagamento = :data_pagamento,
+                    status = :status, observacao = :observacao, recorrente = :recorrente, tipo = :tipo,
+                    num_parcelas = :num_parcelas,
+                    dt_par1 = :dt_par1, val_par1 = :val_par1, dt_par2 = :dt_par2, val_par2 = :val_par2,
+                    dt_par3 = :dt_par3, val_par3 = :val_par3, dt_par4 = :dt_par4, val_par4 = :val_par4,
+                    dt_par5 = :dt_par5, val_par5 = :val_par5, dt_par6 = :dt_par6, val_par6 = :val_par6,
+                    dt_par7 = :dt_par7, val_par7 = :val_par7, dt_par8 = :dt_par8, val_par8 = :val_par8,
+                    dt_par9 = :dt_par9, val_par9 = :val_par9, dt_par10 = :dt_par10, val_par10 = :val_par10,
+                    dt_par11 = :dt_par11, val_par11 = :val_par11, dt_par12 = :dt_par12, val_par12 = :val_par12
+                WHERE id = :id");
+
+    // Vincular parâmetros
+    foreach ($dados as $key => $value) {
+        $db->bind(":$key", $value);
+    }
+    $db->bind(":id", $id);
+
+    // Executar a query
+    return $db->execute();
+}
+
 
     // Deletar uma conta
     public function deletar($id)

@@ -2,111 +2,136 @@
 
 use App\Models\FinanceiroContas\Controller;
 
-// Obter listas de clientes, fornecedores e categorias
+// Instanciar o Controller
 $controller = new Controller();
+
+// Capturar o ID da conta na URL
+$id = $link['3'];
+
+if (!$id) {
+    echo notify('danger', "ID da conta não foi especificado.");
+    exit;
+}
+
+// Obter a conta existente
+$conta = $controller->ver($id);
+
+if (!$conta) {
+    echo notify('danger', "Conta não encontrada.");
+    exit;
+}
+
+// Obter listas de clientes, fornecedores e categorias
 $clientes = $controller->listarClientes();
 $fornecedores = $controller->listarFornecedores();
 $categorias = $controller->listarCategorias();
 
+// Atualizar conta se o formulário for enviado
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-  $dados = [
-    'fornecedor_id' => $_POST['fornecedor_id'] ?? null,
-    'cliente_id' => $_POST['cliente_id'] ?? null,
-    'categoria_id' => $_POST['categoria_id'] ?? null,
-    'data_vencimento' => $_POST['data_vencimento'],
-    'valor' => $_POST['valor'],
-    'data_pagamento' => $_POST['data_pagamento'] ?? null,
-    'status' => $_POST['status'],
-    'observacao' => $_POST['observacao'],
-    'recorrente' => $_POST['recorrente'],
-    'tipo' => $_POST['tipo'],
-    'num_parcelas' => $_POST['num_parcelas'] ?? null,
-    'val_par1' => $_POST['val_par1'] ?? null,
-    'dt_par1' => $_POST['dt_par1'] ?? null,
-    'val_par2' => $_POST['val_par2'] ?? null,
-    'dt_par2' => $_POST['dt_par2'] ?? null,
-    'val_par3' => $_POST['val_par3'] ?? null,
-    'dt_par3' => $_POST['dt_par3'] ?? null,
-    'val_par4' => $_POST['val_par4'] ?? null,
-    'dt_par4' => $_POST['dt_par4'] ?? null,
-    'val_par5' => $_POST['val_par5'] ?? null,
-    'dt_par5' => $_POST['dt_par5'] ?? null,
-    'val_par6' => $_POST['val_par6'] ?? null,
-    'dt_par6' => $_POST['dt_par6'] ?? null,
-    'val_par7' => $_POST['val_par7'] ?? null,
-    'dt_par7' => $_POST['dt_par7'] ?? null,
-    'val_par8' => $_POST['val_par8'] ?? null,
-    'dt_par8' => $_POST['dt_par8'] ?? null,
-    'val_par9' => $_POST['val_par9'] ?? null,
-    'dt_par9' => $_POST['dt_par9'] ?? null,
-    'val_par10' => $_POST['val_par10'] ?? null,
-    'dt_par10' => $_POST['dt_par10'] ?? null,
-    'val_par11' => $_POST['val_par11'] ?? null,
-    'dt_par11' => $_POST['dt_par11'] ?? null,
-    'val_par12' => $_POST['val_par12'] ?? null,
-    'dt_par12' => $_POST['dt_par12'] ?? null
-  ];
+    $dados = [
+        'fornecedor_id' => $_POST['fornecedor_id'] ?? null,
+        'cliente_id' => $_POST['cliente_id'] ?? null,
+        'categoria_id' => $_POST['categoria_id'] ?? null,
+        'data_vencimento' => $_POST['data_vencimento'],
+        'valor' => $_POST['valor'],
+        'data_pagamento' => $_POST['data_pagamento'] ?? null,
+        'status' => $_POST['status'],
+        'observacao' => $_POST['observacao'],
+        'recorrente' => $_POST['recorrente'],
+        'tipo' => $_POST['tipo'],
+        'num_parcelas' => $_POST['num_parcelas'] ?? null,
+        'val_par1' => $_POST['val_par1'] ?? null,
+        'dt_par1' => $_POST['dt_par1'] ?? null,
+        'val_par2' => $_POST['val_par2'] ?? null,
+        'dt_par2' => $_POST['dt_par2'] ?? null,
+        'val_par3' => $_POST['val_par3'] ?? null,
+        'dt_par3' => $_POST['dt_par3'] ?? null,
+        'val_par4' => $_POST['val_par4'] ?? null,
+        'dt_par4' => $_POST['dt_par4'] ?? null,
+        'val_par5' => $_POST['val_par5'] ?? null,
+        'dt_par5' => $_POST['dt_par5'] ?? null,
+        'val_par6' => $_POST['val_par6'] ?? null,
+        'dt_par6' => $_POST['dt_par6'] ?? null,
+        'val_par7' => $_POST['val_par7'] ?? null,
+        'dt_par7' => $_POST['dt_par7'] ?? null,
+        'val_par8' => $_POST['val_par8'] ?? null,
+        'dt_par8' => $_POST['dt_par8'] ?? null,
+        'val_par9' => $_POST['val_par9'] ?? null,
+        'dt_par9' => $_POST['dt_par9'] ?? null,
+        'val_par10' => $_POST['val_par10'] ?? null,
+        'dt_par10' => $_POST['dt_par10'] ?? null,
+        'val_par11' => $_POST['val_par11'] ?? null,
+        'dt_par11' => $_POST['dt_par11'] ?? null,
+        'val_par12' => $_POST['val_par12'] ?? null,
+        'dt_par12' => $_POST['dt_par12'] ?? null
+    ];
 
-  $return = $controller->cadastro($dados);
+    $return = $controller->editar($id, $dados);
 
-  if ($return) {
-    echo notify('success', "Conta cadastrada com sucesso!");
-    echo '<meta http-equiv="refresh" content="2; url=' . $url . '!/' . $link[1] . '/listar">';
-  } else {
-    echo notify('danger', "Erro ao cadastrar a conta.");
-  }
+    if ($return) {
+        echo notify('success', "Conta atualizada com sucesso!");
+        echo '<meta http-equiv="refresh" content="2; url=' . $url . '!/' . $link[1] . '/listar">';
+        exit;
+    } else {
+        echo notify('danger', "Erro ao atualizar a conta.");
+    }
 }
 
 ?>
 
 <div class="card">
   <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-    <h3 class="card-title">Cadastro de Contas</h3>
+    <h3 class="card-title">Editar Conta</h3>
     <a href="<?php echo "{$url}!/{$link[1]}/listar" ?>" class="btn btn-warning text-primary">Voltar</a>
   </div>
 
   <div class="card-body">
-    <form method="POST" action="<?php echo "{$url}!/{$link[1]}/{$link[2]}" ?>" class="needs-validation" novalidate>
+    <form method="POST" action="" class="needs-validation" novalidate>
       <div class="row g-3">
         <!-- Tipo da Conta -->
         <div class="col-lg-6">
           <label class="form-label">Tipo</label>
           <select class="form-select" name="tipo" id="tipo-conta" required>
-            <option value="">Selecione o Tipo</option>
-            <option value="R">Contas a Receber</option>
-            <option value="P">Contas a Pagar</option>
+            <option value="R" <?= $conta['tipo'] === 'R' ? 'selected' : '' ?>>Contas a Receber</option>
+            <option value="P" <?= $conta['tipo'] === 'P' ? 'selected' : '' ?>>Contas a Pagar</option>
           </select>
         </div>
 
         <!-- Cliente (para Contas a Receber) -->
-        <div class="col-lg-6" id="cliente-field" style="display: none;">
+        <div class="col-lg-6" id="cliente-field" style="display: <?= $conta['tipo'] === 'R' ? 'block' : 'none' ?>;">
           <label class="form-label">Cliente</label>
           <select class="form-select" name="cliente_id">
             <option value="">Selecione um Cliente</option>
             <?php foreach ($clientes as $cliente): ?>
-              <option value="<?= $cliente['id'] ?>"><?= htmlspecialchars($cliente['nome_pf'] ?: $cliente['razao_social_pj']) ?></option>
+              <option value="<?= $cliente['id'] ?>" <?= $cliente['id'] == $conta['cliente_id'] ? 'selected' : '' ?>>
+                <?= htmlspecialchars($cliente['nome_pf'] ?: $cliente['razao_social_pj']) ?>
+              </option>
             <?php endforeach; ?>
           </select>
         </div>
 
         <!-- Fornecedor (para Contas a Pagar) -->
-        <div class="col-lg-6" id="fornecedor-field" style="display: none;">
+        <div class="col-lg-6" id="fornecedor-field" style="display: <?= $conta['tipo'] === 'P' ? 'block' : 'none' ?>;">
           <label class="form-label">Fornecedor</label>
           <select class="form-select" name="fornecedor_id">
             <option value="">Selecione um Fornecedor</option>
             <?php foreach ($fornecedores as $fornecedor): ?>
-              <option value="<?= $fornecedor['id'] ?>"><?= htmlspecialchars($fornecedor['razao_social']) ?></option>
+              <option value="<?= $fornecedor['id'] ?>" <?= $fornecedor['id'] == $conta['fornecedor_id'] ? 'selected' : '' ?>>
+                <?= htmlspecialchars($fornecedor['razao_social']) ?>
+              </option>
             <?php endforeach; ?>
           </select>
         </div>
 
-        <!-- Categoria (somente para Contas a Pagar) -->
-        <div class="col-lg-6" id="categoria-field" style="display: none;">
+        <!-- Categoria -->
+        <div class="col-lg-6" id="categoria-field" style="display: <?= $conta['tipo'] === 'P' ? 'block' : 'none' ?>;">
           <label class="form-label">Categoria</label>
           <select class="form-select" name="categoria_id">
             <option value="">Selecione uma Categoria</option>
             <?php foreach ($categorias as $categoria): ?>
-              <option value="<?= $categoria['id'] ?>"><?= htmlspecialchars($categoria['descricao']) ?></option>
+              <option value="<?= $categoria['id'] ?>" <?= $categoria['id'] == $conta['categoria_id'] ? 'selected' : '' ?>>
+                <?= htmlspecialchars($categoria['descricao']) ?>
+              </option>
             <?php endforeach; ?>
           </select>
         </div>
@@ -114,15 +139,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <!-- Data de Vencimento -->
         <div class="col-lg-6">
           <label class="form-label">Data de Vencimento</label>
-          <input type="date" class="form-control" name="data_vencimento" required>
+          <input type="date" class="form-control" name="data_vencimento" value="<?= $conta['data_vencimento'] ?>" required>
         </div>
 
-        <!-- Número de Parcelas (somente para Contas a Pagar) -->
-        <div class="col-lg-6" id="num-parcelas-field" style="display: none;">
+        <!-- Número de Parcelas -->
+        <div class="col-lg-6" id="num-parcelas-field" style="display: <?= $conta['tipo'] === 'P' ? 'block' : 'none' ?>;">
           <label class="form-label">Número de Parcelas</label>
           <select class="form-select" name="num_parcelas" id="num_parcelas">
             <?php for ($i = 1; $i <= 12; $i++): ?>
-              <option value="<?= $i ?>"><?= $i ?>x</option>
+              <option value="<?= $i ?>" <?= $i == $conta['num_parcelas'] ? 'selected' : '' ?>><?= $i ?>x</option>
             <?php endfor; ?>
           </select>
         </div>
@@ -130,49 +155,45 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <!-- Valor Total -->
         <div class="col-lg-6">
           <label class="form-label">Valor Total (R$)</label>
-          <input type="number" step="0.01" class="form-control" name="valor" id="valor_total" required>
+          <input type="number" step="0.01" class="form-control" name="valor" id="valor_total" value="<?= $conta['valor'] ?>" required>
         </div>
 
         <!-- Campos de Parcelas -->
-        <div id="parcelas-container" style="display: none;">
+        <div id="parcelas-container" style="display: <?= $conta['num_parcelas'] > 1 ? 'block' : 'none' ?>;">
           <?php for ($i = 1; $i <= 12; $i++): ?>
-            <div class="row g-3 parcela-fields" id="parcela_<?= $i ?>" style="display: none;">
+            <div class="row g-3 parcela-fields" id="parcela_<?= $i ?>" style="display: <?= $i <= $conta['num_parcelas'] ? 'flex' : 'none' ?>;">
               <div class="col-lg-6">
                 <label class="form-label">Valor da Parcela <?= $i ?> (R$)</label>
-                <input type="number" step="0.01" class="form-control parcela-input" name="val_par<?= $i ?>" data-parcela="<?= $i ?>" readonly>
+                <input type="number" step="0.01" class="form-control parcela-input" name="val_par<?= $i ?>" value="<?= $conta['val_par' . $i] ?? '' ?>" readonly>
               </div>
               <div class="col-lg-6">
                 <label class="form-label">Data da Parcela <?= $i ?></label>
-                <input type="date" class="form-control" name="dt_par<?= $i ?>">
+                <input type="date" class="form-control" name="dt_par<?= $i ?>" value="<?= $conta['dt_par' . $i] ?? '' ?>">
               </div>
             </div>
           <?php endfor; ?>
         </div>
 
-
-
         <!-- Status -->
         <div class="col-lg-6">
           <label class="form-label">Status</label>
           <select class="form-select" name="status" required>
-            <option value="Pendente">Pendente</option>
-            <option value="Pago">Pago</option>
+            <option value="Pendente" <?= $conta['status'] === 'Pendente' ? 'selected' : '' ?>>Pendente</option>
+            <option value="Pago" <?= $conta['status'] === 'Pago' ? 'selected' : '' ?>>Pago</option>
           </select>
         </div>
-
-        <!-- Recorrente -->
-        <div class="col-lg-6" id="recorrente-field" style="display: none;">
-          <label class="form-label">Recorrente</label>
-          <select class="form-select" name="recorrente">
-            <option value="N">Não</option>
-            <option value="S">Sim</option>
-          </select>
-        </div>
+        <div class="col-lg-6" id="recorrente-field" >
+        <label class="form-label">Recorrente</label>
+        <select class="form-select" name="recorrente" id="recorrente">
+          <option value="S" <?= $conta['recorrente'] === 'S' ? 'selected' : '' ?>>Sim</option>
+          <option value="N" <?= $conta['recorrente'] === 'N' ? 'selected' : '' ?>>Não</option>
+        </select>
+      </div>
 
         <!-- Observação -->
         <div class="col-lg-12">
           <label class="form-label">Observação</label>
-          <textarea class="form-control" name="observacao" rows="3"></textarea>
+          <textarea class="form-control" name="observacao" rows="3"><?= htmlspecialchars($conta['observacao']) ?></textarea>
         </div>
 
         <!-- Botão Salvar -->

@@ -2,10 +2,10 @@
 
 use App\Models\FinanceiroContas\Controller;
 
-$tipo = $_GET['tipo'] ?? null;
+$tipo = $link['3'];
 
 // Garantir que o tipo é válido (1 ou 2)
-if (!in_array($tipo, [1, 2])) {
+if (!in_array($tipo, ['R', 'P'])) {
     $tipo = null; // Se inválido, definir como null
 }
 
