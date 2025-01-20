@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <select class="form-select" name="cargo" required>
                         <option value="">Selecione</option>
                         <?php foreach ($cargos as $cargo) : ?>
-                            <option value="<?= $cargo['cargo'] ?>"><?= $cargo['cargo'] ?></option>
+                            <option value="<?= $cargo['id'] ?>"><?= $cargo['cargo'] ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>

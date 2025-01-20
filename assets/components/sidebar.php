@@ -70,6 +70,7 @@
                 <a class="collapse-item" href="<?php echo "{$url}!/ContasReceber/listar" ?>">Contas a Receber</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/CategoriaDespesa/listar" ?>">Categoria de Despesa</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Cartoes/listar" ?>">Cartões</a>
+                <a class="collapse-item" href="<?php echo "{$url}!/ComissaoVendedor/listar" ?>">Comissão</a>
             </div>
         </div>
     </li>
