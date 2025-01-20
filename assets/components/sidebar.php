@@ -49,6 +49,8 @@
         <div id="gerenciamentoProdutos" class="collapse" aria-labelledby="headingGerProdutos" data-bs-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
                 <a class="collapse-item" href="<?php echo "{$url}!/Produtos/listar" ?>">Produtos</a>
+                <a class="collapse-item" href="<?php echo "{$url}!/GrupoProdutos/listar" ?>">Grupo de Produtos</a>
+                <a class="collapse-item" href="<?php echo "{$url}!/SubGrupoProdutos/listar" ?>">Subgrupo de Produtos</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Tipos/listar" ?>">Tipos</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Cotacoes/listar" ?>">Cotações</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/EntradaMercadoria/listar" ?>">Entrada de Mercadoria</a>
@@ -66,8 +68,8 @@
         </a>
         <div id="financeiro" class="collapse" aria-labelledby="headingFinanceiro" data-bs-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
-                <a class="collapse-item" href="<?php echo "{$url}!/ContasPagar/listar" ?>">Contas a Pagar</a>
-                <a class="collapse-item" href="<?php echo "{$url}!/ContasReceber/listar" ?>">Contas a Receber</a>
+                <a class="collapse-item" href="<?php echo "{$url}!/Contas/listar/&tipo=2" ?>">Contas a Pagar</a>
+                <a class="collapse-item" href="<?php echo "{$url}!/Contas/listar/&tipo=1" ?>">Contas a Receber</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/CategoriaDespesa/listar" ?>">Categoria de Despesa</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Cartoes/listar" ?>">Cartões</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/ComissaoVendedor/listar" ?>">Comissão</a>
@@ -86,8 +88,6 @@
             <div class="bg-white py-2 collapse-inner rounded">
                 <a class="collapse-item" href="<?php echo "{$url}!/Clientes/listar" ?>">Clientes</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/GrupoClientes/listar" ?>">Grupo de Clientes</a>
-                <a class="collapse-item" href="<?php echo "{$url}!/GrupoProdutos/listar" ?>">Grupo de Produtos</a>
-                <a class="collapse-item" href="<?php echo "{$url}!/SubGrupoProdutos/listar" ?>">Subgrupo de Produtos</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Fornecedores/listar" ?>">Fornecedores</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Usuarios/listar" ?>">Usuários</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Cargos/listar" ?>">Cargos</a>

@@ -2,8 +2,18 @@
 
 use App\Models\FinanceiroContas\Controller;
 
+$tipo = $_GET['tipo'] ?? null;
+
+// Garantir que o tipo é válido (1 ou 2)
+if (!in_array($tipo, [1, 2])) {
+    $tipo = null; // Se inválido, definir como null
+}
+
+// Instanciar o Controller
 $controller = new Controller();
-$contas = $controller->listar();
+
+// Listar contas com o tipo especificado
+$contas = $controller->listar($tipo);
 
 ?>
 
