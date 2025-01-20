@@ -37,7 +37,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         'login' => $_POST['login'],
         'nivel_acesso' => $_POST['nivel_acesso'],
         'bairro' => $_POST['bairro'],
-        'numero' => $_POST['numero']
+        'numero' => $_POST['numero'],
+        'status' => $_POST['status']
     ];
 
     // Atualizar a senha apenas se for informada no formulário
@@ -150,6 +151,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <option value="Administrador" <?= $return['nivel_acesso'] == 'Administrador' ? 'selected' : '' ?>>Administrador</option>
                         <option value="Operador" <?= $return['nivel_acesso'] == 'Operador' ? 'selected' : '' ?>>Operador</option>
                         <option value="Consulta" <?= $return['nivel_acesso'] == 'Consulta' ? 'selected' : '' ?>>Consulta</option>
+                    </select>
+                </div>
+                <div class="col-lg-4">
+                    <label for="" class="form-label">Status</label>
+                    <select class="form-select" name="status" required>
+                        <option value="1" <?= $return['status'] == 'Administrador' ? 'selected' : '' ?>>Ativo</option>
+                        <option value="0" <?= $return['status'] == 'Administrador' ? 'selected' : '' ?>>Inativo</option>
                     </select>
                 </div>
                 <div class="col-lg-12">
