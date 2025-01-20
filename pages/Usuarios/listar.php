@@ -35,6 +35,7 @@ foreach ($cargos as $cargo) {
                     <th>Nome Completo</th>
                     <th>Email</th>
                     <th>Cargo</th>
+                    <th>Status</th>
                     <th width="220">Ações</th>
                 </tr>
             </thead>
@@ -50,6 +51,9 @@ foreach ($cargos as $cargo) {
                     // Substituir o ID do cargo pelo nome do cargo usando o mapa
                     $nomeCargo = $cargoMap[$r['cargo']] ?? 'Cargo não encontrado';
                     echo "<td>" . htmlspecialchars($nomeCargo) . "</td>";
+
+                    echo "<td>" . $r['status'] == '1' ? 'Ativo' : 'Inativo' . "</td>";
+
 
                     echo "<td> 
                                 <div class=\"dropdown\">
