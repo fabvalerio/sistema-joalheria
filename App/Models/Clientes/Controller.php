@@ -22,15 +22,22 @@ class Controller
     }
 
     public function cadastro($dados)
-    {
-        $db = new db();
-        $db->query("INSERT INTO clientes (tipo_cliente, nome_pf, razao_social_pj, nome_fantasia_pj, perfil, telefone, whatsapp, email, rg, cpf, ie_pj, cnpj_pj, cep, endereco, bairro, cidade, estado, data_nascimento, tags, origem_contato, estado_civil, corporativo, grupo) 
-                    VALUES (:tipo_cliente, :nome_pf, :razao_social_pj, :nome_fantasia_pj, :perfil, :telefone, :whatsapp, :email, :rg, :cpf, :ie_pj, :cnpj_pj, :cep, :endereco, :bairro, :cidade, :estado, :data_nascimento, :tags, :origem_contato, :estado_civil, :corporativo, :grupo)");
-        foreach ($dados as $key => $value) {
-            $db->bind(":$key", $value);
-        }
-        return $db->execute();
+{
+    $db = new db();
+
+    // Tratar data de nascimento vazia
+    $dados['data_nascimento'] = !empty($dados['data_nascimento']) ? $dados['data_nascimento'] : null;
+
+    $db->query("INSERT INTO clientes (tipo_cliente, nome_pf, razao_social_pj, nome_fantasia_pj, perfil, telefone, whatsapp, email, rg, cpf, ie_pj, cnpj_pj, cep, endereco, bairro, cidade, estado, data_nascimento, tags, origem_contato, estado_civil, corporativo, grupo) 
+                VALUES (:tipo_cliente, :nome_pf, :razao_social_pj, :nome_fantasia_pj, :perfil, :telefone, :whatsapp, :email, :rg, :cpf, :ie_pj, :cnpj_pj, :cep, :endereco, :bairro, :cidade, :estado, :data_nascimento, :tags, :origem_contato, :estado_civil, :corporativo, :grupo)");
+
+    foreach ($dados as $key => $value) {
+        $db->bind(":$key", $value);
     }
+
+    return $db->execute();
+}
+
 
     public function editar($id, $dados)
     {

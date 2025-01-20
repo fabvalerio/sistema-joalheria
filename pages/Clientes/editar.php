@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="row g-3">
                 <div class="col-lg-6">
                     <label for="" class="form-label">Tipo de Cliente</label>
-                    <select class="form-select" id="tipo_cliente" name="tipo_cliente" required>
+                    <select class="form-select" id="tipo_cliente" name="tipo_cliente" required disabled>
                         <option value="PF" <?= $cliente['tipo_cliente'] == 'PF' ? 'selected' : '' ?>>Pessoa Física</option>
                         <option value="PJ" <?= $cliente['tipo_cliente'] == 'PJ' ? 'selected' : '' ?>>Pessoa Jurídica</option>
                     </select>

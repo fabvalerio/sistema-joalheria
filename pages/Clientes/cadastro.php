@@ -82,7 +82,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
                 <div class="col-lg-6 pessoa-fisica">
                     <label for="" class="form-label">Estado Civil</label>
-                    <input type="text" class="form-control" name="estado_civil">
+                    <!-- lista select de estado civil -->
+                    <select class="form-select" name="estado_civil">
+                        <option value="">Selecione</option>
+                        <option value="Solteiro">Solteiro</option>
+                        <option value="Casado">Casado</option>
+                        <option value="Divorciado">Divorciado</option>
+                        <option value="Viuvo">Viuvo</option>
+                    </select>
                 </div>
                 <!-- separador -->
                 <div class="col-12 pessoa-fisica">
