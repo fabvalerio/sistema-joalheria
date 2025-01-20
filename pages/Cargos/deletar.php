@@ -12,7 +12,7 @@ if (!$return) {
     exit;
 }
 
-if ($link['4'] == 'deletar') {
+if (isset($link['4']) && $link['4'] == 'deletar') {
     $returnDelete = $controller->deletar($id);
 
     if ($returnDelete) {
