@@ -61,24 +61,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['salvar_comissoes'])) 
                     </select>
                 </div>
 
-                <div class="col-lg-6" id="referencia-container" style="<?= $modo ? 'display: block;' : 'display: none;' ?>">
-                    <label class="form-label"><?= ($modo === 'grupo') ? 'Grupo de Produtos' : 'Usuário' ?></label>
-                    <select class="form-select" name="referencia_id" id="referencia-id" required>
-                        <option value="">Selecione</option>
-                        <?php if ($modo === 'grupo'): ?>
-                            <?php foreach ($grupos as $grupo): ?>
-                                <option value="<?= $grupo['id'] ?>" <?= ($referenciaId == $grupo['id']) ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($grupo['nome_grupo']) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        <?php elseif ($modo === 'usuario'): ?>
-                            <?php foreach ($usuarios as $usuario): ?>
-                                <option value="<?= $usuario['id'] ?>" <?= ($referenciaId == $usuario['id']) ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($usuario['nome_completo']) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </select>
+                <div class="col-lg-6" id="referencia-container">
+                    <div class="result">
+                        <label class="form-label">Selecione o campo modo</label>
+                        <select class="form-select" name="referencia_id" id="referencia-id" required>
+                            <option value="">Selecione o campo modo primeiro</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="col-lg-12">
@@ -87,49 +76,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['salvar_comissoes'])) 
             </div>
         </form>
 
-        <!-- Tabela Dinâmica -->
-        <?php if ($referenciaId): ?>
-            <form method="POST" action="">
-                <input type="hidden" name="modo" value="<?= $modo ?>">
-                <input type="hidden" name="referencia_id" value="<?= $referenciaId ?>">
-                <div class="mt-4">
-                    <h5>Comissões</h5>
-                    <?php if ($modo === 'grupo'): ?>
-                        <?php foreach ($usuarios as $usuario): ?>
-                            <div class="row g-3 align-items-center mb-3">
-                                <div class="col-lg-8">
-                                    <label class="form-label"><?= htmlspecialchars($usuario['nome_completo']) ?></label>
-                                </div>
-                                <div class="col-lg-4">
-                                    <input type="number" step="0.01" class="form-control" name="comissoes[<?= $usuario['id'] ?>]" 
-                                    value="<?= $comissoesExistentes[$usuario['id']] ?? '' ?>" placeholder="Comissão (%)">
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                    <?php elseif ($modo === 'usuario'): ?>
-                        <?php foreach ($grupos as $grupo): ?>
-                            <div class="row g-3 align-items-center mb-3">
-                                <div class="col-lg-8">
-                                    <label class="form-label"><?= htmlspecialchars($grupo['nome_grupo']) ?></label>
-                                </div>
-                                <div class="col-lg-4">
-                                    <input type="number" step="0.01" class="form-control" name="comissoes[<?= $grupo['id'] ?>]" 
-                                    value="<?= $comissoesExistentes[$grupo['id']] ?? '' ?>" placeholder="Comissão (%)">
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-
-                    <div class="mt-3">
-                        <button type="submit" name="salvar_comissoes" class="btn btn-primary">Salvar</button>
-                    </div>
-                </div>
-            </form>
-        <?php endif; ?>
+        
     </div>
 </div>
 
 <script>
+
+    $(document).ready(function () {
+        // Máscaras
+        $("#modo").change(function () {
+            //alert( $("#modo").val());
+
+            if ($("#modo").val() == 'grupo') {
+
+                $.get('<?php echo $url;?>pages/ComissaoVendedor/grupo.php', function (data) {
+                    $("#referencia-container").html(data);
+                });
+                
+            } else if ($("#modo").val() == 'usuario') {
+
+                $.get('<?php echo $url;?>pages/ComissaoVendedor/usuario.php', function (data) {
+                    $("#referencia-container").html(data);
+                });
+
+            }
+        });
+    });
+
+    //ENVIAR GET
+    $("form").submit(function (e) {
+        e.preventDefault();
+        
+        var modo = $("#modo").val();
+        var usuario = $("#usuario").val();
+        var grupo = $("#grupo").val();
+
+
+        if (modo == 'grupo') {
+            window.location.href = '<?php echo $url;?>!/ComissaoVendedor/cadastro/&modo=' + modo + '&grupo=' + grupo;
+        } else if (modo == 'usuario') {
+            window.location.href = '<?php echo $url;?>!/ComissaoVendedor/cadastro/&modo=' + modo + '&usuario=' + usuario;
+        }
+
+    });
+
+
+
     // Atualizar a página ao mudar o modo
     document.getElementById('modo').addEventListener('change', function () {
         const referenciaContainer = document.getElementById('referencia-container');
