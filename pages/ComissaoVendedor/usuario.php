@@ -6,7 +6,7 @@
     include '../../App/php/function.php';
 
 ?>
-
-<label for="usuario"> usuario </label>
-
+<div class="result">
+<label class="form-label" for="usuario">Usuario </label>
 <?php echo select('usuarios', 'nome_completo', 'id', 'id > 0' , '', 'usuario')?>
+</div>

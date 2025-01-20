@@ -90,29 +90,30 @@ class Controller
     public function listarComissoesPorUsuario($usuarioId)
     {
         $db = new db();
-        $db->query("SELECT * FROM comissao_vendedor WHERE usuarios_id = :usuarios_id");
+        $db->query("SELECT grupo_produtos_id, caomissao FROM comissao_vendedor WHERE usuarios_id = :usuarios_id");
         $db->bind(":usuarios_id", $usuarioId);
         $result = $db->resultSet();
-
+    
         $comissoes = [];
         foreach ($result as $row) {
-            $comissoes[$row['grupo_produtos_id']] = $row['caomissao'];
+            $comissoes[$row['grupo_produtos_id']] = $row['caomissao']; // Mapear grupo_produtos_id para caomissao
         }
         return $comissoes;
     }
-
-    // Listar comissões existentes por grupo
+    
     public function listarComissoesPorGrupo($grupoId)
     {
         $db = new db();
-        $db->query("SELECT * FROM comissao_vendedor WHERE grupo_produtos_id = :grupo_produtos_id");
+        $db->query("SELECT usuarios_id, caomissao FROM comissao_vendedor WHERE grupo_produtos_id = :grupo_produtos_id");
         $db->bind(":grupo_produtos_id", $grupoId);
         $result = $db->resultSet();
-
+    
         $comissoes = [];
         foreach ($result as $row) {
-            $comissoes[$row['usuarios_id']] = $row['caomissao'];
+            $comissoes[$row['usuarios_id']] = $row['caomissao']; // Mapear usuarios_id para caomissao
         }
         return $comissoes;
     }
+    
+
 }
