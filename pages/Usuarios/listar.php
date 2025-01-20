@@ -52,7 +52,10 @@ foreach ($cargos as $cargo) {
                     $nomeCargo = $cargoMap[$r['cargo']] ?? 'Cargo não encontrado';
                     echo "<td>" . htmlspecialchars($nomeCargo) . "</td>";
 
-                    echo "<td>" . $r['status'] == '1' ? 'Ativo' : 'Inativo' . "</td>";
+                    $valor_status =  $r['status'] == '1' ? 'Ativo' : 'Inativo';
+
+                    echo "<td>" . $valor_status . "</td>";
+                    $valor_status = "";
 
 
                     echo "<td> 
