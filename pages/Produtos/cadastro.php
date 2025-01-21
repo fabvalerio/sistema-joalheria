@@ -35,6 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     'custo' => $_POST['custo'] ?? null,
     'margem' => $_POST['margem'] ?? null,
     'em_reais' => $_POST['em_reais'] ?? null,
+    'capa' => $_POST['capa_base64'] ?? null
   ];
 
   $return = $controller->cadastro($dados);
@@ -104,6 +105,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <div id="campos-adicionais" style="display: none;">
 
           <div class="row g-3">
+          <div class="col-lg-12">
+            <div id="preview-container" style="text-align: center;">
+                <img id="preview-thumb" src="" alt="Preview da Imagem" style="max-width: 100%; max-height: 200px; display: none; border: 1px solid #ddd; padding: 5px; border-radius: 5px;">
+            </div>
+        </div>
+        <div class="col-lg-12">
+            <label class="form-label">Foto de Capa do Produto (Opcional) </label>
+            <input type="file" class="form-control" name="capa" id="capa" accept="image/*">
+            <input type="hidden" name="capa_base64" id="capa_base64">
+        </div>
             <!-- Descrição Adicional Etiqueta (Manual) -->
             <div class="col-lg-12">
               <label class="form-label">Descrição Adicional Etiqueta (opcional)</label>
@@ -553,4 +564,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       })
       .catch(error => console.error('Erro ao buscar subgrupos:', error));
   });
+  document.getElementById('capa').addEventListener('change', function (event) {
+        const file = event.target.files[0]; // Obtém o arquivo selecionado
+
+        if (file) {
+            const reader = new FileReader();
+
+            // Quando a leitura estiver completa, exibe a imagem e converte para Base64
+            reader.onload = function (e) {
+                const base64 = e.target.result; // Base64 da imagem
+                const previewThumb = document.getElementById('preview-thumb');
+                const fotoCapaBase64 = document.getElementById('capa_base64');
+
+                previewThumb.src = base64; // Define a imagem para exibição
+                previewThumb.style.display = 'block'; // Exibe o thumbnail
+                fotoCapaBase64.value = base64; // Armazena o Base64 no campo oculto
+            };
+
+            reader.readAsDataURL(file); // Lê o arquivo como Base64
+        }
+    });
 </script>

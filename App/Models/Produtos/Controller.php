@@ -22,7 +22,8 @@ class Controller
                 g.nome_grupo AS grupo,
                 sg.nome_subgrupo AS subgrupo,
                 c.nome AS cotacao,
-                p.em_reais AS em_reais
+                p.em_reais AS em_reais,
+                p.capa AS capa
             FROM 
                 produtos p
             LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
@@ -59,6 +60,7 @@ class Controller
             p.custo,
             p.margem,
             p.em_reais,
+            p.capa,
 
             -- ESSENCIAIS PARA O SELECT FUNCIONAR
             p.fornecedor_id,
@@ -93,11 +95,11 @@ class Controller
             INSERT INTO produtos (
                 descricao_etiqueta, fornecedor_id, modelo, macica_ou_oca, numeros, pedra, 
                 nat_ou_sint, peso, aros, cm, pontos, mm, grupo_id, subgrupo_id, unidade, 
-                estoque_princ, cotacao, preco_ql, peso_gr, custo, margem, em_reais
+                estoque_princ, cotacao, preco_ql, peso_gr, custo, margem, em_reais, capa
             ) VALUES (
                 :descricao_etiqueta, :fornecedor_id, :modelo, :macica_ou_oca, :numeros, :pedra, 
                 :nat_ou_sint, :peso, :aros, :cm, :pontos, :mm, :grupo_id, :subgrupo_id, :unidade, 
-                :estoque_princ, :cotacao, :preco_ql, :peso_gr, :custo, :margem, :em_reais
+                :estoque_princ, :cotacao, :preco_ql, :peso_gr, :custo, :margem, :em_reais, :capa
             )
         ");
 
@@ -135,7 +137,8 @@ class Controller
             peso_gr = :peso_gr,
             custo = :custo,
             margem = :margem,
-            em_reais = :em_reais
+            em_reais = :em_reais,
+            capa = :capa
         WHERE id = :id
     ");
 

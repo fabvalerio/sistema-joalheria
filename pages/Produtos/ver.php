@@ -26,6 +26,14 @@ if (!$produto) {
 
   <div class="card-body">
     <div class="row g-3">
+    <div class="col-lg-12">
+        <label class="form-label fw-bold">Capa</label><br>
+        <img
+                                src="<?= isset($produto['capa']) && !empty($produto['capa']) ? htmlspecialchars($produto['capa']) : $url . '/assets/img_padrao.webp'; ?>"
+                                alt="Capa do Produto"
+                                width="100"
+                                style="height: 100px; object-fit: cover; border: 1px solid #ddd; border-radius: 5px;">
+      </div>
       <!-- Descrição Etiqueta -->
       <div class="col-lg-12">
         <label class="form-label fw-bold">Descrição Etiqueta</label><br>

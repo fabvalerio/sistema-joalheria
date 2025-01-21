@@ -18,6 +18,7 @@ $produtos = $controller->listar();
             <thead class="bg-light">
                 <tr>
                     <th>ID</th>
+                    <th>Capa</th>
                     <th>Descrição</th>
                     <th>Fornecedor</th>
                     <th>Grupo</th>
@@ -31,6 +32,13 @@ $produtos = $controller->listar();
                 <?php foreach ($produtos as $produto): ?>
                     <tr>
                         <td><?= htmlspecialchars($produto['id']) ?></td>
+                        <td>
+                            <img
+                                src="<?= isset($produto['capa']) && !empty($produto['capa']) ? htmlspecialchars($produto['capa']) : $url . '/assets/img_padrao.webp'; ?>"
+                                alt="Capa do Produto"
+                                width="100"
+                                style="height: 100px; object-fit: cover; border: 1px solid #ddd; border-radius: 5px;">
+                        </td>
                         <td><?= htmlspecialchars($produto['descricao_etiqueta']) ?></td>
                         <td><?= htmlspecialchars($produto['fornecedor'] ?? 'Não informado') ?></td>
                         <td><?= htmlspecialchars($produto['grupo'] ?? 'Não informado') ?></td>
