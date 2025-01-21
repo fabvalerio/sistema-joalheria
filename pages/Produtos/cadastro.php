@@ -151,6 +151,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
               </select>
             </div>
 
+            <div class="col-lg-2">
+              <label class="form-label">Tipo de Pedra</label>
+              <select class="form-select" name="pedra" id="pedra">
+                <option value="Nenhuma Pedra">Sem Pedra</option>
+                <option value="Diamante">Diamante</option>
+                <option value="Safira">Safira</option>
+                <option value="Rubi">Rubi</option>
+                <option value="Esmeralda">Esmeralda</option>
+                <option value="Ametista">Ametista</option>
+                <option value="Topázio">Topázio</option>
+                <option value="Turmalina">Turmalina</option>
+                <option value="Quartzo">Quartzo</option>
+                <option value="Âmbar">Âmbar</option>
+                <option value="Opala">Opala</option>
+                <option value="Multiplas">Multiplas</option>
+              </select>
+            </div>
+
+
             <!-- Peso -->
             <div class="col-lg-2">
               <label class="form-label">Peso (g)</label>
@@ -467,14 +486,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   const camposAdicionais = document.getElementById('campos-adicionais');
   const descricaoEtiqueta = document.getElementById('descricao_etiqueta');
   const macica_ou_oca = document.getElementById('macica_ou_oca');
+  const pedra = document.getElementById('pedra');
   const peso = document.getElementById('peso');
   const nat_ou_sint = document.getElementById('nat_ou_sint');
   const unidade = document.getElementById('unidade');
   const descricao_etiqueta_manual = document.getElementById('descricao_etiqueta_manual');
 
+
   // Adicionar listeners para atualização da descrição
 
-  [fornecedor, grupo, subgrupo, modelo, macica_ou_oca, nat_ou_sint, unidade, peso].forEach(select => {
+  [fornecedor, grupo, subgrupo, modelo, macica_ou_oca, nat_ou_sint, unidade, peso, pedra].forEach(select => {
     select.addEventListener('change', () => {
       if (fornecedor.value && grupo.value && subgrupo.value) {
         camposAdicionais.style.display = 'block';
@@ -499,10 +520,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     const unidadeText = unidade.options[unidade.selectedIndex]?.text || '';
     const pesoValue = peso.value || '';
     const descricao_etiqueta_manualValue = descricao_etiqueta_manual.value || '';
+    const pedravalor = pedra.options[pedra.selectedIndex]?.value || '';
 
 
 
-    descricaoEtiqueta.value = `${subgrupoText} - ${grupoText} - ${modeloText} - ${macica_ou_ocaText} - ${nat_ou_sintText} - ${unidadeText} - ${pesoValue}g - [ ${descricao_etiqueta_manualValue} ]`;
+    descricaoEtiqueta.value = `${subgrupoText} - ${grupoText} - com ${pedravalor} - ${modeloText} - ${macica_ou_ocaText} - ${nat_ou_sintText} - ${unidadeText} - ${pesoValue}g - [ ${descricao_etiqueta_manualValue} ]`;
   }
 
   // Atualizar subgrupos dinamicamente ao alterar o grupo

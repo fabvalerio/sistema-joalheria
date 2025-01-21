@@ -85,6 +85,12 @@ if (!$produto) {
         <?= htmlspecialchars($produto['macica_ou_oca'] ?? '') ?>
       </div>
 
+      <!-- Pedra -->
+      <div class="col-lg-2">
+        <label class="form-label fw-bold">Pedra</label><br>
+        <?= htmlspecialchars($produto['pedra'] ?? '') ?>
+      </div>
+
       <!-- Peso (g) -->
       <div class="col-lg-2">
         <label class="form-label fw-bold">Peso (g)</label><br>
