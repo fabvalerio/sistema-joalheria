@@ -25,7 +25,6 @@ $comissoes = $controller->listar();
                     <th>Grupo de Produtos</th>
                     <th>Comissão A</th>
                     <th>Comissão B</th>
-                    <th width="220">Ações</th>
                 </tr>
             </thead>
             <tbody>
@@ -34,20 +33,8 @@ $comissoes = $controller->listar();
                         <td><?= $comissao['id'] ?></td>
                         <td><?= htmlspecialchars($comissao['vendedor']) ?></td>
                         <td><?= htmlspecialchars($comissao['grupo_produto']) ?></td>
-                        <td><?= htmlspecialchars(number_format($comissao['caomissao'], 2, ',', '.')) ?>%</td>
-                        <td><?= htmlspecialchars(number_format($comissao['comissao_vendedorcol'], 2, ',', '.')) ?>%</td>
-                        <td>
-                            <div class="dropdown">
-                                <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    Ação
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li><a href="<?= "{$url}!/{$link[1]}/ver/{$comissao['id']}" ?>" class="dropdown-item">Ver</a></li>
-                                    <li><a href="<?= "{$url}!/{$link[1]}/editar/{$comissao['id']}" ?>" class="dropdown-item">Editar</a></li>
-                                    <li><a href="<?= "{$url}!/{$link[1]}/deletar/{$comissao['id']}" ?>" class="dropdown-item text-danger">Excluir</a></li>
-                                </ul>
-                            </div>
-                        </td>
+                        <td><?= htmlspecialchars(number_format($comissao['comissao_v'], 2, ',', '.')) ?>%</td>
+                        <td><?= htmlspecialchars(number_format($comissao['comissao_a'], 2, ',', '.')) ?>%</td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
