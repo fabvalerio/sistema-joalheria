@@ -20,68 +20,68 @@ class Controller
 
     // Salvar comissões em lote para um usuário
     public function salvarComissoesPorUsuario($usuarioId, $comissoes, $comissoes2)
-{
-    $db = new db();
+    {
+        $db = new db();
 
-    // Deletar comissões existentes para o usuário
-    $db->query("DELETE FROM comissao_vendedor WHERE usuarios_id = :usuarios_id");
-    $db->bind(":usuarios_id", $usuarioId);
-    if (!$db->execute()) {
-        return false;
-    }
-
-    // Inserir novas comissões
-    $db->query("INSERT INTO comissao_vendedor (usuarios_id, grupo_produtos_id, comissao_v, comissao_a) 
-                VALUES (:usuarios_id, :grupo_produtos_id, :comissao_v, :comissao_a)");
-    
-    foreach ($comissoes as $grupo_produtos_id => $comissao_v) {
-        $comissao_a = $comissoes2[$grupo_produtos_id] ?? 0; // Obtém a segunda comissão correspondente ou usa 0
-
+        // Deletar comissões existentes para o usuário
+        $db->query("DELETE FROM comissao_vendedor WHERE usuarios_id = :usuarios_id");
         $db->bind(":usuarios_id", $usuarioId);
-        $db->bind(":grupo_produtos_id", $grupo_produtos_id);
-        $db->bind(":comissao_v", $comissao_v ?: 0); // Valor padrão para a primeira comissão
-        $db->bind(":comissao_a", $comissao_a ?: 0); // Valor padrão para a segunda comissão
-
         if (!$db->execute()) {
             return false;
         }
-    }
 
-    return true;
-}
+        // Inserir novas comissões
+        $db->query("INSERT INTO comissao_vendedor (usuarios_id, grupo_produtos_id, comissao_v, comissao_a) 
+                VALUES (:usuarios_id, :grupo_produtos_id, :comissao_v, :comissao_a)");
+
+        foreach ($comissoes as $grupo_produtos_id => $comissao_v) {
+            $comissao_a = $comissoes2[$grupo_produtos_id] ?? 0; // Obtém a segunda comissão correspondente ou usa 0
+
+            $db->bind(":usuarios_id", $usuarioId);
+            $db->bind(":grupo_produtos_id", $grupo_produtos_id);
+            $db->bind(":comissao_v", $comissao_v ?: 0); // Valor padrão para a primeira comissão
+            $db->bind(":comissao_a", $comissao_a ?: 0); // Valor padrão para a segunda comissão
+
+            if (!$db->execute()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
 
     // Salvar comissões em lote para um grupo de produtos
     public function salvarComissoesPorGrupo($grupoId, $comissoes, $comissoes2)
-{
-    $db = new db();
+    {
+        $db = new db();
 
-    // Deletar comissões existentes para o grupo
-    $db->query("DELETE FROM comissao_vendedor WHERE grupo_produtos_id = :grupo_produtos_id");
-    $db->bind(":grupo_produtos_id", $grupoId);
-    if (!$db->execute()) {
-        return false;
-    }
-
-    // Inserir novas comissões
-    $db->query("INSERT INTO comissao_vendedor (grupo_produtos_id, usuarios_id, comissao_v, comissao_a) 
-                VALUES (:grupo_produtos_id, :usuarios_id, :comissao_v, :comissao_a)");
-    
-    foreach ($comissoes as $usuarios_id => $comissao_v) {
-        $comissao_a = $comissoes2[$usuarios_id] ?? 0; // Obtém a segunda comissão correspondente ou usa 0
-
+        // Deletar comissões existentes para o grupo
+        $db->query("DELETE FROM comissao_vendedor WHERE grupo_produtos_id = :grupo_produtos_id");
         $db->bind(":grupo_produtos_id", $grupoId);
-        $db->bind(":usuarios_id", $usuarios_id);
-        $db->bind(":comissao_v", $comissao_v ?: 0); // Valor padrão para a primeira comissão
-        $db->bind(":comissao_a", $comissao_a ?: 0); // Valor padrão para a segunda comissão
-
         if (!$db->execute()) {
             return false;
         }
-    }
 
-    return true;
-}
+        // Inserir novas comissões
+        $db->query("INSERT INTO comissao_vendedor (grupo_produtos_id, usuarios_id, comissao_v, comissao_a) 
+                VALUES (:grupo_produtos_id, :usuarios_id, :comissao_v, :comissao_a)");
+
+        foreach ($comissoes as $usuarios_id => $comissao_v) {
+            $comissao_a = $comissoes2[$usuarios_id] ?? 0; // Obtém a segunda comissão correspondente ou usa 0
+
+            $db->bind(":grupo_produtos_id", $grupoId);
+            $db->bind(":usuarios_id", $usuarios_id);
+            $db->bind(":comissao_v", $comissao_v ?: 0); // Valor padrão para a primeira comissão
+            $db->bind(":comissao_a", $comissao_a ?: 0); // Valor padrão para a segunda comissão
+
+            if (!$db->execute()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
 
     // Listar grupos de produtos
@@ -107,7 +107,7 @@ class Controller
         $db->query("SELECT grupo_produtos_id, comissao_v, comissao_a FROM comissao_vendedor WHERE usuarios_id = :usuarios_id");
         $db->bind(":usuarios_id", $usuarioId);
         $result = $db->resultSet();
-    
+
         $comissoes = [];
         foreach ($result as $row) {
             $comissoes[$row['grupo_produtos_id']] = [
@@ -115,28 +115,25 @@ class Controller
                 'comissao_a' => $row['comissao_a'], // Segunda comissão
             ];
         }
-    
+
         return $comissoes;
     }
-    
+
     public function listarComissoesPorGrupo($grupoId)
-{
-    $db = new db();
-    $db->query("SELECT usuarios_id, comissao_v, comissao_a FROM comissao_vendedor WHERE grupo_produtos_id = :grupo_produtos_id");
-    $db->bind(":grupo_produtos_id", $grupoId);
-    $result = $db->resultSet();
+    {
+        $db = new db();
+        $db->query("SELECT usuarios_id, comissao_v, comissao_a FROM comissao_vendedor WHERE grupo_produtos_id = :grupo_produtos_id");
+        $db->bind(":grupo_produtos_id", $grupoId);
+        $result = $db->resultSet();
 
-    $comissoes = [];
-    foreach ($result as $row) {
-        $comissoes[$row['usuarios_id']] = [
-            'comissao_v' => $row['comissao_v'], // Primeira comissão
-            'comissao_a' => $row['comissao_a'], // Segunda comissão
-        ];
+        $comissoes = [];
+        foreach ($result as $row) {
+            $comissoes[$row['usuarios_id']] = [
+                'comissao_v' => $row['comissao_v'], // Primeira comissão
+                'comissao_a' => $row['comissao_a'], // Segunda comissão
+            ];
+        }
+
+        return $comissoes;
     }
-
-    return $comissoes;
-}
-
-    
-
 }

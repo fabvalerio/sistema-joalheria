@@ -122,45 +122,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['salvar_comissoes'])) 
           <h5>Comissões</h5>
           <?php if ($modo === 'grupo'): ?>
 
-<?php foreach ($usuarios as $usuario): ?>
-    <div class="row align-items-center mb-2 p-2 border rounded bg-light">
-        <div class="col-lg-8">
-            <label class="form-label fw-semibold text-primary m-0"><?= htmlspecialchars($usuario['nome_completo']) ?></label>
-        </div>
-        <div class="col-lg-4">
-        <span class="fw-semibold">Comissão Varejo (%)</span> <input type="number" step="0.01" class="form-control border-gray" 
-                name="comissoes[<?= $usuario['id'] ?>]"
-                value="<?= $comissoesExistentes[$usuario['id']]['comissao_v'] ?? '' ?>" 
-                placeholder="Comissão (%)">
-                <span class="fw-semibold">Comissão Atacado (%)</span> <input type="number" step="0.01" class="form-control border-gray" 
-                name="comissoes2[<?= $usuario['id'] ?>]"
-                value="<?= $comissoesExistentes[$usuario['id']]['comissao_a'] ?? '' ?>" 
-                placeholder="Outra Comissão (%)">
-        </div>
-    </div>
-<?php endforeach; ?>
+            <?php foreach ($usuarios as $usuario): ?>
+              <div class="row align-items-center mb-2 p-2 border rounded bg-light">
+                <div class="col-lg-8">
+                  <label class="form-label fw-semibold text-primary m-0"><?= htmlspecialchars($usuario['nome_completo']) ?></label>
+                </div>
+                <div class="col-lg-4">
+                  <span class="fw-semibold">Comissão Varejo (%)</span> <input type="number" step="0.01" class="form-control border-gray"
+                    name="comissoes[<?= $usuario['id'] ?>]"
+                    value="<?= $comissoesExistentes[$usuario['id']]['comissao_v'] ?? '' ?>"
+                    placeholder="Comissão (%)">
+                  <span class="fw-semibold">Comissão Atacado (%)</span> <input type="number" step="0.01" class="form-control border-gray"
+                    name="comissoes2[<?= $usuario['id'] ?>]"
+                    value="<?= $comissoesExistentes[$usuario['id']]['comissao_a'] ?? '' ?>"
+                    placeholder="Outra Comissão (%)">
+                </div>
+              </div>
+            <?php endforeach; ?>
 
-<?php elseif ($modo === 'usuario'): ?>
+          <?php elseif ($modo === 'usuario'): ?>
 
-<?php foreach ($grupos as $grupo): ?>
-    <div class="row align-items-center mb-2 p-2 border rounded bg-light">
-        <div class="col-lg-8">
-            <label class="form-label fw-semibold text-primary m-0"><?= htmlspecialchars($grupo['nome_grupo']) ?></label>
-        </div>
-        <div class="col-lg-4">
-           <span class="fw-semibold">Comissão Varejo (%)</span> <input type="number" step="0.01" class="form-control border-gray"
-                name="comissoes[<?= $grupo['id'] ?>]"
-                value="<?= $comissoesExistentes[$grupo['id']]['comissao_v'] ?? '' ?>"
-                placeholder="Comissão (%)">
-                <span class="fw-semibold">Comissão Atacado (%)</span> <input type="number" step="0.01" class="form-control border-gray"
-                name="comissoes2[<?= $grupo['id'] ?>]"
-                value="<?= $comissoesExistentes[$grupo['id']]['comissao_a'] ?? '' ?>"
-                placeholder="Outra Comissão (%)">
-        </div>
-    </div>
-<?php endforeach; ?>
+            <?php foreach ($grupos as $grupo): ?>
+              <div class="row align-items-center mb-2 p-2 border rounded bg-light">
+                <div class="col-lg-8">
+                  <label class="form-label fw-semibold text-primary m-0"><?= htmlspecialchars($grupo['nome_grupo']) ?></label>
+                </div>
+                <div class="col-lg-4">
+                  <span class="fw-semibold">Comissão Varejo (%)</span> <input type="number" step="0.01" class="form-control border-gray"
+                    name="comissoes[<?= $grupo['id'] ?>]"
+                    value="<?= $comissoesExistentes[$grupo['id']]['comissao_v'] ?? '' ?>"
+                    placeholder="Comissão (%)">
+                  <span class="fw-semibold">Comissão Atacado (%)</span> <input type="number" step="0.01" class="form-control border-gray"
+                    name="comissoes2[<?= $grupo['id'] ?>]"
+                    value="<?= $comissoesExistentes[$grupo['id']]['comissao_a'] ?? '' ?>"
+                    placeholder="Outra Comissão (%)">
+                </div>
+              </div>
+            <?php endforeach; ?>
 
-<?php endif; ?>
+          <?php endif; ?>
 
 
 
