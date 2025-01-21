@@ -62,9 +62,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <!-- Descrição Etiqueta (gerada automaticamente) -->
         <div class="col-lg-12">
           <label class="form-label">Descrição Etiqueta</label>
-          <input type="text" class="form-control" name="descricao_etiqueta" id="descricao_etiqueta" readonly>
+          <input type="text" class="form-control bg-secondary text-white" name="descricao_etiqueta" id="descricao_etiqueta" readonly>
         </div>
-
+        <div class="col-12">
+          <hr>
+        </div>
         <!-- Fornecedor -->
         <div class="col-lg-4">
           <label class="form-label">Fornecedor</label>
@@ -100,29 +102,47 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
         <!-- Campos adicionais aparecem após seleção -->
         <div id="campos-adicionais" style="display: none;">
+
           <div class="row g-3">
+            <!-- Descrição Adicional Etiqueta (Manual) -->
+            <div class="col-lg-12">
+              <label class="form-label">Descrição Adicional Etiqueta (opcional)</label>
+              <input type="text" class="form-control" name="descricao_etiqueta_manual" id="descricao_etiqueta_manual">
+            </div>
             <!-- Modelo -->
             <div class="col-lg-4">
               <label class="form-label">Modelo</label>
               <select class="form-select" name="modelo" id="modelo">
                 <option value="">Selecione</option>
-                <option value="362">3 Aros Liso 5 Com Pedras</option>
-                <option value="370">Aro Entrelaçado Com</option>
-                <option value="537">Baiano</option>
-                <option value="374">Bola</option>
-                <option value="346">Cartier</option>
-                <option value="533">Elos 1 X 1</option>
-                <option value="532">Elos 2 X 1</option>
-                <option value="531">Elos 3 X 1</option>
-                <option value="345">Grume</option>
-                <option value="536">Piastrine</option>
-                <option value="535">Singa Pura</option>
-                <option value="534">Veneziana</option>
+                <option value="3 Aros Liso 5 Com Pedras">3 Aros Liso 5 Com Pedras</option>
+                <option value="Aro Entrelaçado Com">Aro Entrelaçado Com</option>
+                <option value="Baiano">Baiano</option>
+                <option value="Bola">Bola</option>
+                <option value="Cartier">Cartier</option>
+                <option value="Elos 1 X 1">Elos 1 X 1</option>
+                <option value="Elos 2 X 1">Elos 2 X 1</option>
+                <option value="Elos 3 X 1">Elos 3 X 1</option>
+                <option value="Grume">Grume</option>
+                <option value="Piastrine">Piastrine</option>
+                <option value="Singa Pura">Singa Pura</option>
+                <option value="Veneziana">Veneziana</option>
               </select>
+
+            </div>
+            <!-- Aros -->
+            <div class="col-lg-2">
+              <label class="form-label">Aros</label>
+              <input type="number" step="0.001" class="form-control" name="aros" id="aros">
+            </div>
+
+            <!-- Pontos -->
+            <div class="col-lg-2">
+              <label class="form-label">Pontos</label>
+              <input type="number" step="0.001" class="form-control" name="pontos" id="pontos">
             </div>
 
             <!-- Material (Maciça/Oca) -->
-            <div class="col-lg-4">
+            <div class="col-lg-2">
               <label class="form-label">Material (Maciça/Oca)</label>
               <select class="form-select" name="macica_ou_oca" id="macica_ou_oca">
                 <option value="">Selecione</option>
@@ -147,7 +167,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </div>
 
             <!-- Natural ou Sintético -->
-            <div class="col-lg-4">
+            <div class="col-lg-2">
               <label class="form-label">Natural ou Sintético</label>
               <select class="form-select" name="nat_ou_sint" id="nat_ou_sint">
                 <option value="">Selecione</option>
@@ -156,59 +176,52 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
               </select>
             </div>
 
-            <!-- Pontos -->
-            <div class="col-lg-2">
-              <label class="form-label">Pontos</label>
-              <input type="number" step="0.001" class="form-control" name="pontos" id="pontos">
-            </div>
-
             <!-- Milímetros (mm) -->
             <div class="col-lg-2">
               <label class="form-label">Milímetros (mm)</label>
               <select class="form-select" name="mm" id="mm">
                 <option value="">Selecione</option>
-                <option value=""></option>
-                <option value="361"> 00,80 Mm </option>
-                <option value="376"> 00.90 Mm </option>
-                <option value="371"> 01,00 Mm </option>
-                <option value="377"> 01,25 Mm </option>
-                <option value="364"> 01,50 Mm </option>
-                <option value="378"> 01,75 Mm </option>
-                <option value="379"> 02,00 Mm </option>
-                <option value="380"> 02,25 Mm </option>
-                <option value="381"> 02,50 Mm </option>
-                <option value="382"> 02,75 Mm </option>
-                <option value="383"> 03,00 Mm </option>
-                <option value="384"> 03,25 Mm </option>
-                <option value="385"> 03,50 Mm </option>
-                <option value="386"> 03,75 Mm </option>
-                <option value="375"> 04,00 Mm </option>
-                <option value="387"> 04,25 Mm </option>
-                <option value="388"> 04,50 Mm </option>
-                <option value="389"> 04,75 Mm </option>
-                <option value="390"> 05,00 Mm </option>
-                <option value="392"> 05,50 Mm </option>
-                <option value="393"> 06,00 Mm </option>
-                <option value="394"> 06,50 Mm </option>
-                <option value="391"> 07,00 Mm </option>
-                <option value="395"> 07,50 Mm </option>
-                <option value="396"> 08,00 Mm </option>
-                <option value="397"> 08,50 Mm </option>
-                <option value="398"> 09,00 Mm </option>
-                <option value="399"> 09,50 Mm </option>
-                <option value="400"> 10,00 Mm </option>
-                <option value="401"> 10,50 Mm </option>
-                <option value="402"> 11,00 Mm </option>
-                <option value="403"> 11,50 Mm </option>
-                <option value="404"> 12,00 Mm </option>
-                <option value="405"> 12,50 Mm </option>
-                <option value="406"> 13,00 Mm </option>
-                <option value="407"> 13,50 Mm </option>
-                <option value="408"> 14,00 Mm </option>
-                <option value="409"> 14,50 Mm </option>
-                <option value="410"> 15,00 Mm </option>
-
+                <option value="0.080">00,80 Mm</option>
+                <option value="0.090">00.90 Mm</option>
+                <option value="1.000">01,00 Mm</option>
+                <option value="1.250">01,25 Mm</option>
+                <option value="1.500">01,50 Mm</option>
+                <option value="1.750">01,75 Mm</option>
+                <option value="2.000">02,00 Mm</option>
+                <option value="2.250">02,25 Mm</option>
+                <option value="2.500">02,50 Mm</option>
+                <option value="2.750">02,75 Mm</option>
+                <option value="3.000">03,00 Mm</option>
+                <option value="3.250">03,25 Mm</option>
+                <option value="3.500">03,50 Mm</option>
+                <option value="3.750">03,75 Mm</option>
+                <option value="4.000">04,00 Mm</option>
+                <option value="4.250">04,25 Mm</option>
+                <option value="4.500">04,50 Mm</option>
+                <option value="4.750">04,75 Mm</option>
+                <option value="5.000">05,00 Mm</option>
+                <option value="5.500">05,50 Mm</option>
+                <option value="6.000">06,00 Mm</option>
+                <option value="6.500">06,50 Mm</option>
+                <option value="7.000">07,00 Mm</option>
+                <option value="7.500">07,50 Mm</option>
+                <option value="8.000">08,00 Mm</option>
+                <option value="8.500">08,50 Mm</option>
+                <option value="9.000">09,00 Mm</option>
+                <option value="9.500">09,50 Mm</option>
+                <option value="10.000">10,00 Mm</option>
+                <option value="10.500">10,50 Mm</option>
+                <option value="11.000">11,00 Mm</option>
+                <option value="11.500">11,50 Mm</option>
+                <option value="12.000">12,00 Mm</option>
+                <option value="12.500">12,50 Mm</option>
+                <option value="13.000">13,00 Mm</option>
+                <option value="13.500">13,50 Mm</option>
+                <option value="14.000">14,00 Mm</option>
+                <option value="14.500">14,50 Mm</option>
+                <option value="15.000">15,00 Mm</option>
               </select>
+
 
             </div>
 
@@ -217,129 +230,129 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
               <label class="form-label">Centímetros (cm)</label>
               <select class="form-select" name="cm" id="cm">
                 <option value="">Selecione</option>
-                <option value="411"> 10,00 Cm </option>
-                <option value="412"> 10,50 Cm </option>
-                <option value="413"> 11,00 Cm </option>
-                <option value="414"> 11,50 Cm </option>
-                <option value="415"> 12,00 Cm </option>
-                <option value="416"> 12,50 Cm </option>
-                <option value="417"> 13,00 Cm </option>
-                <option value="418"> 13,50 Mm </option>
-                <option value="419"> 14,00 Mm </option>
-                <option value="420"> 14,50 Cm </option>
-                <option value="421"> 15,00 Cm </option>
-                <option value="422"> 15,50 Cm </option>
-                <option value="423"> 16,00 Cm </option>
-                <option value="424"> 16,50 Cm </option>
-                <option value="425"> 17,00 Cm </option>
-                <option value="426"> 17,50 Cm </option>
-                <option value="427"> 18,00 Cm </option>
-                <option value="428"> 18,50 Cm </option>
-                <option value="429"> 19,00 Cm </option>
-                <option value="430"> 19,50 Cm </option>
-                <option value="431"> 20,00 Cm </option>
-                <option value="432"> 20,50 Cm </option>
-                <option value="433"> 21,00 Cm </option>
-                <option value="434"> 21,50 Cm </option>
-                <option value="435"> 22,00 Cm </option>
-                <option value="436"> 22,50 Cm </option>
-                <option value="437"> 23,00 cm </option>
-                <option value="438"> 23,50 Cm </option>
-                <option value="439"> 24,00 Cm </option>
-                <option value="440"> 24,50 Cm </option>
-                <option value="441"> 25,00 Cm </option>
-                <option value="442"> 25,50 Cm </option>
-                <option value="443"> 26,00 Cm </option>
-                <option value="444"> 26,50 Cm </option>
-                <option value="445"> 27,00 Cm </option>
-                <option value="446"> 27,50 Cm </option>
-                <option value="447"> 28,00 Cm </option>
-                <option value="448"> 28,50 Cm </option>
-                <option value="449"> 29,00 Cm </option>
-                <option value="450"> 29,50 Cm </option>
-                <option value="451"> 30,00 Cm </option>
-                <option value="452"> 30,50 Cm </option>
-                <option value="453"> 31,00 Cm </option>
-                <option value="454"> 31,50 Cm </option>
-                <option value="455"> 32,00 Cm </option>
-                <option value="456"> 32,50 Cm </option>
-                <option value="457"> 33,00 Cm </option>
-                <option value="458"> 33,50 Cm </option>
-                <option value="459"> 34,00 Cm </option>
-                <option value="460"> 34,50 Cm </option>
-                <option value="461"> 35,00 Cm </option>
-                <option value="462"> 35,50 Cm </option>
-                <option value="463"> 36,00 Cm </option>
-                <option value="464"> 36,50 m </option>
-                <option value="465"> 37,00 Cm </option>
-                <option value="466"> 37,50 Cm </option>
-                <option value="467"> 38,00 Cm </option>
-                <option value="468"> 38,50 Cm </option>
-                <option value="469"> 39,00 Cm </option>
-                <option value="470"> 39,50 Cm </option>
-                <option value="356"> 40,00 Cm </option>
-                <option value="471"> 40,50 Cm </option>
-                <option value="472"> 41,00 Cm </option>
-                <option value="473"> 41,50 Cm </option>
-                <option value="474"> 42,00 Cm </option>
-                <option value="475"> 42,50 Cm </option>
-                <option value="476"> 43,00 Cm </option>
-                <option value="477"> 43,50 Cm </option>
-                <option value="478"> 44,00 Cm </option>
-                <option value="479"> 44,50 Cm </option>
-                <option value="480"> 45,00 Cm </option>
-                <option value="481"> 45,50 Cm </option>
-                <option value="482"> 46,00 Cm </option>
-                <option value="483"> 46,50 Cm </option>
-                <option value="484"> 47,00 Cm </option>
-                <option value="485"> 47,50 Cm </option>
-                <option value="486"> 48,00 Cm </option>
-                <option value="487"> 48,50 Cm </option>
-                <option value="488"> 49,00 Cm </option>
-                <option value="489"> 49,50 Cm </option>
-                <option value="490"> 50,00 Cm </option>
-                <option value="491"> 50,50 Cm </option>
-                <option value="492"> 51,00 Cm </option>
-                <option value="493"> 51,50 Cm </option>
-                <option value="494"> 52,00 Cm </option>
-                <option value="495"> 52,50 Cm </option>
-                <option value="496"> 53,00 Cm </option>
-                <option value="497"> 53,50 Cm </option>
-                <option value="498"> 54,00 Cm </option>
-                <option value="499"> 54,50 Cm </option>
-                <option value="500"> 55,00 Cm </option>
-                <option value="501"> 55,50 Cm </option>
-                <option value="502"> 56,00 Cm </option>
-                <option value="503"> 56,50 Cm </option>
-                <option value="504"> 57,00 Cm </option>
-                <option value="505"> 57,50 Cm </option>
-                <option value="506"> 58,00 Cm </option>
-                <option value="507"> 58,50 Cm </option>
-                <option value="508"> 59,00 Cm </option>
-                <option value="509"> 59,50 Cm </option>
-                <option value="510"> 60,00 Cm </option>
-                <option value="511"> 60,50 Cm </option>
-                <option value="512"> 61,00 Cm </option>
-                <option value="513"> 61,50 Cm </option>
-                <option value="514"> 62,00 Cm </option>
-                <option value="515"> 62,50 Cm </option>
-                <option value="516"> 63,00 Cm </option>
-                <option value="517"> 63,50 Cm </option>
-                <option value="518"> 64,00 Cm </option>
-                <option value="519"> 64,50 Cm </option>
-                <option value="520"> 65,00 Cm </option>
-                <option value="521"> 65,50 Cm </option>
-                <option value="522"> 66,00 Cm </option>
-                <option value="523"> 66,50 Cm </option>
-                <option value="524"> 67,00 Cm </option>
-                <option value="525"> 67,50 Cm </option>
-                <option value="526"> 68,00 Cm </option>
-                <option value="527"> 68,50 Cm </option>
-                <option value="528"> 69,00 Cm </option>
-                <option value="529"> 69,50 Cm </option>
-                <option value="530"> 70,00 Cm </option>
-
+                <option value="10.000">10,00 Cm</option>
+                <option value="10.500">10,50 Cm</option>
+                <option value="11.000">11,00 Cm</option>
+                <option value="11.500">11,50 Cm</option>
+                <option value="12.000">12,00 Cm</option>
+                <option value="12.500">12,50 Cm</option>
+                <option value="13.000">13,00 Cm</option>
+                <option value="13.500">13,50 Cm</option>
+                <option value="14.000">14,00 Cm</option>
+                <option value="14.500">14,50 Cm</option>
+                <option value="15.000">15,00 Cm</option>
+                <option value="15.500">15,50 Cm</option>
+                <option value="16.000">16,00 Cm</option>
+                <option value="16.500">16,50 Cm</option>
+                <option value="17.000">17,00 Cm</option>
+                <option value="17.500">17,50 Cm</option>
+                <option value="18.000">18,00 Cm</option>
+                <option value="18.500">18,50 Cm</option>
+                <option value="19.000">19,00 Cm</option>
+                <option value="19.500">19,50 Cm</option>
+                <option value="20.000">20,00 Cm</option>
+                <option value="20.500">20,50 Cm</option>
+                <option value="21.000">21,00 Cm</option>
+                <option value="21.500">21,50 Cm</option>
+                <option value="22.000">22,00 Cm</option>
+                <option value="22.500">22,50 Cm</option>
+                <option value="23.000">23,00 Cm</option>
+                <option value="23.500">23,50 Cm</option>
+                <option value="24.000">24,00 Cm</option>
+                <option value="24.500">24,50 Cm</option>
+                <option value="25.000">25,00 Cm</option>
+                <option value="25.500">25,50 Cm</option>
+                <option value="26.000">26,00 Cm</option>
+                <option value="26.500">26,50 Cm</option>
+                <option value="27.000">27,00 Cm</option>
+                <option value="27.500">27,50 Cm</option>
+                <option value="28.000">28,00 Cm</option>
+                <option value="28.500">28,50 Cm</option>
+                <option value="29.000">29,00 Cm</option>
+                <option value="29.500">29,50 Cm</option>
+                <option value="30.000">30,00 Cm</option>
+                <option value="30.500">30,50 Cm</option>
+                <option value="31.000">31,00 Cm</option>
+                <option value="31.500">31,50 Cm</option>
+                <option value="32.000">32,00 Cm</option>
+                <option value="32.500">32,50 Cm</option>
+                <option value="33.000">33,00 Cm</option>
+                <option value="33.500">33,50 Cm</option>
+                <option value="34.000">34,00 Cm</option>
+                <option value="34.500">34,50 Cm</option>
+                <option value="35.000">35,00 Cm</option>
+                <option value="35.500">35,50 Cm</option>
+                <option value="36.000">36,00 Cm</option>
+                <option value="36.500">36,50 Cm</option>
+                <option value="37.000">37,00 Cm</option>
+                <option value="37.500">37,50 Cm</option>
+                <option value="38.000">38,00 Cm</option>
+                <option value="38.500">38,50 Cm</option>
+                <option value="39.000">39,00 Cm</option>
+                <option value="39.500">39,50 Cm</option>
+                <option value="40.000">40,00 Cm</option>
+                <option value="40.500">40,50 Cm</option>
+                <option value="41.000">41,00 Cm</option>
+                <option value="41.500">41,50 Cm</option>
+                <option value="42.000">42,00 Cm</option>
+                <option value="42.500">42,50 Cm</option>
+                <option value="43.000">43,00 Cm</option>
+                <option value="43.500">43,50 Cm</option>
+                <option value="44.000">44,00 Cm</option>
+                <option value="44.500">44,50 Cm</option>
+                <option value="45.000">45,00 Cm</option>
+                <option value="45.500">45,50 Cm</option>
+                <option value="46.000">46,00 Cm</option>
+                <option value="46.500">46,50 Cm</option>
+                <option value="47.000">47,00 Cm</option>
+                <option value="47.500">47,50 Cm</option>
+                <option value="48.000">48,00 Cm</option>
+                <option value="48.500">48,50 Cm</option>
+                <option value="49.000">49,00 Cm</option>
+                <option value="49.500">49,50 Cm</option>
+                <option value="50.000">50,00 Cm</option>
+                <option value="50.500">50,50 Cm</option>
+                <option value="51.000">51,00 Cm</option>
+                <option value="51.500">51,50 Cm</option>
+                <option value="52.000">52,00 Cm</option>
+                <option value="52.500">52,50 Cm</option>
+                <option value="53.000">53,00 Cm</option>
+                <option value="53.500">53,50 Cm</option>
+                <option value="54.000">54,00 Cm</option>
+                <option value="54.500">54,50 Cm</option>
+                <option value="55.000">55,00 Cm</option>
+                <option value="55.500">55,50 Cm</option>
+                <option value="56.000">56,00 Cm</option>
+                <option value="56.500">56,50 Cm</option>
+                <option value="57.000">57,00 Cm</option>
+                <option value="57.500">57,50 Cm</option>
+                <option value="58.000">58,00 Cm</option>
+                <option value="58.500">58,50 Cm</option>
+                <option value="59.000">59,00 Cm</option>
+                <option value="59.500">59,50 Cm</option>
+                <option value="60.000">60,00 Cm</option>
+                <option value="60.500">60,50 Cm</option>
+                <option value="61.000">61,00 Cm</option>
+                <option value="61.500">61,50 Cm</option>
+                <option value="62.000">62,00 Cm</option>
+                <option value="62.500">62,50 Cm</option>
+                <option value="63.000">63,00 Cm</option>
+                <option value="63.500">63,50 Cm</option>
+                <option value="64.000">64,00 Cm</option>
+                <option value="64.500">64,50 Cm</option>
+                <option value="65.000">65,00 Cm</option>
+                <option value="65.500">65,50 Cm</option>
+                <option value="66.000">66,00 Cm</option>
+                <option value="66.500">66,50 Cm</option>
+                <option value="67.000">67,00 Cm</option>
+                <option value="67.500">67,50 Cm</option>
+                <option value="68.000">68,00 Cm</option>
+                <option value="68.500">68,50 Cm</option>
+                <option value="69.000">69,00 Cm</option>
+                <option value="69.500">69,50 Cm</option>
+                <option value="70.000">70,00 Cm</option>
               </select>
+
             </div>
             <div class="col-lg-2">
               <label class="form-label">Quantidade</label>
@@ -366,23 +379,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
               <div class="row g-3">
                 <div class="col-lg-2">
                   <label class="form-label">Preço QL</label>
-                  <input type="number" step="0.01" class="form-control" name="preco_ql" id="preco_ql">
+                  <input type="number" step="0.01" class="form-control text-center" name="preco_ql" id="preco_ql">
                 </div>
                 <div class="col-lg-2">
                   <label class="form-label">Peso Gr</label>
-                  <input type="number" step="0.001" class="form-control" name="peso_gr" id="peso_gr">
+                  <input type="number" step="0.001" class="form-control text-center" name="peso_gr" id="peso_gr">
                 </div>
                 <div class="col-lg-2">
                   <label class="form-label">Margem (%)</label>
-                  <input type="number" step="0.01" class="form-control" name="margem" id="margem">
+                  <input type="number" step="0.01" class="form-control text-center" name="margem" id="margem">
                 </div>
                 <div class="col-lg-2">
                   <label class="form-label">Custo</label>
-                  <input type="number" step="0.01" class="form-control bg-gray" name="custo" id="custo" readonly>
+                  <input type="number" step="0.01" class="form-control bg-secondary text-white text-center" name="custo" id="custo" readonly>
                 </div>
                 <div class="col-lg-4">
                   <label class="form-label">Em Reais</label>
-                  <input type="number" step="0.01" class="form-control bg-light" name="em_reais" id="em_reais" readonly>
+                  <input type="number" step="0.01" class="form-control bg-secondary text-white text-center" name="em_reais" id="em_reais" readonly>
                 </div>
               </div>
             </div>
@@ -450,10 +463,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   const fornecedor = document.getElementById('fornecedor');
   const grupo = document.getElementById('grupo');
   const subgrupo = document.getElementById('subgrupo');
+  const modelo = document.getElementById('modelo');
   const camposAdicionais = document.getElementById('campos-adicionais');
   const descricaoEtiqueta = document.getElementById('descricao_etiqueta');
+  const macica_ou_oca = document.getElementById('macica_ou_oca');
+  const peso = document.getElementById('peso');
+  const nat_ou_sint = document.getElementById('nat_ou_sint');
+  const unidade = document.getElementById('unidade');
+  const descricao_etiqueta_manual = document.getElementById('descricao_etiqueta_manual');
 
-  [fornecedor, grupo, subgrupo].forEach(select => {
+  // Adicionar listeners para atualização da descrição
+
+  [fornecedor, grupo, subgrupo, modelo, macica_ou_oca, nat_ou_sint, unidade, peso].forEach(select => {
     select.addEventListener('change', () => {
       if (fornecedor.value && grupo.value && subgrupo.value) {
         camposAdicionais.style.display = 'block';
@@ -465,15 +486,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     });
   });
 
+  // Listener para o evento 'input' do campo manual
+  descricao_etiqueta_manual.addEventListener('input', atualizarDescricaoEtiqueta);
+
   // Atualizar Descrição Etiqueta automaticamente
   function atualizarDescricaoEtiqueta() {
-    const fornecedorText = fornecedor.options[fornecedor.selectedIndex]?.text;
-    const grupoText = grupo.options[grupo.selectedIndex]?.text;
-    const subgrupoText = subgrupo.options[subgrupo.selectedIndex]?.text;
+    const grupoText = grupo.options[grupo.selectedIndex]?.text || '';
+    const subgrupoText = subgrupo.options[subgrupo.selectedIndex]?.text || '';
+    const modeloText = modelo.options[modelo.selectedIndex]?.text || '';
+    const macica_ou_ocaText = macica_ou_oca.options[macica_ou_oca.selectedIndex]?.text || '';
+    const nat_ou_sintText = nat_ou_sint.options[nat_ou_sint.selectedIndex]?.text || '';
+    const unidadeText = unidade.options[unidade.selectedIndex]?.text || '';
+    const pesoValue = peso.value || '';
+    const descricao_etiqueta_manualValue = descricao_etiqueta_manual.value || '';
 
-    descricaoEtiqueta.value = `${grupoText || ''} - ${subgrupoText || ''}`;
+
+
+    descricaoEtiqueta.value = `${subgrupoText} - ${grupoText} - ${modeloText} - ${macica_ou_ocaText} - ${nat_ou_sintText} - ${unidadeText} - ${pesoValue}g - [ ${descricao_etiqueta_manualValue} ]`;
   }
 
+  // Atualizar subgrupos dinamicamente ao alterar o grupo
   document.getElementById('grupo').addEventListener('change', function() {
     const grupoId = this.value;
     const subgrupoSelect = document.getElementById('subgrupo');
