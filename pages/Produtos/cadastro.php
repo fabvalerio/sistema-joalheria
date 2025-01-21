@@ -92,11 +92,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
           <label class="form-label">Subgrupo</label>
           <select class="form-select" name="subgrupo_id" id="subgrupo" required>
             <option value="">Selecione o Subgrupo</option>
-            <?php foreach ($subgrupos as $subgrupo): ?>
-              <option value="<?= $subgrupo['id'] ?>"><?= htmlspecialchars($subgrupo['nome_subgrupo']) ?></option>
-            <?php endforeach; ?>
           </select>
         </div>
+
         <div class="col-12">
           <hr>
         </div>
@@ -475,4 +473,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     descricaoEtiqueta.value = `${grupoText || ''} - ${subgrupoText || ''}`;
   }
+
+  document.getElementById('grupo').addEventListener('change', function() {
+    const grupoId = this.value;
+    const subgrupoSelect = document.getElementById('subgrupo');
+
+    // Limpar o select de subgrupo
+    subgrupoSelect.innerHTML = '<option value="">Selecione o Subgrupo</option>';
+
+    if (!grupoId) {
+      return; // Se nenhum grupo foi selecionado, parar aqui
+    }
+
+    // Fazer a requisição AJAX
+    fetch(`<?php echo $url; ?>pages/Produtos/subgrupos.php?grupo_id=${grupoId}`)
+      .then(response => response.json())
+      .then(subgrupos => {
+        // Preencher o select de subgrupos
+        subgrupos.forEach(subgrupo => {
+          const option = document.createElement('option');
+          option.value = subgrupo.id;
+          option.textContent = subgrupo.nome_subgrupo;
+          subgrupoSelect.appendChild(option);
+        });
+      })
+      .catch(error => console.error('Erro ao buscar subgrupos:', error));
+  });
 </script>

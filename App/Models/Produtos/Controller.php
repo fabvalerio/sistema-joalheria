@@ -176,5 +176,13 @@ class Controller
         $db->query("SELECT id, nome, valor FROM cotacoes ORDER BY nome");
         return $db->resultSet();
     }
+
+    // Listar subgrupos de acordo com o grupo selecionado
+    public function listarSubgruposPorGrupo($grupo_id)
+    {
+        $db = new db();
+        $db->query("SELECT id, nome_subgrupo FROM subgrupo_produtos WHERE grupo_id = :grupo_id ORDER BY nome_subgrupo");
+        $db->bind(":grupo_id", $grupo_id);
+        return $db->resultSet();
+    }
 }
-?>
