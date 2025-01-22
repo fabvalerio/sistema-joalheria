@@ -141,7 +141,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
           <div class="row g-3">
             <div class="col-lg-12">
               <div id="preview-container" style="text-align: center;">
-                <img id="preview-thumb" src="<?= isset($produto['capa']) && !empty($produto['capa']) ? $produto['capa'] : $url . '/assets/img_padrao.webp'; ?>"  alt="Preview da Imagem" style="max-width: 100%; max-height: 200px; display: block; border: 1px solid #ddd; padding: 5px; border-radius: 5px;">
+                <img id="preview-thumb" src="<?= isset($produto['capa']) && !empty($produto['capa']) ? $produto['capa'] : $url . '/assets/img_padrao.webp'; ?>" alt="Preview da Imagem" style="max-width: 100%; max-height: 200px; display: block; border: 1px solid #ddd; padding: 5px; border-radius: 5px;">
               </div>
             </div>
             <div class="col-lg-12">
@@ -201,17 +201,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 value="<?= $produto['aros'] ?? '' ?>">
             </div>
 
-            <!-- Pontos -->
-            <div class="col-lg-2">
-              <label class="form-label">Pontos</label>
-              <input
-                type="number"
-                step="0.001"
-                class="form-control"
-                name="pontos"
-                id="pontos"
-                value="<?= $produto['pontos'] ?? '' ?>">
-            </div>
 
             <!-- Maciça/Oca -->
             <div class="col-lg-2">
@@ -230,33 +219,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </option>
               </select>
             </div>
-
-            <div class="col-lg-2">
-              <label class="form-label">Tipo de Pedra</label>
-              <select class="form-select" name="pedra" id="pedra">
-                <?php
-                $opcoesPedra = [
-                  "Nenhuma Pedra" => "Sem Pedra",
-                  "Diamante" => "Diamante",
-                  "Safira" => "Safira",
-                  "Rubi" => "Rubi",
-                  "Esmeralda" => "Esmeralda",
-                  "Ametista" => "Ametista",
-                  "Topázio" => "Topázio",
-                  "Turmalina" => "Turmalina",
-                  "Quartzo" => "Quartzo",
-                  "Âmbar" => "Âmbar",
-                  "Opala" => "Opala",
-                  "Multiplas" => "Multiplas"
-                ];
-                foreach ($opcoesPedra as $valor => $rotulo) {
-                  $selected = ($produto['pedra'] ?? '') == $valor ? 'selected' : '';
-                  echo "<option value='{$valor}' {$selected}>{$rotulo}</option>";
-                }
-                ?>
-              </select>
-            </div>
-
 
             <!-- Peso (g) -->
             <div class="col-lg-2">
@@ -287,6 +249,43 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
               </select>
             </div>
 
+            <div class="col-lg-2">
+              <label class="form-label">Tipo de Pedra</label>
+              <select class="form-select" name="pedra" id="pedra">
+                <?php
+                $opcoesPedra = [
+                  "Nenhuma Pedra" => "Sem Pedra",
+                  "Diamante" => "Diamante",
+                  "Safira" => "Safira",
+                  "Rubi" => "Rubi",
+                  "Esmeralda" => "Esmeralda",
+                  "Ametista" => "Ametista",
+                  "Topázio" => "Topázio",
+                  "Turmalina" => "Turmalina",
+                  "Quartzo" => "Quartzo",
+                  "Âmbar" => "Âmbar",
+                  "Opala" => "Opala",
+                  "Multiplas" => "Multiplas"
+                ];
+                foreach ($opcoesPedra as $valor => $rotulo) {
+                  $selected = ($produto['pedra'] ?? '') == $valor ? 'selected' : '';
+                  echo "<option value='{$valor}' {$selected}>{$rotulo}</option>";
+                }
+                ?>
+              </select>
+            </div>
+            <!-- Pontos -->
+            <div class="col-lg-2">
+              <label class="form-label">Pontos</label>
+              <input
+                type="number"
+                step="0.001"
+                class="form-control"
+                name="pontos"
+                id="pontos"
+                value="<?= $produto['pontos'] ?? '' ?>">
+            </div>
+
             <!-- Natural ou Sintético -->
             <div class="col-lg-2">
               <label class="form-label">Natural ou Sintético</label>
@@ -305,78 +304,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
               </select>
             </div>
 
-            <!-- Milímetros (mm) -->
+
+
+
+
             <div class="col-lg-2">
               <label class="form-label">Milímetros (mm)</label>
-              <select class="form-select" name="mm" id="mm">
-                <option value="">Selecione</option>
-                <?php
-                $opcoesMM = [
-                  "0.080" => "00,80 Mm",
-                  "0.090" => "00,90 Mm",
-                  "1.000" => "01,00 Mm",
-                  "1.250" => "01,25 Mm",
-                  "1.500" => "01,50 Mm",
-                  "1.750" => "01,75 Mm",
-                  "2.000" => "02,00 Mm",
-                  "2.250" => "02,25 Mm",
-                  "2.500" => "02,50 Mm",
-                  "2.750" => "02,75 Mm",
-                  "3.000" => "03,00 Mm",
-                  "3.250" => "03,25 Mm",
-                  "3.500" => "03,50 Mm",
-                  "3.750" => "03,75 Mm",
-                  "4.000" => "04,00 Mm",
-                  "4.250" => "04,25 Mm",
-                  "4.500" => "04,50 Mm",
-                  "4.750" => "04,75 Mm",
-                  "5.000" => "05,00 Mm",
-                  "5.500" => "05,50 Mm",
-                  "6.000" => "06,00 Mm",
-                  "6.500" => "06,50 Mm",
-                  "7.000" => "07,00 Mm",
-                  "7.500" => "07,50 Mm",
-                  "8.000" => "08,00 Mm",
-                  "8.500" => "08,50 Mm",
-                  "9.000" => "09,00 Mm",
-                  "9.500" => "09,50 Mm",
-                  "10.000" => "10,00 Mm",
-                  "10.500" => "10,50 Mm",
-                  "11.000" => "11,00 Mm",
-                  "11.500" => "11,50 Mm",
-                  "12.000" => "12,00 Mm",
-                  "12.500" => "12,50 Mm",
-                  "13.000" => "13,00 Mm",
-                  "13.500" => "13,50 Mm",
-                  "14.000" => "14,00 Mm",
-                  "14.500" => "14,50 Mm",
-                  "15.000" => "15,00 Mm"
-                ];
-                foreach ($opcoesMM as $valor => $rotulo) {
-                  $selected = ($produto['mm'] ?? '') == $valor ? 'selected' : '';
-                  echo "<option value='{$valor}' {$selected}>{$rotulo}</option>";
-                }
-                ?>
-              </select>
+              <input type="text" class="form-control" name="mm" id="mm" placeholder="Digite o valor em milímetros" value="<?= $produto['mm'] ?? '' ?>">
             </div>
 
-            <!-- Centímetros (cm) -->
             <div class="col-lg-2">
               <label class="form-label">Centímetros (cm)</label>
-              <select class="form-select" name="cm" id="cm">
-                <option value="">Selecione</option>
-                <?php
-                // Exemplo de geração de cm
-                // caso queira a cada 0.5 cm, basta adaptar o laço
-                for ($i = 10; $i <= 70; $i++) {
-                  // Formatando ex: 10 => "10.000"
-                  $cmString = number_format($i, 3, ".", "");
-                  $rotulo = str_replace(".", ",", $cmString) . " Cm";
-                  $selected = ($produto['cm'] ?? '') == $cmString ? 'selected' : '';
-                  echo "<option value='{$cmString}' {$selected}>{$rotulo}</option>";
-                }
-                ?>
-              </select>
+              <input type="text" class="form-control" name="cm" id="cm" placeholder="Digite o valor em centímetros" value="<?= $produto['cm'] ?? '' ?>">
             </div>
 
             <!-- Quantidade -->
@@ -563,17 +502,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   function atualizarDescricaoEtiqueta() {
     const grupoText = grupo.options[grupo.selectedIndex]?.text || '';
     const subgrupoText = subgrupo.options[subgrupo.selectedIndex]?.text || '';
-    const modeloText = modelo.options[modelo.selectedIndex]?.text || '';
-    const macica_ou_ocaText = macica_ou_oca.options[macica_ou_oca.selectedIndex]?.text || '';
-    const nat_ou_sintText = nat_ou_sint.options[nat_ou_sint.selectedIndex]?.text || '';
+    const modeloText = modelo.options[modelo.selectedIndex]?.value || '';
+    const macica_ou_ocaText = macica_ou_oca.options[macica_ou_oca.selectedIndex]?.value || '';
+    const nat_ou_sintText = nat_ou_sint.options[nat_ou_sint.selectedIndex]?.value || '';
     const unidadeText = unidade.options[unidade.selectedIndex]?.text || '';
-    const pesoValue = peso.value || '';
+    const pesoValue = peso.value ? `${peso.value}g` : '';
     const descricao_etiqueta_manualValue = descricao_etiqueta_manual.value || '';
-    const pedravalor = pedra.options[pedra.selectedIndex]?.value || '';
+    const pedravalor = pedra.options[pedra.selectedIndex]?.value ? `- com ${pedra.options[pedra.selectedIndex]?.value}` : '';
 
+    // Criar a string apenas com valores definidos
+    descricaoEtiqueta.value = [
+      subgrupoText,
+      `- ${grupoText}`,
+      pedravalor,
+      modeloText ? `- ${modeloText}` : '',
+      macica_ou_ocaText ? `- ${macica_ou_ocaText}` : '',
+      nat_ou_sintText ? `- ${nat_ou_sintText}` : '',
+      unidadeText ? `- ${unidadeText}` : '',
+      pesoValue ? `- ${pesoValue}` : '',
+      descricao_etiqueta_manualValue ? `- [ ${descricao_etiqueta_manualValue} ]` : ''
+    ].filter(text => text.trim() !== '').join(' ');
 
-
-    descricaoEtiqueta.value = `${subgrupoText} - ${grupoText} - com ${pedravalor} - ${modeloText} - ${modeloText} - ${macica_ou_ocaText} - ${nat_ou_sintText} - ${unidadeText} - ${pesoValue}g - [ ${descricao_etiqueta_manualValue} ]`;
   }
 
   // Atualizar subgrupos dinamicamente ao alterar o grupo

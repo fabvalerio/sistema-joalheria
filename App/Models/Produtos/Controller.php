@@ -37,9 +37,9 @@ class Controller
 
     // Ver um produto específico
     public function ver($id)
-{
-    $db = new db();
-    $db->query("
+    {
+        $db = new db();
+        $db->query("
         SELECT 
             p.id,
             p.descricao_etiqueta,
@@ -82,9 +82,9 @@ class Controller
         LEFT JOIN cotacoes c ON p.cotacao = c.id
         WHERE p.id = :id
     ");
-    $db->bind(":id", $id);
-    return $db->single();
-}
+        $db->bind(":id", $id);
+        return $db->single();
+    }
 
 
     // Cadastro de um novo produto
@@ -103,8 +103,37 @@ class Controller
             )
         ");
 
-        foreach ($dados as $key => $value) {
-            $db->bind(":$key", $value);
+        // Definindo campos que podem ser opcionais
+        $campos = [
+            'descricao_etiqueta',
+            'fornecedor_id',
+            'modelo',
+            'macica_ou_oca',
+            'numeros',
+            'pedra',
+            'nat_ou_sint',
+            'peso',
+            'aros',
+            'cm',
+            'pontos',
+            'mm',
+            'grupo_id',
+            'subgrupo_id',
+            'unidade',
+            'estoque_princ',
+            'cotacao',
+            'preco_ql',
+            'peso_gr',
+            'custo',
+            'margem',
+            'em_reais',
+            'capa'
+        ];
+
+        // Garantindo que campos ausentes sejam tratados como NULL
+        foreach ($campos as $campo) {
+            $valor = isset($dados[$campo]) && $dados[$campo] !== '' ? $dados[$campo] : null;
+            $db->bind(":$campo", $valor);
         }
 
         return $db->execute();
@@ -112,43 +141,75 @@ class Controller
 
     // Editar um produto existente
     public function editar($id, $dados)
-{
-    $db = new db();
-    $db->query("
-        UPDATE produtos SET
-            descricao_etiqueta = :descricao_etiqueta,
-            fornecedor_id = :fornecedor_id,
-            modelo = :modelo,
-            macica_ou_oca = :macica_ou_oca,
-            numeros = :numeros,
-            pedra = :pedra,
-            nat_ou_sint = :nat_ou_sint,
-            peso = :peso,
-            aros = :aros,
-            cm = :cm,
-            pontos = :pontos,
-            mm = :mm,
-            grupo_id = :grupo_id,
-            subgrupo_id = :subgrupo_id,
-            unidade = :unidade,
-            estoque_princ = :estoque_princ,
-            cotacao = :cotacao,
-            preco_ql = :preco_ql,
-            peso_gr = :peso_gr,
-            custo = :custo,
-            margem = :margem,
-            em_reais = :em_reais,
-            capa = :capa
-        WHERE id = :id
-    ");
+    {
+        $db = new db();
+        $db->query("
+            UPDATE produtos SET
+                descricao_etiqueta = :descricao_etiqueta,
+                fornecedor_id = :fornecedor_id,
+                modelo = :modelo,
+                macica_ou_oca = :macica_ou_oca,
+                numeros = :numeros,
+                pedra = :pedra,
+                nat_ou_sint = :nat_ou_sint,
+                peso = :peso,
+                aros = :aros,
+                cm = :cm,
+                pontos = :pontos,
+                mm = :mm,
+                grupo_id = :grupo_id,
+                subgrupo_id = :subgrupo_id,
+                unidade = :unidade,
+                estoque_princ = :estoque_princ,
+                cotacao = :cotacao,
+                preco_ql = :preco_ql,
+                peso_gr = :peso_gr,
+                custo = :custo,
+                margem = :margem,
+                em_reais = :em_reais,
+                capa = :capa
+            WHERE id = :id
+        ");
 
-    foreach ($dados as $key => $value) {
-        $db->bind(":$key", $value);
+        // Lista de campos do formulário
+        $campos = [
+            'descricao_etiqueta',
+            'fornecedor_id',
+            'modelo',
+            'macica_ou_oca',
+            'numeros',
+            'pedra',
+            'nat_ou_sint',
+            'peso',
+            'aros',
+            'cm',
+            'pontos',
+            'mm',
+            'grupo_id',
+            'subgrupo_id',
+            'unidade',
+            'estoque_princ',
+            'cotacao',
+            'preco_ql',
+            'peso_gr',
+            'custo',
+            'margem',
+            'em_reais',
+            'capa'
+        ];
+
+        // Garantindo que valores vazios sejam tratados como NULL
+        foreach ($campos as $campo) {
+            $valor = isset($dados[$campo]) && $dados[$campo] !== '' ? $dados[$campo] : null;
+            $db->bind(":$campo", $valor);
+        }
+
+        // Vinculando o ID
+        $db->bind(":id", $id);
+
+        return $db->execute();
     }
-    $db->bind(":id", $id);
 
-    return $db->execute();
-}
 
 
     // Excluir um produto
