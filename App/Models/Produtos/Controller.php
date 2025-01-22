@@ -94,16 +94,16 @@ class Controller
 
         // Inserir o produto na tabela "produtos"
         $db->query("
-            INSERT INTO produtos (
-                descricao_etiqueta, fornecedor_id, modelo, macica_ou_oca, numeros, pedra, 
-                nat_ou_sint, peso, aros, cm, pontos, mm, grupo_id, subgrupo_id, unidade, 
-                estoque_princ, cotacao, preco_ql, peso_gr, custo, margem, em_reais, capa
-            ) VALUES (
-                :descricao_etiqueta, :fornecedor_id, :modelo, :macica_ou_oca, :numeros, :pedra, 
-                :nat_ou_sint, :peso, :aros, :cm, :pontos, :mm, :grupo_id, :subgrupo_id, :unidade, 
-                :estoque_princ, :cotacao, :preco_ql, :peso_gr, :custo, :margem, :em_reais, :capa
-            )
-        ");
+        INSERT INTO produtos (
+            descricao_etiqueta, fornecedor_id, modelo, macica_ou_oca, numeros, pedra, 
+            nat_ou_sint, peso, aros, cm, pontos, mm, grupo_id, subgrupo_id, unidade, 
+            estoque_princ, cotacao, preco_ql, peso_gr, custo, margem, em_reais, capa
+        ) VALUES (
+            :descricao_etiqueta, :fornecedor_id, :modelo, :macica_ou_oca, :numeros, :pedra, 
+            :nat_ou_sint, :peso, :aros, :cm, :pontos, :mm, :grupo_id, :subgrupo_id, :unidade, 
+            :estoque_princ, :cotacao, :preco_ql, :peso_gr, :custo, :margem, :em_reais, :capa
+        )
+    ");
 
         // Definindo campos que podem ser opcionais
         $campos = [
@@ -144,14 +144,14 @@ class Controller
 
             // Inserir movimentação de estoque como "Entrada"
             $db->query("
-                INSERT INTO movimentacao_estoque (
-                    produto_id, descricao_produto, tipo_movimentacao, quantidade, documento, 
-                    data_movimentacao, motivo, estoque_antes, estoque_atualizado
-                ) VALUES (
-                    :produto_id, :descricao_produto, :tipo_movimentacao, :quantidade, :documento, 
-                    :data_movimentacao, :motivo, :estoque_antes, :estoque_atualizado
-                )
-            ");
+            INSERT INTO movimentacao_estoque (
+                produto_id, descricao_produto, tipo_movimentacao, quantidade, documento, 
+                data_movimentacao, motivo, estoque_antes, estoque_atualizado
+            ) VALUES (
+                :produto_id, :descricao_produto, :tipo_movimentacao, :quantidade, :documento, 
+                :data_movimentacao, :motivo, :estoque_antes, :estoque_atualizado
+            )
+        ");
 
             $db->bind(":produto_id", $produto_id);
             $db->bind(":descricao_produto", $dados['descricao_etiqueta'] ?? '');
@@ -163,126 +163,156 @@ class Controller
             $db->bind(":estoque_antes", 0); // Estoque inicial é 0 para novo produto
             $db->bind(":estoque_atualizado", $dados['estoque_princ'] ?? 0);
 
-            return $db->execute();
+            if ($db->execute()) {
+                // Inserir dados na tabela "estoque"
+                $db->query("
+                INSERT INTO estoque (
+                    produtos_id, entrada_mercadorias_id, quantidade_minima, quantidade
+                ) VALUES (
+                    :produtos_id, :entrada_mercadorias_id, :quantidade_minima, :quantidade
+                )
+            ");
+
+                $db->bind(":produtos_id", $produto_id);
+                $db->bind(":entrada_mercadorias_id", null); // Ajuste conforme necessário
+                $db->bind(":quantidade_minima", $dados['quantidade_minima'] ?? 0);
+                $db->bind(":quantidade", $dados['estoque_princ'] ?? 0);
+
+                return $db->execute();
+            }
         }
 
         return false; // Falha no cadastro
     }
 
 
+
     // Editar um produto existente
     public function editar($id, $dados)
-{
-    $db = new db();
+    {
+        $db = new db();
 
-    // Recuperar o estoque atual antes de atualizar
-    $db->query("SELECT estoque_princ FROM produtos WHERE id = :id");
-    $db->bind(":id", $id);
-    $estoqueAntes = $db->single()['estoque_princ'] ?? 0; // Estoque atual ou 0 se não encontrado
+        // Recuperar o estoque atual antes de atualizar
+        $db->query("SELECT estoque_princ FROM produtos WHERE id = :id");
+        $db->bind(":id", $id);
+        $estoqueAntes = $db->single()['estoque_princ'] ?? 0; // Estoque atual ou 0 se não encontrado
 
-    // Atualizar o produto na tabela "produtos"
-    $db->query("
-        UPDATE produtos SET
-            descricao_etiqueta = :descricao_etiqueta,
-            fornecedor_id = :fornecedor_id,
-            modelo = :modelo,
-            macica_ou_oca = :macica_ou_oca,
-            numeros = :numeros,
-            pedra = :pedra,
-            nat_ou_sint = :nat_ou_sint,
-            peso = :peso,
-            aros = :aros,
-            cm = :cm,
-            pontos = :pontos,
-            mm = :mm,
-            grupo_id = :grupo_id,
-            subgrupo_id = :subgrupo_id,
-            unidade = :unidade,
-            estoque_princ = :estoque_princ,
-            cotacao = :cotacao,
-            preco_ql = :preco_ql,
-            peso_gr = :peso_gr,
-            custo = :custo,
-            margem = :margem,
-            em_reais = :em_reais,
-            capa = :capa
-        WHERE id = :id
-    ");
+        // Atualizar o produto na tabela "produtos"
+        $db->query("
+            UPDATE produtos SET
+                descricao_etiqueta = :descricao_etiqueta,
+                fornecedor_id = :fornecedor_id,
+                modelo = :modelo,
+                macica_ou_oca = :macica_ou_oca,
+                numeros = :numeros,
+                pedra = :pedra,
+                nat_ou_sint = :nat_ou_sint,
+                peso = :peso,
+                aros = :aros,
+                cm = :cm,
+                pontos = :pontos,
+                mm = :mm,
+                grupo_id = :grupo_id,
+                subgrupo_id = :subgrupo_id,
+                unidade = :unidade,
+                estoque_princ = :estoque_princ,
+                cotacao = :cotacao,
+                preco_ql = :preco_ql,
+                peso_gr = :peso_gr,
+                custo = :custo,
+                margem = :margem,
+                em_reais = :em_reais,
+                capa = :capa
+            WHERE id = :id
+        ");
 
-    // Lista de campos do formulário
-    $campos = [
-        'descricao_etiqueta',
-        'fornecedor_id',
-        'modelo',
-        'macica_ou_oca',
-        'numeros',
-        'pedra',
-        'nat_ou_sint',
-        'peso',
-        'aros',
-        'cm',
-        'pontos',
-        'mm',
-        'grupo_id',
-        'subgrupo_id',
-        'unidade',
-        'estoque_princ',
-        'cotacao',
-        'preco_ql',
-        'peso_gr',
-        'custo',
-        'margem',
-        'em_reais',
-        'capa'
-    ];
+        // Lista de campos do formulário
+        $campos = [
+            'descricao_etiqueta',
+            'fornecedor_id',
+            'modelo',
+            'macica_ou_oca',
+            'numeros',
+            'pedra',
+            'nat_ou_sint',
+            'peso',
+            'aros',
+            'cm',
+            'pontos',
+            'mm',
+            'grupo_id',
+            'subgrupo_id',
+            'unidade',
+            'estoque_princ',
+            'cotacao',
+            'preco_ql',
+            'peso_gr',
+            'custo',
+            'margem',
+            'em_reais',
+            'capa'
+        ];
 
-    // Garantindo que valores vazios sejam tratados como NULL
-    foreach ($campos as $campo) {
-        $valor = isset($dados[$campo]) && $dados[$campo] !== '' ? $dados[$campo] : null;
-        $db->bind(":$campo", $valor);
-    }
-
-    // Vinculando o ID
-    $db->bind(":id", $id);
-
-    // Executar a atualização do produto
-    if ($db->execute()) {
-        // Verificar se houve alteração no estoque
-        $estoqueAtualizado = $dados['estoque_princ'] ?? $estoqueAntes;
-
-        if ($estoqueAtualizado != $estoqueAntes) {
-            // Inserir movimentação de estoque como "Ajuste"
-            $db->query("
-                INSERT INTO movimentacao_estoque (
-                    produto_id, descricao_produto, tipo_movimentacao, quantidade, documento, 
-                    data_movimentacao, motivo, estoque_antes, estoque_atualizado
-                ) VALUES (
-                    :produto_id, :descricao_produto, :tipo_movimentacao, :quantidade, :documento, 
-                    :data_movimentacao, :motivo, :estoque_antes, :estoque_atualizado
-                )
-            ");
-
-            $quantidade = abs($estoqueAtualizado - $estoqueAntes); // Quantidade ajustada
-            $motivo = $estoqueAtualizado > $estoqueAntes ? "Aumento de estoque" : "Redução de estoque";
-
-            $db->bind(":produto_id", $id);
-            $db->bind(":descricao_produto", $dados['descricao_etiqueta'] ?? '');
-            $db->bind(":tipo_movimentacao", "Ajuste");
-            $db->bind(":quantidade", $quantidade);
-            $db->bind(":documento", null); // Ajuste conforme necessário
-            $db->bind(":data_movimentacao", date("Y-m-d"));
-            $db->bind(":motivo", $motivo);
-            $db->bind(":estoque_antes", $estoqueAntes);
-            $db->bind(":estoque_atualizado", $estoqueAtualizado);
-
-            return $db->execute();
+        // Garantindo que valores vazios sejam tratados como NULL
+        foreach ($campos as $campo) {
+            $valor = isset($dados[$campo]) && $dados[$campo] !== '' ? $dados[$campo] : null;
+            $db->bind(":$campo", $valor);
         }
 
-        return true; // Apenas atualização, sem movimentação
+        // Vinculando o ID
+        $db->bind(":id", $id);
+
+        // Executar a atualização do produto
+        if ($db->execute()) {
+            // Verificar se houve alteração no estoque
+            $estoqueAtualizado = $dados['estoque_princ'] ?? $estoqueAntes;
+
+            if ($estoqueAtualizado != $estoqueAntes) {
+                // Inserir movimentação de estoque como "Ajuste"
+                $db->query("
+                    INSERT INTO movimentacao_estoque (
+                        produto_id, descricao_produto, tipo_movimentacao, quantidade, documento, 
+                        data_movimentacao, motivo, estoque_antes, estoque_atualizado
+                    ) VALUES (
+                        :produto_id, :descricao_produto, :tipo_movimentacao, :quantidade, :documento, 
+                        :data_movimentacao, :motivo, :estoque_antes, :estoque_atualizado
+                    )
+                ");
+
+                $quantidade = abs($estoqueAtualizado - $estoqueAntes); // Quantidade ajustada
+                $motivo = $estoqueAtualizado > $estoqueAntes ? "Aumento de estoque" : "Redução de estoque";
+
+                $db->bind(":produto_id", $id);
+                $db->bind(":descricao_produto", $dados['descricao_etiqueta'] ?? '');
+                $db->bind(":tipo_movimentacao", "Ajuste");
+                $db->bind(":quantidade", $quantidade);
+                $db->bind(":documento", null); // Ajuste conforme necessário
+                $db->bind(":data_movimentacao", date("Y-m-d"));
+                $db->bind(":motivo", $motivo);
+                $db->bind(":estoque_antes", $estoqueAntes);
+                $db->bind(":estoque_atualizado", $estoqueAtualizado);
+
+                $db->execute();
+
+                // Atualizar a tabela "estoque"
+                $db->query("
+                    UPDATE estoque SET
+                        quantidade = :quantidade
+                    WHERE produtos_id = :produtos_id
+                ");
+
+                $db->bind(":quantidade", $estoqueAtualizado);
+                $db->bind(":produtos_id", $id);
+
+                return $db->execute();
+            }
+
+            return true; // Apenas atualização, sem movimentação
+        }
+
+        return false; // Falha na atualização
     }
 
-    return false; // Falha na atualização
-}
 
 
 
