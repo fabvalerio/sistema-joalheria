@@ -161,7 +161,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </div>
 
             <!-- Modelo -->
-            <div class="col-lg-4">
+            <div class="col-lg-2">
               <label class="form-label">Modelo</label>
               <select class="form-select" name="modelo" id="modelo">
                 <option value="">Selecione</option>
@@ -188,6 +188,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <?php endforeach; ?>
               </select>
             </div>
+
+            <!-- Numero (Anel) -->
+            <div class="col-lg-2">
+  <label class="form-label">Número (Anel)</label>
+  <select class="form-select" name="numeros" id="numeros">
+    <option value="">Selecione</option>
+    <?php
+    // Gerar números de 1 a 36
+    for ($i = 1; $i <= 36; $i++) {
+        // Formatar o número com dois dígitos
+        $value = str_pad($i, 2, '0', STR_PAD_LEFT);
+        // Verificar se o número atual é o mesmo do produto e marcar como selecionado
+        $selected = ($produto['numeros'] ?? '') === $value ? 'selected' : '';
+        echo "<option value=\"{$value}\" {$selected}>Nº {$value}</option>";
+    }
+    ?>
+  </select>
+</div>
 
             <!-- Aros -->
             <div class="col-lg-2">
@@ -344,7 +362,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     value="<?= $cotacao['id'] ?>"
                     data-valor="<?= $cotacao['valor'] ?>"
                     <?= ($produto['cotacao'] ?? '') == $cotacao['id'] ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($cotacao['nome']) ?>
+                    <?= htmlspecialchars($cotacao['nome']) ?> (<?= htmlspecialchars($cotacao['valor']) ?>)
                   </option>
                 <?php endforeach; ?>
               </select>
@@ -480,10 +498,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   const unidade = document.getElementById('unidade');
   const descricao_etiqueta_manual = document.getElementById('descricao_etiqueta_manual');
   const pedra = document.getElementById('pedra');
+  const numeros = document.getElementById('numeros');
 
   // Adicionar listeners para atualização da descrição
 
-  [fornecedor, grupo, subgrupo, modelo, macica_ou_oca, nat_ou_sint, unidade, peso, pedra].forEach(select => {
+  [fornecedor, grupo, subgrupo, modelo, macica_ou_oca, nat_ou_sint, unidade, peso, pedra, numeros].forEach(select => {
     select.addEventListener('change', () => {
       if (fornecedor.value && grupo.value && subgrupo.value) {
         camposAdicionais.style.display = 'block';
@@ -509,6 +528,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     const pesoValue = peso.value ? `${peso.value}g` : '';
     const descricao_etiqueta_manualValue = descricao_etiqueta_manual.value || '';
     const pedravalor = pedra.options[pedra.selectedIndex]?.value ? `- com ${pedra.options[pedra.selectedIndex]?.value}` : '';
+    const numerosvalor = numeros.options[numeros.selectedIndex]?.text || '';
 
     // Criar a string apenas com valores definidos
     descricaoEtiqueta.value = [
@@ -516,6 +536,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       `- ${grupoText}`,
       pedravalor,
       modeloText ? `- ${modeloText}` : '',
+      numerosvalor ? `- ${numerosvalor}` : '',
       macica_ou_ocaText ? `- ${macica_ou_ocaText}` : '',
       nat_ou_sintText ? `- ${nat_ou_sintText}` : '',
       unidadeText ? `- ${unidadeText}` : '',
