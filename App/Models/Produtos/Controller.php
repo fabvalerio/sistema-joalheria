@@ -284,7 +284,7 @@ class Controller
 
                 $db->bind(":produto_id", $id);
                 $db->bind(":descricao_produto", $dados['descricao_etiqueta'] ?? '');
-                $db->bind(":tipo_movimentacao", "Ajuste");
+                $db->bind(":tipo_movimentacao", "Iventário");
                 $db->bind(":quantidade", $quantidade);
                 $db->bind(":documento", null); // Ajuste conforme necessário
                 $db->bind(":data_movimentacao", date("Y-m-d"));

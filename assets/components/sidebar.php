@@ -53,7 +53,7 @@
                 <a class="collapse-item" href="<?php echo "{$url}!/SubGrupoProdutos/listar" ?>">Subgrupo de Produtos</a>
                 <!-- <a class="collapse-item" href="<?php echo "{$url}!/Tipos/listar" ?>">Tipos</a> -->
                 <a class="collapse-item" href="<?php echo "{$url}!/Cotacoes/listar" ?>">Cotações</a>
-                <a class="collapse-item" href="<?php echo "{$url}!/EntradaMercadoria/listar" ?>">Entrada de Mercadoria</a>
+                <a class="collapse-item" href="<?php echo "{$url}!/EntradaMercadorias/listar" ?>">Entrada de Mercadoria</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/MovimentacaoEstoque/listar" ?>">Movimentação de Estoque</a>
             </div>
         </div>
