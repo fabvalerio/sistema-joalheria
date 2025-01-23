@@ -49,9 +49,6 @@ $entradas = $controller->listar();
                                         <a href="<?= "{$url}!/{$link[1]}/ver/{$entrada['id']}" ?>" class="dropdown-item">Ver</a>
                                     </li>
                                     <li>
-                                        <a href="<?= "{$url}!/{$link[1]}/editar/{$entrada['id']}" ?>" class="dropdown-item">Editar</a>
-                                    </li>
-                                    <li>
                                         <a href="<?= "{$url}!/{$link[1]}/deletar/{$entrada['id']}" ?>" class="dropdown-item text-danger">Excluir</a>
                                     </li>
                                 </ul>
