@@ -77,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <h4 class="card-title">Dados do Pedido</h4>
                 </div>
                 <!-- Dados principais -->
-                <div class="col-lg-4">
+                <div class="col-lg-6">
                     <label for="cliente_id" class="form-label">Cliente</label>
                     <select class="form-select" id="cliente_id" name="cliente_id" required>
                         <option value="" disabled selected>Selecione um cliente</option>
@@ -98,10 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <label for="data_entrega" class="form-label">Data de Entrega</label>
                     <input type="date" class="form-control" id="data_entrega" name="data_entrega">
                 </div>
-                <div class="col-lg-2">
-                    <label for="valor_pago" class="form-label">Valor Pago</label>
-                    <input type="number" step="0.01" class="form-control" id="valor_pago" name="valor_pago">
-                </div>
+
                 <div class="col-lg-4" style="display: none;">
                     <label for="cod_vendedor" class="form-label">Código do Vendedor</label>
                     <input type="text" class="form-control" id="cod_vendedor" name="cod_vendedor" value="2">
@@ -111,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <select class="form-select" id="status_pedido" name="status_pedido" required>
                         <option value="Pendente">Pendente</option>
                         <option value="Pago">Pago</option>
-                        <option value="Cancelado">Cancelado</option>
+                        
                     </select>
                 </div>
 
@@ -232,9 +229,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <option value="" disabled selected>Selecione o número de parcelas</option>
                     </select>
                 </div>
-                <div class="col-lg-12">
-                    <button type="button" class="btn btn-warning" id="altera cartão">Alterar Cartão</button>
-                </div>
+
                 <div class="col-12">
                     <hr>
                 </div>
@@ -335,6 +330,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <div class="col-lg-12">
                     <label for="total" class="form-label">Total do Pedido</label>
                     <input type="number" step="0.01" class="form-control text-white" id="total" name="total" style="background-color: #198754;" readonly>
+                </div>
+                <div class="col-lg-2">
+                    <label for="valor_pago" class="form-label">Valor Pago</label>
+                    <input type="number" step="0.01" class="form-control" id="valor_pago" name="valor_pago">
                 </div>
                 <div class="col-lg-12">
                     <label for="observacoes" class="form-label">Observações</label>

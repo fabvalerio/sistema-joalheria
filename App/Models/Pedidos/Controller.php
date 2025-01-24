@@ -8,83 +8,90 @@ class Controller
 {
     // Listar todos os pedidos
     public function listar()
-    {
-        $db = new db();
-        $db->query("
-            SELECT 
-                p.id, 
-                p.cliente_id, 
-                c.nome_fantasia AS cliente_nome,
-                p.data_pedido, 
-                p.total, 
-                p.status_pedido, 
-                p.data_entrega
-            FROM 
-                pedidos p
-            LEFT JOIN 
-                clientes c ON p.cliente_id = c.id
-            ORDER BY 
-                p.data_pedido DESC
-        ");
-        return $db->resultSet();
-    }
+{
+    $db = new db();
+    $db->query("
+        SELECT 
+            p.id, 
+            p.data_pedido,
+            p.forma_pagamento,
+            p.acrescimo,
+            p.desconto,
+            p.total,
+            p.valor_pago,
+            p.status_pedido,
+            p.data_entrega,
+            c.nome_pf,
+            c.nome_fantasia_pj
+        FROM 
+            pedidos p
+        LEFT JOIN 
+            clientes c ON p.cliente_id = c.id
+        ORDER BY 
+            p.data_pedido DESC
+    ");
+    return $db->resultSet();
+}
+
 
     // Visualizar um pedido e seus itens
     public function ver($id)
-    {
-        $db = new db();
+{
+    $db = new db();
 
-        // Buscar os dados do pedido
-        $db->query("
-            SELECT 
-                p.id, 
-                p.cliente_id, 
-                c.nome_fantasia AS cliente_nome,
-                p.data_pedido, 
-                p.forma_pagamento, 
-                p.acrescimo, 
-                p.desconto, 
-                p.observacoes, 
-                p.total, 
-                p.valor_pago, 
-                p.cod_vendedor, 
-                p.status_pedido, 
-                p.data_entrega
-            FROM 
-                pedidos p
-            LEFT JOIN 
-                clientes c ON p.cliente_id = c.id
-            WHERE 
-                p.id = :id
-        ");
-        $db->bind(":id", $id);
-        $pedido = $db->single();
+    // Consulta principal do pedido com os dados do cliente
+    $db->query("
+        SELECT 
+            p.id, 
+            p.data_pedido,
+            p.forma_pagamento,
+            p.acrescimo,
+            p.desconto,
+            p.total,
+            p.valor_pago,
+            p.status_pedido,
+            p.data_entrega,
+            p.observacoes,
+            c.nome_pf,
+            c.nome_fantasia_pj
+        FROM 
+            pedidos p
+        LEFT JOIN 
+            clientes c ON p.cliente_id = c.id
+        WHERE 
+            p.id = :id
+    ");
+    $db->bind(':id', $id);
+    $pedido = $db->single(); // Retorna uma única linha
 
-        if (!$pedido) {
-            return false; // Retorna falso se o pedido não for encontrado
-        }
+    // Consulta para os itens do pedido
+    $db->query("
+        SELECT 
+            pi.produto_id, 
+            pi.quantidade, 
+            pi.valor_unitario, 
+            pi.desconto_percentual, 
+            pr.descricao_etiqueta AS nome_produto
+        FROM 
+            pedidos_itens pi
+        LEFT JOIN 
+            produtos pr ON pi.produto_id = pr.id
+        WHERE 
+            pi.pedido_id = :pedido_id
+    ");
+    $db->bind(':pedido_id', $id);
+    $itens = $db->resultSet(); // Retorna uma lista de itens
 
-        // Buscar os itens do pedido
-        $db->query("
-            SELECT 
-                pi.id, 
-                pi.produto_id, 
-                pr.descricao_etiqueta AS produto_nome, 
-                pi.quantidade, 
-                pi.valor_unitario, 
-                pi.desconto_percentual
-            FROM 
-                pedidos_itens pi
-            LEFT JOIN 
-                produtos pr ON pi.produto_id = pr.id
-            WHERE 
-                pi.pedido_id = :pedido_id
-        ");
-        $db->bind(":pedido_id", $id);
-        $pedido['itens'] = $db->resultSet();
+    // Retorna os dados combinados
+    return [
+        'pedido' => $pedido,
+        'itens' => $itens
+    ];
+}
 
-        return $pedido;
-    }
+
+
+
 
     // Cadastrar um novo pedido
     public function cadastro($dados)
@@ -151,20 +158,21 @@ class Controller
                 //inserir em movimentação de estoque
                 $db->query("
                     INSERT INTO movimentacao_estoque (
-                        produto_id, descricao_produto, quantidade, tipo_movimentacao, data_movimentacao, motivo, estoque_antes, estoque_atualizado
+                        produto_id, descricao_produto, quantidade, tipo_movimentacao, data_movimentacao, motivo, estoque_antes, estoque_atualizado, pedido_id
                     ) VALUES (
-                        :produto_id, :descricao_produto, :quantidade, :tipo_movimentacao, :data_movimentacao, :motivo, :estoque_antes, :estoque_atualizado
+                        :produto_id, :descricao_produto, :quantidade, :tipo_movimentacao, :data_movimentacao, :motivo, :estoque_antes, :estoque_atualizado, :pedido_id
                     )
                 ");
 
                 $db->bind(":produto_id", $item['produto_id']);
                 $db->bind(":descricao_produto", $item['descricao_produto']);
                 $db->bind(":quantidade", $item['quantidade']);
-                $db->bind(":tipo_movimentacao", 'entrada');
+                $db->bind(":tipo_movimentacao", 'Venda ($pedidoId )');
                 $db->bind(":data_movimentacao", date('Y-m-d'));
                 $db->bind(":motivo", 'pedido');
                 $db->bind(":estoque_antes", $item['estoque_antes']);
                 $db->bind(":estoque_atualizado", $item['quantidade']);
+                $db->bind(":pedido_id", $pedidoId);
 
                 if (!$db->execute()) {
                     return false; // Retorna falso se a inserção de um item falhar
@@ -274,6 +282,19 @@ class Controller
     {
         $db = new db();
 
+        //pegar todos os itens do pedido e faz um foreach somando a quandidade da pedidos_itens para atualizar o estoque
+        $db->query("SELECT * FROM pedidos_itens WHERE pedido_id = :pedido_id");
+        $db->bind(":pedido_id", $id);
+        $itens = $db->resultSet();
+
+        foreach ($itens as $item) {
+            $db->query("UPDATE estoque SET quantidade = quantidade + :quantidade WHERE produtos_id = :produto_id");
+            $db->bind(":quantidade", $item['quantidade']);
+            $db->bind(":produto_id", $item['produto_id']);
+            $db->execute();
+        }
+
+
         // Excluir os itens do pedido
         $db->query("DELETE FROM pedidos_itens WHERE pedido_id = :pedido_id");
         $db->bind(":pedido_id", $id);
@@ -282,6 +303,10 @@ class Controller
         // Excluir o pedido
         $db->query("DELETE FROM pedidos WHERE id = :id");
         $db->bind(":id", $id);
+
+        // Excluir o movimentação de estoque com pedido_id
+        $db->query("DELETE FROM movimentacao_estoque WHERE pedido_id = :pedido_id");
+        $db->bind(":pedido_id", $id);
 
         return $db->execute(); // Retorna true se a exclusão for bem-sucedida
     }
@@ -335,4 +360,32 @@ class Controller
 
         return $db->resultSet(); // Retorna todos os resultados
     }
+    public function mudarStatus()
+{
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $id = $_POST['id'] ?? null;
+        $novoStatus = $_POST['status'] ?? null;
+
+        if ($id && $novoStatus) {
+            $db = new db();
+            $db->query("
+                UPDATE pedidos 
+                SET status_pedido = :status 
+                WHERE id = :id
+            ");
+            $db->bind(':status', $novoStatus);
+            $db->bind(':id', $id);
+            $db->execute();
+
+            // Redireciona de volta para a lista
+            header('Location: ' . $_SERVER['HTTP_REFERER']);
+            exit;
+        }
+    }
+
+    // Caso algo dê errado, redirecione para a lista com erro
+    header('Location: ' . $_SERVER['HTTP_REFERER']);
+    exit;
+}
+
 }
