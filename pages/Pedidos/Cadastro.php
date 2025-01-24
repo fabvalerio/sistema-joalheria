@@ -58,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div class="card-body">
         <form method="POST" action="<?php echo "{$url}!/{$link[1]}/{$link[2]}" ?>" class="needs-validation" novalidate>
             <div class="row g-3">
-            <div class="col-12">
+                <div class="col-12">
                     <hr>
                     <h4 class="card-title">Dados do Pedido</h4>
                 </div>
@@ -100,6 +100,56 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <option value="Cancelado">Cancelado</option>
                     </select>
                 </div>
+
+                <div class="col-12">
+                    <hr>
+                    <h4 class="card-title">Produtos do Pedido</h4>
+                </div>
+
+                <!-- Seção de Produtos -->
+                <div class="col-lg-12">
+                    <div id="product-list">
+                        <!-- Campo inicial para produtos -->
+                        <div class="row g-3 align-items-end product-item mb-2">
+                            <div class="col-lg-4">
+                                <label class="form-label">Produto</label>
+                                <input type="text" class="form-control product-input" placeholder="Clique para selecionar um produto" readonly data-index="0">
+                                <input type="hidden" name="produtos[0][id]" class="product-id">
+                                <input type="hidden" name="produtos[0][valor_unitario]" class="product-price">
+                            </div>
+                            <div class="col-lg-2">
+                                <label class="form-label">Preço</label>
+                                <input type="number" step="0.01" class="form-control product-price-display" placeholder="Preço" readonly>
+                            </div>
+                            <div class="col-lg-2">
+                                <label class="form-label">Quantidade</label>
+                                <input type="number" class="form-control" name="produtos[0][quantidade]" placeholder="Quantidade" required>
+                            </div>
+                            <div class="col-lg-2">
+                                <label class="form-label">Desconto (%)</label>
+                                <input type="number" step="0.01" class="form-control" name="produtos[0][desconto_percentual]" placeholder="Desconto (%)">
+                            </div>
+                            <div class="col-lg-2">
+                                <button type="button" class="btn btn-success btn-add">Adicionar +</button>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+                <div class="col-12">
+                    <hr>
+                    <h4 class="card-title">Complementos</h4>
+                </div>
+                <div class="col-lg-4">
+                    <label for="acrescimo" class="form-label">Acréscimo Adicional</label>
+                    <input type="number" step="0.01" class="form-control" id="acrescimo" name="acrescimo" placeholder="Acrescimo (%)">
+                </div>
+                <div class="col-lg-4">
+                    <label for="desconto" class="form-label">Desconto Adicional</label>
+                    <input type="number" step="0.01" class="form-control" id="desconto" name="desconto" placeholder="Desconto (%)">
+                    <input type="hidden" name="juros_aplicado" id="juros_aplicado" value="0">
+                </div>
                 <div class="col-12">
                     <hr>
                     <h4 class="card-title">Pagamento</h4>
@@ -107,7 +157,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <div class="col-lg-4">
                     <label for="forma_pagamento" class="form-label">Forma de Pagamento</label>
                     <select class="form-select" id="forma_pagamento" name="forma_pagamento" required>
-                        <option value="" disabled selected>Selecione uma forma de pagamento</option>
+                        <option value="" selected>Selecione uma forma de pagamento</option>
                         <option value="Dinheiro">Dinheiro</option>
                         <option value="Cartão de Crédito">Cartão de Crédito</option>
                         <option value="Cartão de Débito">Cartão de Débito</option>
@@ -166,6 +216,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <select class="form-select" id="numero_parcelas" name="numero_parcelas">
                         <option value="" disabled selected>Selecione o número de parcelas</option>
                     </select>
+                </div>
+                <div class="col-lg-12">
+                    <button type="button" class="btn btn-warning" id="altera cartão">Alterar Cartão</button>
+                </div>
+                <div class="col-12">
+                    <hr>
                 </div>
 
                 <script>
@@ -248,7 +304,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 for (let i = 1; i <= maxParcelas; i++) {
                                     const option = document.createElement('option');
                                     option.value = i;
-                                    option.textContent = i + (i > 1 ? ' parcelas' : ' parcela');
+                                    option.textContent = i + (i > 1 ? ' Parcelas( Juros: ' + eval(`juros_parcela_${i}`) + '% )' : ' Parcela ( Juros: ' + eval(`juros_parcela_${i}`) + '% )');
                                     // criar data-juros no option
                                     option.dataset.juros_parcela_i = eval(`juros_parcela_${i}`);
                                     numeroParcelas.appendChild(option);
@@ -260,54 +316,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         });
                     });
                 </script>
-                <div class="col-12">
-                    <hr>
-                    <h4 class="card-title">Produtos do Pedido</h4>
-                </div>
 
-                <!-- Seção de Produtos -->
                 <div class="col-lg-12">
-                    <label for="produtos" class="form-label">Produtos</label>
-                    <div id="product-list">
-                        <!-- Campo inicial para produtos -->
-                        <div class="row g-3 align-items-end product-item mb-2">
-                            <div class="col-lg-4">
-                                <input type="text" class="form-control product-input" placeholder="Clique para selecionar um produto" readonly data-index="0">
-                                <input type="hidden" name="produtos[0][id]" class="product-id">
-                                <input type="hidden" name="produtos[0][valor_unitario]" class="product-price">
-                            </div>
-                            <div class="col-lg-2">
-                                <input type="number" step="0.01" class="form-control product-price-display" placeholder="Preço" readonly>
-                            </div>
-                            <div class="col-lg-2">
-                                <input type="number" class="form-control" name="produtos[0][quantidade]" placeholder="Quantidade" required>
-                            </div>
-                            <div class="col-lg-2">
-                                <input type="number" step="0.01" class="form-control" name="produtos[0][desconto_percentual]" placeholder="Desconto (%)">
-                            </div>
-                            <div class="col-lg-2">
-                                <button type="button" class="btn btn-success btn-add">+</button>
-                            </div>
-                        </div>
-                    </div>
-
-
-                </div>
-                <div class="col-12">
-                    <hr>
-                    <h4 class="card-title">Complementos</h4>
-                </div>
-                <div class="col-lg-4">
-                    <label for="acrescimo" class="form-label">Acréscimo Geral</label>
-                    <input type="number" step="0.01" class="form-control" id="acrescimo" name="acrescimo">
-                </div>
-                <div class="col-lg-4">
-                    <label for="desconto" class="form-label">Desconto Geral</label>
-                    <input type="number" step="0.01" class="form-control" id="desconto" name="desconto">
-                </div>
-                <div class="col-lg-4">
                     <label for="total" class="form-label">Total do Pedido</label>
-                    <input type="number" step="0.01" class="form-control" id="total" name="total" readonly>
+                    <input type="number" step="0.01" class="form-control text-white" id="total" name="total" style="background-color: #198754;" readonly>
                 </div>
                 <div class="col-lg-12">
                     <label for="observacoes" class="form-label">Observações</label>
@@ -385,6 +397,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         total += subtotal;
                     });
                     totalField.value = total.toFixed(2);
+
+                    // Atualiza o baseTotal e aplica juros
+                    if (typeof window.initializeBaseTotal === 'function') window.initializeBaseTotal();
+                    if (typeof window.applyJuros === 'function') window.applyJuros();
                 }
 
                 // Abrir o modal ao clicar no input de produto
@@ -460,4 +476,168 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     }
                 });
             });
+
+            document.addEventListener('DOMContentLoaded', () => {
+                const totalField = document.getElementById('total'); // Campo de total
+                const acrescimoField = document.getElementById('acrescimo'); // Campo de acréscimo geral
+                const descontoField = document.getElementById('desconto'); // Campo de desconto geral
+                const productList = document.getElementById('product-list'); // Lista de produtos
+
+                // Função para calcular o total base dos produtos
+                function calculateBaseTotal() {
+                    let baseTotal = 0;
+                    const productItems = document.querySelectorAll('.product-item');
+                    productItems.forEach(item => {
+                        const price = parseFloat(item.querySelector('.product-price').value) || 0;
+                        const quantity = parseFloat(item.querySelector('input[name*="[quantidade]"]').value) || 0;
+                        const discount = parseFloat(item.querySelector('input[name*="[desconto_percentual]"]').value) || 0;
+
+                        const subtotal = price * quantity * (1 - discount / 100);
+                        baseTotal += subtotal;
+                    });
+                    return baseTotal;
+                }
+
+                // Função para aplicar acréscimo e desconto ao total
+                function applyAcrescimoDesconto() {
+                    let baseTotal = calculateBaseTotal();
+
+                    const acrescimo = parseFloat(acrescimoField.value) || 0;
+                    const desconto = parseFloat(descontoField.value) || 0;
+
+                    // Calcula o total com acréscimo e desconto
+                    const total = baseTotal * (1 + acrescimo / 100) * (1 - desconto / 100);
+                    totalField.value = total.toFixed(2);
+
+                    // Atualiza o baseTotal e aplica juros
+                    if (typeof window.initializeBaseTotal === 'function') window.initializeBaseTotal();
+                    if (typeof window.applyJuros === 'function') window.applyJuros();
+                }
+
+                // Eventos para recalcular o total ao alterar produtos, acréscimo ou desconto
+                document.addEventListener('input', function(e) {
+                    if (
+                        e.target.matches('input[name*="[quantidade]"]') ||
+                        e.target.matches('input[name*="[desconto_percentual]"]') ||
+                        e.target.id === 'acrescimo' ||
+                        e.target.id === 'desconto'
+                    ) {
+                        applyAcrescimoDesconto();
+                    }
+                });
+
+                // Recalcula o total inicial ao carregar a página
+                applyAcrescimoDesconto();
+            });
+
+
+            ///juros cartao
+
+            document.addEventListener('DOMContentLoaded', () => {
+    const numeroParcelas = document.getElementById('numero_parcelas'); // Select de parcelas
+    const totalField = document.getElementById('total'); // Campo de total
+    let timeout; // Variável para controlar o delay
+    let previousTotalValue = totalField.value; // Armazena o valor anterior do total
+    const juros_aplicado = document.getElementById('juros_aplicado'); // Campo hidden para armazenar o juros aplicado
+
+    // Função para aplicar juros ao total
+    function applyJuros() {
+        // Subtrai o valor do juros_aplicado do total
+        const totalSemJuros = parseFloat(totalField.value || 0) - parseFloat(juros_aplicado.value || 0);
+        const selectedOption = numeroParcelas.options[numeroParcelas.selectedIndex]; // Option selecionado
+        const juros = parseFloat(selectedOption?.dataset?.juros_parcela_i || 0); // Obtém o valor do data-juros_parcela_i
+
+        // Verifica se é possível aplicar o juros
+        if (totalSemJuros && !isNaN(juros)) {
+            const totalComJuros = totalSemJuros * (1 + juros / 100); // Aplica o juros
+            const jurosAplicado = totalComJuros - totalSemJuros; // Calcula o valor do juros aplicado
+
+            // Atualiza os campos
+            totalField.value = totalComJuros.toFixed(2); // Atualiza o campo de total
+            juros_aplicado.value = jurosAplicado.toFixed(2); // Atualiza o hidden com o novo valor de juros
+        }
+    }
+
+    // Função para inicializar o valor base total
+    function initializeBaseTotal() {
+        const baseTotal = parseFloat(totalField.value || 0); // Obtém o valor atual do total ou usa 0
+        totalField.dataset.baseTotal = baseTotal; // Armazena o valor inicial do total como base
+        juros_aplicado.value = '0'; // Reseta o campo de juros
+    }
+
+    // Inicializa o valor base do total ao carregar a página
+    initializeBaseTotal();
+
+    // Evento para atualizar os juros ao mudar o número de parcelas
+    numeroParcelas.addEventListener('change', () => {
+        // Aplica o delay antes de recalcular os juros
+        clearTimeout(timeout); // Cancela qualquer timeout anterior
+        timeout = setTimeout(() => {
+            applyJuros(); // Aplica os juros com base na parcela selecionada
+        }, 1000); // Delay de 1 segundo
+    });
+
+    // Observa mudanças no valor do campo de total
+    const observer = new MutationObserver(() => {
+        const currentTotalValue = totalField.value;
+
+        // Verifica se o valor do total realmente mudou
+        if (currentTotalValue !== previousTotalValue) {
+            previousTotalValue = currentTotalValue; // Atualiza o valor anterior
+
+            // Aplica o delay antes de recalcular os juros
+            clearTimeout(timeout); // Cancela qualquer timeout anterior
+            timeout = setTimeout(() => {
+                applyJuros(); // Recalcula os juros com o novo total
+            }, 1000); // Delay de 1 segundo
+        }
+    });
+
+    // Configurar o observer para monitorar alterações no atributo 'value' do totalField
+    observer.observe(totalField, {
+        attributes: true,
+        attributeFilter: ['value']
+    });
+
+    // Tornando as funções globais
+    window.applyJuros = applyJuros; // Agora você pode chamar applyJuros() globalmente
+    window.initializeBaseTotal = initializeBaseTotal; // Para garantir que o baseTotal seja atualizado
+});
+
+// Botão para alterar cartão
+document.addEventListener('DOMContentLoaded', () => {
+    const alterarCartaoButton = document.getElementById('altera cartão'); // Botão para alterar o cartão
+    const formaPagamentoSelect = document.getElementById('forma_pagamento'); // Select de forma de pagamento
+
+    // Evento de clique no botão
+    alterarCartaoButton.addEventListener('click', () => {
+        formaPagamentoSelect.selectedIndex = 0; // Define o select para a primeira opção
+    });
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const cartaoTipo = document.getElementById('cartao_tipo'); // Select de cartão
+    const formaPagamento = document.getElementById('forma_pagamento'); // Select de forma de pagamento
+    const jurosAplicado = document.getElementById('juros_aplicado'); // Campo hidden de juros aplicado
+    const totalField = document.getElementById('total'); // Campo de total
+
+    // Função para subtrair o valor de juros do total
+    function removeJurosFromTotal() {
+        const juros = parseFloat(jurosAplicado.value || 0); // Obtém o valor do juros aplicado
+        const total = parseFloat(totalField.value || 0); // Obtém o valor atual do total
+
+        if (!isNaN(juros) && !isNaN(total)) {
+            const newTotal = total - juros; // Subtrai o juros do total
+            totalField.value = newTotal.toFixed(2); // Atualiza o total com o novo valor
+            jurosAplicado.value = '0'; // Reseta o campo de juros aplicado
+        }
+    }
+
+    // Adiciona os eventos de mudança nos selects
+    cartaoTipo.addEventListener('change', removeJurosFromTotal);
+    formaPagamento.addEventListener('change', removeJurosFromTotal);
+});
+
+
+
         </script>
