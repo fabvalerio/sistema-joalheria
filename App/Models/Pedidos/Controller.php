@@ -103,8 +103,17 @@ class Controller
         ");
 
         $campos = [
-            'cliente_id', 'data_pedido', 'forma_pagamento', 'acrescimo', 'desconto',
-            'observacoes', 'total', 'valor_pago', 'cod_vendedor', 'status_pedido', 'data_entrega'
+            'cliente_id',
+            'data_pedido',
+            'forma_pagamento',
+            'acrescimo',
+            'desconto',
+            'observacoes',
+            'total',
+            'valor_pago',
+            'cod_vendedor',
+            'status_pedido',
+            'data_entrega'
         ];
 
         foreach ($campos as $campo) {
@@ -136,6 +145,42 @@ class Controller
 
                 if (!$db->execute()) {
                     return false; // Retorna falso se a inserção de um item falhar
+                }
+
+
+                //inserir em movimentação de estoque
+                $db->query("
+                    INSERT INTO movimentacao_estoque (
+                        produto_id, descricao_produto, quantidade, tipo_movimentacao, data_movimentacao, motivo, estoque_antes, estoque_atualizado
+                    ) VALUES (
+                        :produto_id, :descricao_produto, :quantidade, :tipo_movimentacao, :data_movimentacao, :motivo, :estoque_antes, :estoque_atualizado
+                    )
+                ");
+
+                $db->bind(":produto_id", $item['produto_id']);
+                $db->bind(":descricao_produto", $item['descricao_produto']);
+                $db->bind(":quantidade", $item['quantidade']);
+                $db->bind(":tipo_movimentacao", 'entrada');
+                $db->bind(":data_movimentacao", date('Y-m-d'));
+                $db->bind(":motivo", 'pedido');
+                $db->bind(":estoque_antes", $item['estoque_antes']);
+                $db->bind(":estoque_atualizado", $item['quantidade']);
+
+                if (!$db->execute()) {
+                    return false; // Retorna falso se a inserção de um item falhar
+                }
+
+                //update de estoque
+                $db->query("
+                    UPDATE estoque
+                    SET quantidade = quantidade - :quantidade
+                    WHERE produtos_id = :produto_id
+                ");
+                $db->bind(":quantidade", $item['quantidade']);
+                $db->bind(":produto_id", $item['produto_id']);
+
+                if (!$db->execute()) {
+                    return false; // Retorna falso se a atualização de estoque falhar
                 }
             }
 
@@ -169,8 +214,17 @@ class Controller
         ");
 
         $campos = [
-            'cliente_id', 'data_pedido', 'forma_pagamento', 'acrescimo', 'desconto',
-            'observacoes', 'total', 'valor_pago', 'cod_vendedor', 'status_pedido', 'data_entrega'
+            'cliente_id',
+            'data_pedido',
+            'forma_pagamento',
+            'acrescimo',
+            'desconto',
+            'observacoes',
+            'total',
+            'valor_pago',
+            'cod_vendedor',
+            'status_pedido',
+            'data_entrega'
         ];
 
         foreach ($campos as $campo) {
@@ -232,11 +286,11 @@ class Controller
         return $db->execute(); // Retorna true se a exclusão for bem-sucedida
     }
     public function listarClientes()
-{
-    $db = new db();
+    {
+        $db = new db();
 
-    // Consulta SQL para listar os clientes
-    $db->query("
+        // Consulta SQL para listar os clientes
+        $db->query("
         SELECT 
             id, nome_pf,
             nome_fantasia_pj,
@@ -246,14 +300,14 @@ class Controller
         ORDER BY id ASC
     ");
 
-    return $db->resultSet(); // Retorna todos os resultados
-}
-public function listarProdutos()
-{
-    $db = new db();
+        return $db->resultSet(); // Retorna todos os resultados
+    }
+    public function listarProdutos()
+    {
+        $db = new db();
 
-    // Consulta SQL para listar os produtos
-    $db->query("
+        // Consulta SQL para listar os produtos
+        $db->query("
         SELECT 
             p.id, 
             p.descricao_etiqueta AS nome_produto, 
@@ -267,20 +321,18 @@ public function listarProdutos()
             p.descricao_etiqueta ASC
     ");
 
-    return $db->resultSet(); // Retorna todos os resultados
-}
-public function listarCartoes()
-{
-    $db = new db();
+        return $db->resultSet(); // Retorna todos os resultados
+    }
+    public function listarCartoes()
+    {
+        $db = new db();
 
-    // Consulta SQL para listar os cartões
-    $db->query("
+        // Consulta SQL para listar os cartões
+        $db->query("
         SELECT *
         FROM cartoes
     ");
 
-    return $db->resultSet(); // Retorna todos os resultados
-}
-
-
+        return $db->resultSet(); // Retorna todos os resultados
+    }
 }

@@ -28,19 +28,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         foreach ($_POST['produtos'] as $produto) {
             if (!empty($produto['id']) && !empty($produto['quantidade']) && !empty($produto['preco'])) {
                 $dados['itens'][] = [
+                    'descricao_produto' => $produto['descricao_produto'],
                     'produto_id' => (int)$produto['id'], // ID do produto
                     'quantidade' => (float)$produto['quantidade'], // Quantidade
                     'valor_unitario' => (float)$produto['preco'], // Valor unitário
-                    'desconto_percentual' => (float)($produto['desconto_percentual'] ?? 0) // Desconto percentual
+                    'desconto_percentual' => (float)($produto['desconto_percentual'] ?? 0), // Desconto percentual
+                    'estoque_antes' => (int)$produto['estoque_atual'],
+                    'tipo_movimentacao' => 'Pedido',
+                    //data de hoje
+                    'data_movimentacao' => date('Y-m-d'),
+                    'motivo' => 'Pedido',
+                    //estoque atualizado estoque_antes - quantidade
+                    'estoque_atualizado' => (int)$produto['estoque_atual'] - (int)$produto['quantidade']
                 ];
             }
         }
     }
     // Debug para verificar o conteúdo do array
-    //  echo '<pre>';
-    //  print_r($dados['itens']); // Acessa a chave correta
-    //  echo '</pre>';
-    //  exit;
+    // echo '<pre>';
+    // print_r($dados['itens']); // Acessa a chave correta
+    // echo '</pre>';
+    // exit;
 
 
     $return = $controller->cadastro($dados);
@@ -119,9 +127,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <div class="row g-3 align-items-end product-item mb-2">
                             <div class="col-lg-4">
                                 <label class="form-label">Produto</label>
-                                <input type="text" class="form-control product-input" placeholder="Clique para selecionar um produto" readonly data-index="0">
+                                <input type="text" class="form-control product-input" name="produtos[0][descricao_produto]" placeholder="Clique para selecionar um produto" readonly data-index="0">
                                 <input type="hidden" name="produtos[0][id]" class="product-id">
                                 <input type="hidden" name="produtos[0][valor_unitario]" class="product-price">
+                                <input type="hidden" name="produtos[0][estoque_atual]" class="estoque_atual">
                             </div>
                             <div class="col-lg-2">
                                 <label class="form-label">Preço</label>
@@ -348,6 +357,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                             <th>ID</th>
                                             <th>Nome</th>
                                             <th>Preço</th>
+                                            <th>Estoque Atual</th>
                                             <th>Ações</th>
                                         </tr>
                                     </thead>
@@ -357,11 +367,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                                 <td><?php echo $produto['id']; ?></td>
                                                 <td><?php echo $produto['nome_produto']; ?></td>
                                                 <td><?php echo $produto['preco']; ?></td>
+                                                <td><?php echo $produto['estoque']; ?></td>
                                                 <td>
                                                     <button type="button" class="btn btn-primary btn-select-product"
                                                         data-id="<?php echo $produto['id']; ?>"
                                                         data-name="<?php echo $produto['nome_produto']; ?>"
-                                                        data-price="<?php echo $produto['preco']; ?>">
+                                                        data-price="<?php echo $produto['preco']; ?>"
+                                                        data-estoque="<?php echo $produto['estoque']; ?>">
                                                         Selecionar
                                                     </button>
                                                 </td>
@@ -424,12 +436,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         const productName = e.target.getAttribute('data-name');
                         const productPrice = e.target.getAttribute('data-price');
                         const activeInput = document.querySelector(`.product-input[data-index="${activeIndex}"]`);
+                        const estoque_atual = e.target.getAttribute('data-estoque');
 
                         if (activeInput) {
                             activeInput.value = productName;
                             const parentItem = activeInput.closest('.product-item');
                             parentItem.querySelector('.product-id').value = productId;
                             parentItem.querySelector('.product-price').value = productPrice;
+                            parentItem.querySelector('.estoque_atual').value = estoque_atual;
                             parentItem.querySelector('.product-price-display').value = productPrice;
                         }
 
@@ -446,9 +460,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         productItem.classList.add('row', 'g-3', 'align-items-end', 'product-item', 'mb-2');
                         productItem.innerHTML = `
                 <div class="col-lg-4">
-                    <input type="text" class="form-control product-input" placeholder="Clique para selecionar um produto" readonly data-index="${productIndex}">
+                    <input type="text" class="form-control product-input" placeholder="Clique para selecionar um produto" name="produtos[${productIndex}][descricao_produto]" readonly data-index="${productIndex}">
                     <input type="hidden" name="produtos[${productIndex}][id]" class="product-id">
                     <input type="hidden" name="produtos[${productIndex}][valor_unitario]" class="product-price">
+                    <input type="hidden" name="produtos[${productIndex}][estoque_atual]" class="estoque_atual">
                 </div>
                 <div class="col-lg-2">
                     <input type="number" step="0.01" class="form-control product-price-display" name="produtos[${productIndex}][preco]" placeholder="Preço" readonly>
