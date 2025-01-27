@@ -30,7 +30,7 @@ $consignacoes = $controller->listar();
           <tr>
             <td><?= htmlspecialchars($consignacao['id']) ?></td>
             <td>
-              <?= htmlspecialchars($consignacao['nome_pf'] ?? $consignacao['nome_fantasia_pj'] ?? 'Não informado') ?>
+              <?= htmlspecialchars($consignacao['nome_fantasia_pj'] ?? $consignacao['nome_fantasia_pj'] ?? 'Não informado') ?>
             </td>
             <td><?= htmlspecialchars(date('d/m/Y', strtotime($consignacao['data_consignacao']))) ?></td>
             <td><?= htmlspecialchars($consignacao['status']) ?></td>

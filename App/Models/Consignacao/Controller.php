@@ -151,6 +151,8 @@ class Controller
                 id, nome_pf, nome_fantasia_pj, cpf, cnpj_pj
             FROM 
                 clientes
+            WHERE 
+                tipo_cliente = 'PJ'
             ORDER BY 
                 nome_pf ASC, nome_fantasia_pj ASC
         ");
@@ -180,7 +182,7 @@ class Controller
     public function editar($id, $dados)
     {
         $db = new db();
-    
+
         // Atualizar o status da consignação
         $db->query("
             UPDATE consignacao
@@ -192,12 +194,12 @@ class Controller
         $db->bind(':status', $dados['status']);
         $db->bind(':valor', $dados['valor']);
         $db->bind(':id', $id);
-    
+
         if (!$db->execute()) {
             echo "<pre>Erro ao atualizar status da consignação.</pre>";
             return false; // Retorna falso se a atualização do status falhar
         }
-    
+
         // Atualizar os itens da consignação
         foreach ($dados['itens'] as $item) {
             $db->query("
@@ -208,7 +210,7 @@ class Controller
             ");
             $db->bind(':qtd_devolvido', $item['qtd_devolvido']);
             $db->bind(':id', $item['id']); // Atualiza com o identificador correto do item
-    
+
             if (!$db->execute()) {
                 echo "<pre>Erro ao atualizar item com ID {$item['id']}.</pre>";
                 return false; // Retorna falso se a atualização de um item falhar
@@ -223,14 +225,14 @@ class Controller
             $db->bind(':produto_id', $item['produto_id']);
             $db->execute();
         }
-    
+
         return true; // Retorna verdadeiro se todas as atualizações forem bem-sucedidas
     }
 
     public function deletar($id)
     {
         $db = new db();
-    
+
         // Selecionar todos os itens da consignação antes de deletar
         $db->query("
             SELECT 
@@ -242,7 +244,7 @@ class Controller
         ");
         $db->bind(":id", $id);
         $itens = $db->resultSet();
-    
+
         // Para cada item, calcular a quantidade a ser devolvida ao estoque
         foreach ($itens as $item) {
             $quantidadeDevolvida = $item['quantidade'] - $item['qtd_devolvido'];
@@ -257,20 +259,18 @@ class Controller
                 $db->execute();
             }
         }
-    
+
         // Deletar os itens associados à consignação
         $db->query("DELETE FROM consignacao_itens WHERE consignacao_id = :id");
         $db->bind(":id", $id);
         $itensDeletados = $db->execute();
-    
+
         // Deletar a consignação
         $db->query("DELETE FROM consignacao WHERE id = :id");
         $db->bind(":id", $id);
         $consignacaoDeletada = $db->execute();
-    
+
         // Verificar se ambas as operações foram realizadas com sucesso
         return $itensDeletados && $consignacaoDeletada;
     }
-    
-
 }
