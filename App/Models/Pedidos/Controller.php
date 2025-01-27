@@ -167,7 +167,7 @@ class Controller
                 $db->bind(":produto_id", $item['produto_id']);
                 $db->bind(":descricao_produto", $item['descricao_produto']);
                 $db->bind(":quantidade", $item['quantidade']);
-                $db->bind(":tipo_movimentacao", 'Venda ($pedidoId )');
+                $db->bind(":tipo_movimentacao", 'Saida');
                 $db->bind(":data_movimentacao", date('Y-m-d'));
                 $db->bind(":motivo", 'pedido');
                 $db->bind(":estoque_antes", $item['estoque_antes']);
