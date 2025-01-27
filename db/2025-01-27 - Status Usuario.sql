@@ -1,0 +1,1 @@
+ALTER TABLE `usuarios` ADD `status` INT NULL AFTER `numero`

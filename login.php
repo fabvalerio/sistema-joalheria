@@ -60,7 +60,7 @@
                                     <div class="text-center">
                                         <h1 class="h4  mb-4 text-white">Login</h1>
                                     </div>
-                                    <form class="user" action="validar.php">
+                                    <form class="user" action="validar.php" method="post">
                                         <div class="form-group my-3">
                                             <input type="text" class="form-control" id="cpf" name="cpf" aria-describedby="informe seu cpf" placeholder="CPF">
                                         </div>
