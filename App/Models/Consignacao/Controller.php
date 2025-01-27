@@ -224,6 +224,53 @@ class Controller
             $db->bind(':quantidade', $item['qtd_devolvido']);
             $db->bind(':produto_id', $item['produto_id']);
             $db->execute();
+
+            //busta na tabela estoque a quantidade atualizada
+            $db->query("
+                SELECT quantidade 
+                FROM estoque 
+                WHERE produtos_id = :produto_id
+            ");
+            $db->bind(':produto_id', $item['produto_id']);
+            $quantidadeAtualizada = $db->single()['quantidade'];
+
+            //grava dados em movimentação de estoque
+            $db->query("
+                INSERT INTO movimentacao_estoque (
+                    produto_id,
+                    descricao_produto,
+                    tipo_movimentacao,
+                    quantidade,
+                    documento,
+                    data_movimentacao,
+                    motivo,
+                    estoque_antes,
+                    estoque_atualizado
+                ) VALUES (
+                    :produto_id,
+                    :descricao_produto,
+                    :tipo_movimentacao,
+                    :quantidade,
+                    :documento,
+                    :data_movimentacao,
+                    :motivo,
+                    :estoque_antes,
+                    :estoque_atualizado
+                )
+            ");
+            $db->bind(':produto_id', $item['produto_id']);
+            $db->bind(':descricao_produto', $item['nome_produto']);
+            $db->bind(':tipo_movimentacao', 'Saida');
+            $db->bind(':quantidade', $item['quantidade'] - $item['qtd_devolvido']);
+            $db->bind(':documento', 'Consignação-' . $id);
+            $db->bind(':data_movimentacao', date('Y-m-d'));
+            $db->bind(':motivo', 'Consignação');
+            $db->bind(':estoque_antes', null);
+            $db->bind(':estoque_atualizado', $quantidadeAtualizada);
+            $db->execute();
+
+            //fim
+
         }
 
         return true; // Retorna verdadeiro se todas as atualizações forem bem-sucedidas

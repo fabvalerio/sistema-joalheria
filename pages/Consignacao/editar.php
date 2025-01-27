@@ -31,7 +31,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       $dadosAtualizados['itens'][] = [
         'id' => $item['id'] ?? null,
         'qtd_devolvido' => (float)($item['qtd_devolvido'] ?? 0),
-        'produto_id' => $item['produto_id']
+        'produto_id' => $item['produto_id'],
+        'quantidade' => $item['quantidade'],
+        'nome_produto' => $item['nome_produto']
       ];
     }
   }
@@ -107,8 +109,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <tbody>
           <?php foreach ($itens as $item): ?>
             <tr>
-              <td><?= htmlspecialchars($item['nome_produto'] ?? 'Produto não encontrado') ?></td>
-              <td><?= htmlspecialchars($item['quantidade'] ?? '0') ?></td>
+              <td>
+                <input type="text" class="form-control" name="itens[<?= htmlspecialchars($item['id']) ?>][nome_produto]""
+                  value="<?= htmlspecialchars($item['nome_produto'] ?? 'Produto não encontrado') ?>"
+                  readonly>
+              </td>
+              <td>
+                <input type="number" class="form-control" name="itens[<?= htmlspecialchars($item['id']) ?>][quantidade]"
+                  value="<?= htmlspecialchars($item['quantidade'] ?? '0') ?>"
+                  readonly>
+              </td>
+
               <td>
                 <!-- Campo para a quantidade devolvida -->
                 <input type="number" step="0.01" class="form-control devolvido-input"
