@@ -265,7 +265,7 @@ class Controller
             $db->bind(':documento', 'Consignação-' . $id);
             $db->bind(':data_movimentacao', date('Y-m-d'));
             $db->bind(':motivo', 'Consignação');
-            $db->bind(':estoque_antes', null);
+            $db->bind(':estoque_antes', $quantidadeAtualizada - ($item['quantidade'] - $item['qtd_devolvido']));
             $db->bind(':estoque_atualizado', $quantidadeAtualizada);
             $db->execute();
 
