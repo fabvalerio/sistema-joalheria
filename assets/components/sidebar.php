@@ -30,7 +30,7 @@
         </a>
         <div id="menuOperacoes" class="collapse" aria-labelledby="headingOperacoes" data-bs-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
-                <a class="collapse-item" href="<?php echo "{$url}!/Vendas/listar" ?>">Vendas</a>
+                <a class="collapse-item" href="<?php echo "{$url}!/Pedidos/cadastro" ?>">Novo Pedido</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Pedidos/listar" ?>">Pedidos</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Fabrica/listar" ?>">Fábrica</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/ImpressaoEtiquetas/listar" ?>">Impressão de Etiquetas</a>
