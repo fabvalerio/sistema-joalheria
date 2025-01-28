@@ -129,7 +129,11 @@ a:focus {
 }
 
 .bg-success {
-  background-color: var(--tema-claro)!important;
+  background-color: #1cc88a !important;
+}
+
+.bg-danger {
+  background-color: #e74a3b !important;
 }
 
 .bg-gradient-primary {
