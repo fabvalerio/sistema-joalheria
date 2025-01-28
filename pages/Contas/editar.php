@@ -70,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if ($return) {
         echo notify('success', "Conta atualizada com sucesso!");
-        echo '<meta http-equiv="refresh" content="2; url=' . $url . '!/' . $link[1] . '/listar">';
+        echo '<meta http-equiv="refresh" content="2; url=' . $url . '!/' . $link[1] . '/listar/' . $link[4] . '">';
         exit;
     } else {
         echo notify('danger', "Erro ao atualizar a conta.");
@@ -82,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <div class="card">
   <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
     <h3 class="card-title">Editar Conta</h3>
-    <a href="<?php echo "{$url}!/{$link[1]}/listar" ?>" class="btn btn-warning text-primary">Voltar</a>
+    <a href="<?php echo "{$url}!/{$link[1]}/listar/{$link[4]}" ?>" class="btn btn-warning text-primary">Voltar</a>
   </div>
 
   <div class="card-body">

@@ -19,8 +19,8 @@ $contas = $controller->listar($tipo);
 
 <div class="card">
     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-        <h3 class="card-title">Contas Financeiras</h3>
-        <a href="<?php echo "{$url}!/{$link[1]}/cadastro" ?>" class="btn btn-white text-primary">Adicionar</a>
+        <h3 class="card-title">Contas Financeiras (<?php echo $tipo == 'R' ? 'Contas a Receber' : 'Contas a Pagar' ?>)</h3>
+        <a href="<?php echo "{$url}!/{$link[1]}/cadastro/{$link[3]}" ?>" class="btn btn-white text-primary">Adicionar</a>
     </div>
 
     <div class="card-body">
@@ -49,9 +49,9 @@ $contas = $controller->listar($tipo);
                                     Ação
                                 </button>
                                 <ul class="dropdown-menu">
-                                    <li><a href="<?= "{$url}!/{$link[1]}/ver/{$conta['id']}" ?>" class="dropdown-item">Ver</a></li>
-                                    <li><a href="<?= "{$url}!/{$link[1]}/editar/{$conta['id']}" ?>" class="dropdown-item">Editar</a></li>
-                                    <li><a href="<?= "{$url}!/{$link[1]}/deletar/{$conta['id']}" ?>" class="dropdown-item text-danger">Excluir</a></li>
+                                    <li><a href="<?= "{$url}!/{$link[1]}/ver/{$conta['id']}/$link[3]" ?>" class="dropdown-item">Ver</a></li>
+                                    <li><a href="<?= "{$url}!/{$link[1]}/editar/{$conta['id']}/$link[3]" ?>" class="dropdown-item">Editar</a></li>
+                                    <li><a href="<?= "{$url}!/{$link[1]}/deletar/{$conta['id']}/$link[3]" ?>" class="dropdown-item text-danger">Excluir</a></li>
                                 </ul>
                             </div>
                         </td>

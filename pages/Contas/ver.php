@@ -31,7 +31,7 @@ $categorias = $controller->listarCategorias();
 <div class="card">
   <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
     <h3 class="card-title">Detalhes da Conta</h3>
-    <a href="<?php echo "{$url}!/{$link[1]}/listar" ?>" class="btn btn-warning text-primary">Voltar</a>
+    <a href="<?php echo "{$url}!/{$link[1]}/listar/{$link[4]}" ?>" class="btn btn-warning text-primary">Voltar</a>
   </div>
 
   <div class="card-body">

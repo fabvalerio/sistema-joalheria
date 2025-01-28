@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
   if ($return) {
     echo notify('success', "Conta cadastrada com sucesso!");
-    echo '<meta http-equiv="refresh" content="2; url=' . $url . '!/' . $link[1] . '/listar">';
+    echo '<meta http-equiv="refresh" content="2; url=' . $url . '!/' . $link[1] . '/listar/' . $link[3] . '">';
   } else {
     echo notify('danger', "Erro ao cadastrar a conta.");
   }
@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <div class="card">
   <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
     <h3 class="card-title">Cadastro de Contas</h3>
-    <a href="<?php echo "{$url}!/{$link[1]}/listar" ?>" class="btn btn-warning text-primary">Voltar</a>
+    <a href="<?php echo "{$url}!/{$link[1]}/listar/{$link[3]}" ?>" class="btn btn-warning text-primary">Voltar</a>
   </div>
 
   <div class="card-body">
