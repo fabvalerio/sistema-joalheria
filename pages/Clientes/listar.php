@@ -31,10 +31,23 @@ $clientes = $controller->listar();
                         <td><?= htmlspecialchars($cliente['telefone']) ?></td>
                         <td><?= htmlspecialchars($cliente['grupo']) ?></td>
                         <td>
-                            <a href="<?= "{$url}!/{$link[1]}/ver/{$cliente['id']}" ?>" class="btn btn-info">Ver</a>
-                            <a href="<?= "{$url}!/{$link[1]}/editar/{$cliente['id']}" ?>" class="btn btn-warning">Editar</a>
-                            <a href="<?= "{$url}!/{$link[1]}/deletar/{$cliente['id']}" ?>" class="btn btn-danger">Excluir</a>
+                            <div class="dropdown">
+                                <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Ação
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a href="<?= "{$url}!/{$link[1]}/ver/{$cliente['id']}" ?>" class="dropdown-item">Ver</a></li>
+                                    <li>
+                                        <a href="<?= "{$url}!/{$link[1]}/editar/{$cliente['id']}" ?>" class="dropdown-item">Editar</a>
+                                    </li>
+                                    <li>
+                                        <a href="<?= "{$url}!/{$link[1]}/deletar/{$cliente['id']}" ?>" class="dropdown-item text-danger">Excluir</a>
+                                    </li>
+
+                                </ul>
+                            </div>
                         </td>
+                        
                     </tr>
                 <?php endforeach; ?>
             </tbody>
