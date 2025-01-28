@@ -279,37 +279,38 @@ class Controller
 
     // Deletar um pedido e seus itens
     public function deletar($id)
-    {
-        $db = new db();
+{
+    $db = new db();
 
-        //pegar todos os itens do pedido e faz um foreach somando a quandidade da pedidos_itens para atualizar o estoque
-        $db->query("SELECT * FROM pedidos_itens WHERE pedido_id = :pedido_id");
-        $db->bind(":pedido_id", $id);
-        $itens = $db->resultSet();
+    // Pegar todos os itens do pedido para atualizar o estoque
+    $db->query("SELECT * FROM pedidos_itens WHERE pedido_id = :pedido_id");
+    $db->bind(":pedido_id", $id);
+    $itens = $db->resultSet();
 
-        foreach ($itens as $item) {
-            $db->query("UPDATE estoque SET quantidade = quantidade + :quantidade WHERE produtos_id = :produto_id");
-            $db->bind(":quantidade", $item['quantidade']);
-            $db->bind(":produto_id", $item['produto_id']);
-            $db->execute();
-        }
-
-
-        // Excluir os itens do pedido
-        $db->query("DELETE FROM pedidos_itens WHERE pedido_id = :pedido_id");
-        $db->bind(":pedido_id", $id);
+    foreach ($itens as $item) {
+        $db->query("UPDATE estoque SET quantidade = quantidade + :quantidade WHERE produtos_id = :produto_id");
+        $db->bind(":quantidade", $item['quantidade']);
+        $db->bind(":produto_id", $item['produto_id']);
         $db->execute();
-
-        // Excluir o pedido
-        $db->query("DELETE FROM pedidos WHERE id = :id");
-        $db->bind(":id", $id);
-
-        // Excluir o movimentação de estoque com pedido_id
-        $db->query("DELETE FROM movimentacao_estoque WHERE pedido_id = :pedido_id");
-        $db->bind(":pedido_id", $id);
-
-        return $db->execute(); // Retorna true se a exclusão for bem-sucedida
     }
+
+    // Excluir os itens do pedido
+    $db->query("DELETE FROM pedidos_itens WHERE pedido_id = :pedido_id");
+    $db->bind(":pedido_id", $id);
+    $db->execute();
+
+    // Excluir as movimentações de estoque relacionadas ao pedido
+    $db->query("DELETE FROM movimentacao_estoque WHERE pedido_id = :pedido_id");
+    $db->bind(":pedido_id", $id);
+    $db->execute();
+
+    // Por último, excluir o pedido
+    $db->query("DELETE FROM pedidos WHERE id = :id");
+    $db->bind(":id", $id);
+
+    return $db->execute(); // Retorna true se a exclusão do pedido for bem-sucedida
+}
+
     public function listarClientes()
     {
         $db = new db();
