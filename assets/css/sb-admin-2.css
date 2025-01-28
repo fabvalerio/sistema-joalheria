@@ -1,5 +1,5 @@
 :root{
-  --tema-escuro: #838383;
+  --tema-escuro: #4f4f4f;
   --tema-claro: #b1b1b1;
 }
 
@@ -1529,4 +1529,88 @@ body.sidebar-toggled footer.sticky-footer {
 
 .h-z{
   height: calc(100% - 110px);
+}
+
+
+.btn-primary {
+  color: #fff;
+  background-color: #4f4f4f !important;
+  border-color: #000000;
+}
+
+.btn-primary:hover {
+  color: #fff;
+  background-color: #000000 !important;
+  border-color: #000000 !important;
+}
+
+.btn-primary:focus, .btn-primary.focus {
+  color: #fff;
+  background-color: #1cc88a !important;
+  border-color: #1cc88a !important;
+  /* box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.5) !important; */
+}
+
+form .btn-primary {
+  font-weight: 600;
+  font-size: large !important;
+  width: 100% !important;
+  color: #fff;
+  background-color: #178b61 !important;
+  border-color: #ffffff;
+}
+
+form .btn-primary:hover {
+  color: #fff;
+  background-color: #178b61 !important;
+  border-color: #178b61 !important;
+}
+
+form .btn-primary:focus, .btn-primary.focus {
+  color: #fff;
+  background-color: #1cc88a !important;
+  border-color: #1cc88a !important;
+  /* box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.5) !important; */
+}
+
+.card-header .btn-warning {
+  width: 100px;
+    font-weight: 500;
+    color: #ffffff !important;
+    background-color: #ffc153 !important;
+    border-color: #000000;
+}
+
+.card-header .btn-warning:hover {
+  color: #fff;
+  background-color: #000000 !important;
+  border-color: #000000 !important;
+}
+
+.card-header .btn-warning:focus, .btn-warning.focus {
+  color: #ffffff !important;
+    background-color: #ffc153 !important;
+    border-color: #000000;
+  /* box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.5) !important; */
+}
+
+.card-header .btn-white {
+  width: auto !important;
+    font-weight: 500;
+    color: #ffffff !important;
+    background-color: #30c38e !important;
+    border-color: #30c38e !important;
+}
+
+.card-header .btn-white:hover {
+  color: #fff;
+  background-color: #000000 !important;
+  border-color: #000000 !important;
+}
+
+.card-header .btn-white:focus, .btn-white.focus {
+  color: #ffffff !important;
+    background-color: #30c38e !important;
+    border-color: #30c38e !important;
+  /* box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.5) !important; */
 }

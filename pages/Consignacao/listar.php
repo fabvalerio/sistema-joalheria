@@ -50,10 +50,10 @@ $consignacoes = $controller->listar();
                   </li>
                   <?php if ($consignacao['status'] === 'Aberta'): ?>
                   <li>
-                    <a href="<?= "{$url}!/{$link[1]}/editar/{$consignacao['id']}" ?>" class="dropdown-item">Editar</a>
+                    <a href="<?= "{$url}!/{$link[1]}/editar/{$consignacao['id']}" ?>" class="dropdown-item">Finalizar</a>
                   </li>
                   <li>
-                    <a href="<?= "{$url}!/{$link[1]}/deletar/{$consignacao['id']}" ?>" class="dropdown-item text-danger">Excluir</a>
+                    <a href="<?= "{$url}!/{$link[1]}/deletar/{$consignacao['id']}" ?>" class="dropdown-item text-danger">CANCELAR</a>
                   </li>
                   <?php endif; ?>
                 </ul>
