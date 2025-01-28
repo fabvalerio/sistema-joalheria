@@ -70,6 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <option value="PF" <?= $cliente['tipo_cliente'] == 'PF' ? 'selected' : '' ?>>Pessoa Física</option>
                         <option value="PJ" <?= $cliente['tipo_cliente'] == 'PJ' ? 'selected' : '' ?>>Pessoa Jurídica</option>
                     </select>
+                    <input type="hidden" name="tipo_cliente" value="<?= $cliente['tipo_cliente'] ?>">
                 </div>
 
                 <!-- Campos para Pessoa Física -->
@@ -85,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <label for="" class="form-label">CPF</label>
                     <input type="text" class="form-control" name="cpf" value="<?= htmlspecialchars($cliente['cpf']) ?>">
                 </div>
-                <div class="col-lg-6 pessoa-fisica">
+                <div class="col-lg-6">
                     <label for="" class="form-label">Data de Nascimento</label>
                     <input type="date" class="form-control" name="data_nascimento" value="<?= $cliente['data_nascimento'] ?>">
                 </div>

@@ -33,7 +33,7 @@ $consignacoes = $controller->listar();
               <?= htmlspecialchars($consignacao['nome_fantasia_pj'] ?? $consignacao['nome_fantasia_pj'] ?? 'Não informado') ?>
             </td>
             <td><?= htmlspecialchars(date('d/m/Y', strtotime($consignacao['data_consignacao']))) ?></td>
-            <td><?= htmlspecialchars($consignacao['status']) ?></td>
+            <td><span class="badge bg-<?= $consignacao['status'] == 'Aberta' ? 'warning' : 'success' ?>"><?= htmlspecialchars($consignacao['status']) ?> </span></td>
             <td>
               R$<?= isset($consignacao['valor']) && $consignacao['valor'] !== null
                   ? number_format($consignacao['valor'], 2, ',', '.')

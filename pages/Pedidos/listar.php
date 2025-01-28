@@ -40,7 +40,7 @@ $pedidos = $controller->listar();
                   ? htmlspecialchars(date('d/m/Y', strtotime($pedido['data_entrega'])))
                   : 'Não informado'; ?>
             </td>
-            <td><?= htmlspecialchars($pedido['status_pedido']) ?></td>
+            <td><span class="badge bg-<?= $pedido['status_pedido'] == 'Pendente' ? 'warning' : 'success' ?>"><?= htmlspecialchars($pedido['status_pedido']) ?> </span></td>
             <td>
               R$<?= isset($pedido['total']) && $pedido['total'] !== null
                   ? number_format($pedido['total'], 2, ',', '.')
@@ -54,7 +54,7 @@ $pedidos = $controller->listar();
                 <ul class="dropdown-menu">
                   <li>
                     <?php if ($pedido['status_pedido'] === 'Pendente') { ?>
-                      <a href="<?= "{$url}!/{$link[1]}/mudarStatus/{$pedido['id']}/Emandamento" ?>"
+                      <a href="<?= "{$url}!/{$link[1]}/mudarStatus/{$pedido['id']}/Pago" ?>"
                         class="dropdown-item">
                         Alterar para PAGO
                       </a>

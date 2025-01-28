@@ -42,7 +42,7 @@ $contas = $controller->listar($tipo);
                         <td><?= htmlspecialchars($conta['tipo'] == 'P' ? 'Contas a Pagar' : 'Contas a Receber') ?></td>
                         <td><?= htmlspecialchars($conta['data_vencimento']) ?></td>
                         <td>R$ <?= number_format($conta['valor'], 2, ',', '.') ?></td>
-                        <td><?= htmlspecialchars($conta['status']) ?></td>
+                        <td><span class="badge bg-<?= $conta['status'] == 'Pago' ? 'success' : 'warning' ?>"><?= htmlspecialchars($conta['status']) ?> </span></td>
                         <td>
                             <div class="dropdown">
                                 <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">

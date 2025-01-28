@@ -50,7 +50,7 @@ $itens = $dados['itens'];
             </div>
             <div class="col-lg-6">
                 <strong>Status:</strong> 
-                <?= htmlspecialchars($pedido['status_pedido'] ?? 'Pendente') ?>
+                <span class="badge bg-<?= $pedido['status_pedido'] == 'Pendente' ? 'warning' : 'success' ?>"><?= htmlspecialchars($pedido['status_pedido'] ?? 'Pendente') ?> </span>
             </div>
             <div class="col-lg-6">
                 <strong>Valor Total:</strong> 

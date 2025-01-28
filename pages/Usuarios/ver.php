@@ -100,6 +100,11 @@ $nomeCargo = $cargoMap[$return['cargo']] ?? 'Cargo não encontrado';
                 <label for="" class="form-label d-block fw-bold">Nível de Acesso</label>
                 <?php echo $return['nivel_acesso'] ?? ''; ?>
             </div>
+            <!-- status -->
+            <div class="col-lg-4">
+                <label for="" class="form-label d-block fw-bold">Status</label>
+                <span class="badge bg-<?= $return['status'] == 'Ativo' ? 'success' : 'danger' ?>"><?= $return['status'] == 'Ativo' ? 'Ativo' : 'Inativo' ?></span>
+            </div>
         </div>
     </div>
 

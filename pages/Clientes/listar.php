@@ -4,11 +4,15 @@ use App\Models\Clientes\Controller;
 
 $controller = new Controller();
 $clientes = $controller->listar();
+// Obter os grupos de clientes
+$grupos = $controller->listarGrupos();
+$grupoNome = null;
+
 
 ?>
 
 <div class="card">
-<div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
         <h3 class="card-title">Clientes</h3>
         <a href="<?php echo "{$url}!/{$link[1]}/cadastro" ?>" class="btn btn-white text-primary">Adicionar</a>
     </div>
@@ -24,12 +28,20 @@ $clientes = $controller->listar();
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($clientes as $cliente): ?>
+                <?php foreach ($clientes as $cliente):
+                    //pega nome do grupo
+                    foreach ($grupos as $grupo) {
+                        if ($grupo['id'] == $cliente['grupo']) {
+                            $grupoNome = $grupo['nome_grupo'];
+                            break;
+                        }
+                    }
+                ?>
                     <tr>
                         <td><?= $cliente['id'] ?></td>
                         <td><?= htmlspecialchars($cliente['nome_pf']) ?: htmlspecialchars($cliente['razao_social_pj']) ?></td>
                         <td><?= htmlspecialchars($cliente['telefone']) ?></td>
-                        <td><?= htmlspecialchars($cliente['grupo']) ?></td>
+                        <td><?= $grupoNome ?></td>
                         <td>
                             <div class="dropdown">
                                 <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -47,7 +59,7 @@ $clientes = $controller->listar();
                                 </ul>
                             </div>
                         </td>
-                        
+
                     </tr>
                 <?php endforeach; ?>
             </tbody>

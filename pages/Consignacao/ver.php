@@ -40,7 +40,7 @@ $itens = $dados['itens'];
             </div>
             <div class="col-lg-6">
                 <strong>Status:</strong> 
-                <?= htmlspecialchars($consignacao['status'] ?? 'Aberta') ?>
+                <span class="badge bg-<?= $consignacao['status'] == 'Aberta' ? 'warning' : 'success' ?>"><?= htmlspecialchars($consignacao['status'] ?? 'Aberta') ?> </span>
             </div>
             <div class="col-lg-6">
                 <strong>Valor Total:</strong> 

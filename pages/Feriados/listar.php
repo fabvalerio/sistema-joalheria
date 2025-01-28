@@ -30,10 +30,10 @@ $feriados = $controller->listar();
                 <?php foreach ($feriados as $feriado): ?>
                     <tr>
                         <td><?= $feriado['id'] ?></td>
-                        <td><?= htmlspecialchars($feriado['data_feriado']) ?></td>
+                        <td><?= date('d/m/Y', strtotime($feriado['data_feriado'])) ?></td>
                         <td><?= htmlspecialchars($feriado['descricao']) ?></td>
                         <td><?= htmlspecialchars($feriado['tipo']) ?></td>
-                        <td><?= htmlspecialchars($feriado['facultativo'] == 'S' ? 'Sim' : 'Não') ?></td>
+                        <td><span class="badge bg-<?= $feriado['facultativo'] == 'S' ? 'success' : 'danger' ?>"><?= htmlspecialchars($feriado['facultativo'] == 'S' ? 'Sim' : 'Não') ?></span></td>
                         <td>
                             <div class="dropdown">
                                 <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">

@@ -54,7 +54,7 @@ foreach ($cargos as $cargo) {
 
                     $valor_status =  $r['status'] == '1' ? 'Ativo' : 'Inativo';
 
-                    echo "<td>" . $valor_status . "</td>";
+                    echo "<td><span class=\"badge bg-" . ($r['status'] == '1' ? 'success' : 'danger') . "\">" . $valor_status . " </span></td>";
                     $valor_status = "";
 
 

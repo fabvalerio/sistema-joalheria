@@ -33,7 +33,6 @@ $cargos = $controller->listar();
                                     Ação
                                 </button>
                                 <ul class="dropdown-menu">
-                                    <li><a href="<?= "{$url}!/{$link[1]}/ver/{$cargo['id']}" ?>" class="dropdown-item">Ver</a></li>
                                     <li><a href="<?= "{$url}!/{$link[1]}/editar/{$cargo['id']}" ?>" class="dropdown-item">Editar</a></li>
                                     <li><a href="<?= "{$url}!/{$link[1]}/deletar/{$cargo['id']}" ?>" class="dropdown-item text-danger">Excluir</a></li>
                                 </ul>

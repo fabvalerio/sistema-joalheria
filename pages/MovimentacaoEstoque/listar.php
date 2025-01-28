@@ -32,13 +32,13 @@ $movimentacoes = $controller->listar();
                     <tr>
                         <td><?= $movimentacao['id'] ?></td>
                         <td><?= htmlspecialchars($movimentacao['descricao_produto']) ?></td>
-                        <td><?= htmlspecialchars($movimentacao['tipo_movimentacao']) ?></td>
+                        <td><span class="badge bg-<?= $movimentacao['tipo_movimentacao'] == 'Entrada' ? 'success' : 'danger' ?>"><?= htmlspecialchars($movimentacao['tipo_movimentacao']) ?></span></td>
                         <td><?= number_format($movimentacao['quantidade'], 2, ',', '.') ?></td>
                         <td><?= htmlspecialchars($movimentacao['documento'] ?? '-') ?></td>
                         <td><?= date("d/m/Y", strtotime($movimentacao['data_movimentacao'])) ?></td>
                         <td><?= htmlspecialchars($movimentacao['motivo']) ?></td>
-                        <td><?= number_format($movimentacao['estoque_antes'], 2, ',', '.') ?></td>
-                        <td><?= number_format($movimentacao['estoque_atualizado'], 2, ',', '.') ?></td>
+                        <td><span class="badge bg-<?= $movimentacao['estoque_antes'] > $movimentacao['estoque_atualizado'] ? 'danger' : 'success' ?>"><?= number_format($movimentacao['estoque_antes'], 2, ',', '.') ?> </span></td>
+                        <td><span class="badge bg-<?= $movimentacao['estoque_antes'] > $movimentacao['estoque_atualizado'] ? 'danger' : 'success' ?>"><?= number_format($movimentacao['estoque_atualizado'], 2, ',', '.') ?> </span></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>

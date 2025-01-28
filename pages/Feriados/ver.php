@@ -24,7 +24,8 @@ if (!$return) {
         <div class="row g-3">
             <div class="col-lg-4">
                 <label for="" class="form-label fw-bold">Data</label>
-                <?= htmlspecialchars($return['data_feriado']) ?>
+                <!-- data dd/mm/aaa -->
+                <?= date('d/m/Y', strtotime($return['data_feriado'])) ?>
             </div>
             <div class="col-lg-4">
                 <label for="" class="form-label fw-bold">Descrição</label>
@@ -36,7 +37,7 @@ if (!$return) {
             </div>
             <div class="col-lg-4">
                 <label for="" class="form-label fw-bold">Facultativo</label>
-                <?= $return['facultativo'] == 'S' ? 'Sim' : 'Não' ?>
+                <span class="badge bg-<?= $return['facultativo'] == 'S' ? 'success' : 'danger' ?>"><?= $return['facultativo'] == 'S' ? 'Sim' : 'Não' ?></span>
             </div>
         </div>
     </div>
