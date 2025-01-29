@@ -23,13 +23,16 @@ class Controller
                 sg.nome_subgrupo AS subgrupo,
                 c.nome AS cotacao,
                 p.em_reais AS em_reais,
-                p.capa AS capa
+                p.capa AS capa,
+                e.quantidade AS estoque_princ,
+                e.quantidade_minima AS estoque_min
             FROM 
                 produtos p
             LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
             LEFT JOIN grupo_produtos g ON p.grupo_id = g.id
             LEFT JOIN subgrupo_produtos sg ON p.subgrupo_id = sg.id
             LEFT JOIN cotacoes c ON p.cotacao = c.id
+            LEFT JOIN estoque e ON p.id = e.produtos_id
             ORDER BY p.descricao_etiqueta
         ");
         return $db->resultSet();
