@@ -1,0 +1,1 @@
+ALTER TABLE `financeiro_contas` CHANGE `data_vencimento` `data_vencimento` DATE NULL;

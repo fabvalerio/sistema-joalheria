@@ -3,6 +3,20 @@
 npx webpack --config webpack.config.js
 
 
+# Cpanel
+
+[https://www.web4br.com:2083/](https://www.web4br.com:2083/)
+
+Usuário: webbrcom
+Senha: gK1QB3tRWLxTk5zA
+
+# Banco de dados
+
+Data: webbrcom_joias
+User: webbrcom_joias
+Pass:  8I~O%zHz(Z!8
+
+
 # Diretórios
 
 * APP
@@ -25,7 +39,6 @@ npx webpack --config webpack.config.js
 * .env (acesso ao banco de dados)
 * .htaccess
 * ...
-
 
 # Estruture o namespace
 
@@ -173,7 +186,6 @@ Listar
         return $resultados;
     }
 ```
-
 
 # Como usar 2 CONTROLLER?
 

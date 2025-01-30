@@ -96,6 +96,23 @@
         </div>
     </li>
 
+    <!-- RELATORIOS -->
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#relatorios" 
+        aria-expanded="false" aria-controls="relatorios">
+            <i class="fas fa-fw fa-users"></i>
+            <span>Relatórios</span>
+        </a>
+        <div id="relatorios" class="collapse" aria-labelledby="headingrelatorios" data-bs-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <a class="collapse-item" href="<?php echo "{$url}!/Relatorios/vendas" ?>">Vendas</a>
+                <a class="collapse-item" href="<?php echo "{$url}!/Relatorios/produtos" ?>">Produtos</a>
+                <a class="collapse-item" href="<?php echo "{$url}!/Relatorios/financeiros" ?>">Financeiros</a>
+                <a class="collapse-item" href="<?php echo "{$url}!/Relatorios/estoque" ?>">Estoque</a>
+            </div>
+        </div>
+    </li>
+
     <!-- Divider -->
     <hr class="sidebar-divider d-none d-md-block" />
 
