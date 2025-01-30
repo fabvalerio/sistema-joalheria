@@ -28,7 +28,7 @@
             <i class="fas fa-fw fa-briefcase"></i>
             <span>Operações</span>
         </a>
-        <div id="menuOperacoes" class="collapse" aria-labelledby="headingOperacoes" data-bs-parent="#accordionSidebar">
+        <div id="menuOperacoes" class="collapse <?php echo in_array($link[1], ['Pedidos', 'Fabrica', 'ImpressaoEtiquetas', 'Consignacao', 'Consignacao']) ? 'show' : ''; ?>" aria-labelledby="headingOperacoes" data-bs-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
                 <a class="collapse-item" href="<?php echo "{$url}!/Pedidos/cadastro" ?>">Novo Pedido</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Pedidos/listar" ?>">Pedidos</a>
@@ -46,7 +46,7 @@
             <i class="fas fa-fw fa-box"></i>
             <span>Gerenciamento Produtos</span>
         </a>
-        <div id="gerenciamentoProdutos" class="collapse" aria-labelledby="headingGerProdutos" data-bs-parent="#accordionSidebar">
+        <div id="gerenciamentoProdutos" class="collapse <?php echo in_array($link[1], ['Produtos', 'GrupoProdutos', 'SubGrupoProdutos', 'Tipos', 'Cotacoes', 'EntradaMercadorias', 'MovimentacaoEstoque']) ? 'show' : ''; ?>" aria-labelledby="headingGerProdutos" data-bs-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
                 <a class="collapse-item" href="<?php echo "{$url}!/Produtos/listar" ?>">Produtos</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/GrupoProdutos/listar" ?>">Grupo de Produtos</a>
@@ -66,7 +66,7 @@
             <i class="fas fa-fw fa-dollar-sign"></i>
             <span>Financeiro</span>
         </a>
-        <div id="financeiro" class="collapse" aria-labelledby="headingFinanceiro" data-bs-parent="#accordionSidebar">
+        <div id="financeiro" class="collapse <?php echo in_array($link[1], ['Contas', 'CategoriaDespesa', 'Cartoes', 'ComissaoVendedor']) ? 'show' : ''; ?>" aria-labelledby="headingFinanceiro" data-bs-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
                 <a class="collapse-item" href="<?php echo "{$url}!/Contas/listar/P" ?>">Contas a Pagar</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Contas/listar/R" ?>">Contas a Receber</a>
@@ -84,7 +84,7 @@
             <i class="fas fa-fw fa-users"></i>
             <span>Cadastros</span>
         </a>
-        <div id="cadastros" class="collapse" aria-labelledby="headingCadastros" data-bs-parent="#accordionSidebar">
+        <div id="cadastros" class="collapse <?php echo in_array($link[1], ['Clientes', 'GrupoClientes', 'Fornecedores', 'Usuarios', 'Cargos', 'Feriados']) ? 'show' : ''; ?>" aria-labelledby="headingCadastros" data-bs-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
                 <a class="collapse-item" href="<?php echo "{$url}!/Clientes/listar" ?>">Clientes</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/GrupoClientes/listar" ?>">Grupo de Clientes</a>
@@ -98,12 +98,11 @@
 
     <!-- RELATORIOS -->
     <li class="nav-item">
-        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#relatorios" 
-        aria-expanded="false" aria-controls="relatorios">
+        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#relatorios"  aria-expanded=" <?php echo $link[1] == 'Relatorios' ? 'true' : 'false' ?>" aria-controls="relatorios">
             <i class="fas fa-fw fa-users"></i>
             <span>Relatórios</span>
         </a>
-        <div id="relatorios" class="collapse" aria-labelledby="headingrelatorios" data-bs-parent="#accordionSidebar">
+        <div id="relatorios" class="collapse <?php echo $link[1] == 'Relatorios' ? 'show' : '' ?>" aria-labelledby="headingrelatorios" data-bs-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
                 <a class="collapse-item" href="<?php echo "{$url}!/Relatorios/vendas" ?>">Vendas</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Relatorios/produtos" ?>">Produtos</a>
