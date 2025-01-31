@@ -10,6 +10,7 @@ $pagina = $_GET['pagina'] ?? 1;
 $controller = new Controller();
 $movimentacoes = $controller->movimentos($tipo, $inicio, $fim, $pagina, 10, $url_completa);
 
+
 ?>
 
 <div class="card">
@@ -42,7 +43,7 @@ $movimentacoes = $controller->movimentos($tipo, $inicio, $fim, $pagina, 10, $url
                         </div>
                         <div class="col-lg-2">
                             <a class="btn btn-success submit">FILTRAR</a>
-                            <a class="btn btn-danger" href="<?php echo "{$url}!/Relatorios/financeiros"; ?>">LIMPAR</a>
+                            <a class="btn btn-danger" href="<?php echo "{$url}!/Relatorios/estoque"; ?>">LIMPAR</a>
                         </div>
                     </div>
                 </form>
@@ -76,7 +77,8 @@ $movimentacoes = $controller->movimentos($tipo, $inicio, $fim, $pagina, 10, $url
                 <tr>
                     <th>Produto</th>
                     <th>Tipo</th>
-                    <th>Estoque</th>
+                    <th>Movimentação</th>
+                    <th>Estoque Atual</th>
                 </tr>
             </thead>
             <tbody>
@@ -88,8 +90,13 @@ $movimentacoes = $controller->movimentos($tipo, $inicio, $fim, $pagina, 10, $url
                             </span>
                         </td>
                         <td>
-                            <span class="badge bg-<?php echo $m['estoque_inicial'] > $m['estoque_final'] ? 'danger' : 'success' ?>">
-                                <?php echo number_format($m['estoque_final'], 2, ',', '.') ?>
+                            <span class="badge bg-success">
+                                <?php echo $m['quantidade']; ?>
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-success">
+                                <?php echo $m['atual']; ?>
                             </span>
                         </td>
                     </tr>
