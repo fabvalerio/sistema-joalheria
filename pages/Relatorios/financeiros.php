@@ -45,11 +45,30 @@ $r = $controller->soma($inicio, $fim);
                                 <input type="date" name="data_final" id="data_final" class="form-control" value="<?php echo $fim; ?>">
                             </div>
                             <div class="col-lg-2">
-                                <button type="submit" class="btn btn-success">FILTRAR</button>
+                            <a class="btn btn-success submit">FILTRAR</a>
                                 <a class="btn btn-danger" href="<?php echo "{$url}!/Relatorios/financeiros"; ?>">LIMPAR</a>
                             </div>
                         </div>
                     </form>
+                <script>
+                        $(document).ready(function() {
+                            $(".submit").click(function(event) {
+                                event.preventDefault(); // Evita que o link redirecione
+
+                                let tipo = $("#tipo").val();
+                                let dataInicio = $("#data_inicio").val();
+                                let dataFinal = $("#data_final").val();
+
+                                // Monta a URL com os parâmetros
+                                let url = "/!/Relatorios/financeiros/&tipo=" + encodeURIComponent(tipo) + 
+                                        "&data_inicio=" + encodeURIComponent(dataInicio) + 
+                                        "&data_final=" + encodeURIComponent(dataFinal);
+
+                                // Redireciona para a nova URL
+                                window.location.href = url;
+                            });
+                        });
+                </script>
                 </div>
             </div>
 
