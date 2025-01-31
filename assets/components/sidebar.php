@@ -105,7 +105,6 @@
         <div id="relatorios" class="collapse <?php echo $link[1] == 'Relatorios' ? 'show' : '' ?>" aria-labelledby="headingrelatorios" data-bs-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
                 <a class="collapse-item" href="<?php echo "{$url}!/Relatorios/vendas" ?>">Vendas</a>
-                <a class="collapse-item" href="<?php echo "{$url}!/Relatorios/produtos" ?>">Produtos</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Relatorios/financeiros" ?>">Financeiros</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Relatorios/estoque" ?>">Estoque</a>
             </div>

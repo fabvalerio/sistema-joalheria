@@ -12,6 +12,9 @@ if ($_SERVER['SERVER_NAME'] == 'localhost') {
    $url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://" . $_SERVER['SERVER_NAME'] . '/';
 }
 
+//URL Completa
+$url_completa = $url . $_SERVER['REQUEST_URI'];
+
 $url_site = $url; // O mesmo valor de $url é atribuído a $url_site
 
 

@@ -2,17 +2,16 @@
 
 use App\Models\Relatorios\Controller;
 
-
 $tipo = $_GET['tipo'] ?? null;
 $inicio = $_GET['data_inicio'] ?? null;
 $fim = $_GET['data_final'] ?? null;
-
+$pagina = $_GET['pagina'] ?? 1;
 
 // Instanciar o Controller
 $controller = new Controller();
 
-// Listar contas com o tipo especificado
-$contas = $controller->listar($tipo, $inicio, $fim);
+// Listar contas com paginação
+$contas = $controller->listaPages($tipo, $inicio, $fim, $pagina, 2, $url_completa);
 $r = $controller->soma($inicio, $fim);
 
 ?>
@@ -30,51 +29,30 @@ $r = $controller->soma($inicio, $fim);
                     <form id="filtroForm">
                         <div class="row g-3 d-flex align-items-end">
                             <div class="col-lg-4">
-                                <label for="" class="form-label fw-bold">Tipo</label>
+                                <label class="form-label fw-bold">Tipo</label>
                                 <select name="tipo" id="tipo" class="form-select">
-                                    <option value="" <?php $tipo == '' ? 'selected' : '' ?>>Todos</option>
-                                    <option value="Pendente" <?php $tipo == 'Pendente' ? 'selected' : '' ?>>Pendente</option>
-                                    <option value="Pago" <?php $tipo == 'Pago' ? 'selected' : '' ?>>Pago</option>
+                                    <option value="" <?php echo ($tipo == '') ? 'selected' : ''; ?>>Todos</option>
+                                    <option value="Pendente" <?php echo ($tipo == 'Pendente') ? 'selected' : ''; ?>>Pendente</option>
+                                    <option value="Pago" <?php echo ($tipo == 'Pago') ? 'selected' : ''; ?>>Pago</option>
                                 </select>
                             </div>
                             <div class="col-lg-2">
-                                <label for="" class="form-label fw-bold">Período Inicial</label>
-                                <input type="date" name="data_inicio" id="data_inicio" class="form-control" value="<?php echo $inicio;?>">
+                                <label class="form-label fw-bold">Período Inicial</label>
+                                <input type="date" name="data_inicio" id="data_inicio" class="form-control" value="<?php echo $inicio; ?>">
                             </div>
                             <div class="col-lg-2">
-                                <label for="" class="form-label fw-bold">Período Final</label>
-                                <input type="date" name="data_final" id="data_final" class="form-control" value="<?php echo $fim;?>">
+                                <label class="form-label fw-bold">Período Final</label>
+                                <input type="date" name="data_final" id="data_final" class="form-control" value="<?php echo $fim; ?>">
                             </div>
                             <div class="col-lg-2">
-                                <a class="btn btn-success" href="#" id="filtrarBtn">FILTRAR</a>
-                                <a class="btn btn-danger" href="<?php echo "{$url}!/Relatorios/financeiros";?>">LIMPAR</a>
+                                <button type="submit" class="btn btn-success">FILTRAR</button>
+                                <a class="btn btn-danger" href="<?php echo "{$url}!/Relatorios/financeiros"; ?>">LIMPAR</a>
                             </div>
                         </div>
                     </form>
-                    <script>
-                        document.addEventListener("DOMContentLoaded", function () {
-                            let filtrarBtn = document.getElementById("filtrarBtn");
-                            
-                            if (filtrarBtn) {
-                                filtrarBtn.addEventListener("click", function (event) {
-                                    event.preventDefault(); // Evita o comportamento padrão do link
-
-                                    let tipo = document.getElementById("tipo") ? document.getElementById("tipo").value : "";
-                                    let dataInicio = document.getElementById("data_inicio") ? document.getElementById("data_inicio").value : "";
-                                    let dataFinal = document.getElementById("data_final") ? document.getElementById("data_final").value : "";
-
-                                    // Monta a URL no formato correto
-                                    let url = `http://localhost:8080/!/Relatorios/financeiros&tipo=${tipo}&data_inicio=${dataInicio}&data_final=${dataFinal}`;
-
-                                    // Redireciona para a nova URL
-                                    window.location.href = url;
-                                });
-                            }
-                        });
-                    </script>
-
                 </div>
             </div>
+
             <div class="col-md-4">
                 <div class="card card-body border-success">
                     <h6 class="card-title">Entrada R$</h6>
@@ -89,15 +67,15 @@ $r = $controller->soma($inicio, $fim);
             </div>
             <div class="col-md-4">
                 <div class="card card-body border-info">
-                    <h6 class="card-title">Total Liquído R$</h6>
-                    <?php echo number_format($r[0]['total_receber'] ?? 0 - $r[0]['total_pagar'] ?? 0, 2, ',', '.'); ?>
+                    <h6 class="card-title">Total Líquido R$</h6>
+                    <?php echo number_format(($r[0]['total_receber'] ?? 0) - ($r[0]['total_pagar'] ?? 0), 2, ',', '.'); ?>
                 </div>
             </div>
         </div>
     </div>
 
     <div class="card-body">
-        <table id="example1" class="table table-striped">
+        <table class="table table-striped">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -108,16 +86,35 @@ $r = $controller->soma($inicio, $fim);
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($contas as $conta): ?>
+                <?php if (!empty($contas['registros'])): ?>
+                    <?php foreach ($contas['registros'] as $conta): ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($conta['id'] ?? 'N/A'); ?></td>
+                            <td>
+                                <?php
+                                echo ($conta['tipo'] ?? '') === 'P'
+                                    ? '<span class="badge bg-danger">Contas a Pagar</span>'
+                                    : '<span class="badge bg-success">Contas a Receber</span>';
+                                ?>
+                            </td>
+                            <td><?php echo htmlspecialchars($conta['data_vencimento'] ?? 'N/A'); ?></td>
+                            <td>R$ <?php echo number_format((float) ($conta['valor'] ?? 0), 2, ',', '.'); ?></td>
+                            <td>
+                                <span class="badge bg-<?php echo ($conta['status'] ?? 'Pendente') == 'Pago' ? 'success' : 'warning'; ?>">
+                                    <?php echo htmlspecialchars($conta['status'] ?? 'Pendente'); ?>
+                                </span>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php else: ?>
                     <tr>
-                        <td><?php echo $conta['id'] ?></td>
-                        <td><?php echo ($conta['tipo'] == 'P' ? '<span class="badge bg-danger">Contas a Pagar</span>' : '<span class="badge bg-success">Contas a Receber</span>') ?></td>
-                        <td><?php echo htmlspecialchars($conta['data_vencimento']) ?></td>
-                        <td>R$ <?php echo number_format($conta['valor'], 2, ',', '.') ?></td>
-                        <td><span class="badge bg-<?php echo $conta['status'] == 'Pago' ? 'success' : 'warning' ?>"><?php echo htmlspecialchars($conta['status']) ?> </span></td>
+                        <td colspan="5" class="text-center">Nenhuma conta encontrada.</td>
                     </tr>
-                <?php endforeach; ?>
+                <?php endif; ?>
             </tbody>
         </table>
     </div>
 </div>
+
+<!-- Paginação -->
+<?php echo $contas['navegacaoHtml']; ?>

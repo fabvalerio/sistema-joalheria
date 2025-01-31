@@ -1,6 +1,8 @@
 :root{
   --tema-escuro: #4f4f4f;
   --tema-claro: #b1b1b1;
+  --branco: #fff;
+  --preto: #000;
 }
 
 
@@ -1674,4 +1676,17 @@ a.badge-danger:hover, a.badge-danger:focus {
 a.badge-danger:focus, a.badge-danger.focus {
   outline: 0 !important;
   box-shadow: 0 0 0 0.2rem rgba(231, 74, 59, 0.5) !important;
+}
+
+
+.active>.page-link, .page-link.active {
+  color: var(--branco);
+  background-color: var(--preto);
+  border-color: var(--tema-escuro);
+}
+
+.page-link {
+  color: var(--branco);
+  background-color: var(--tema-escuro);
+  border: 1 solid var(--tema-claro);
 }
