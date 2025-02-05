@@ -1,6 +1,7 @@
 <?php
 
-use App\Models\Relatorios\Controller;
+use App\Models\Relatorios\Controller as ControllerRelatorio;
+use App\Models\Log\Controller as LogsController;
 
 $tipo = $_GET['tipo'] ?? null;
 $inicio = $_GET['data_inicio'] ?? null;
@@ -8,13 +9,20 @@ $fim = $_GET['data_final'] ?? null;
 $pagina = $_GET['pagina'] ?? 1;
 
 // Instanciar o Controller
-$controller = new Controller();
+$controller = new ControllerRelatorio();
 
 // Listar contas com paginação
-$contas = $controller->vendas($tipo, $inicio, $fim, $pagina, 10, $url_completa);
+$contas = $controller->vendas($tipo, $inicio, $fim, $pagina, 10, "Vendas");
 $r = $controller->somaVendas($inicio, $fim);
 
+
+// LOG
+ $log = new LogsController();
+ $log->logAlteracao("admin", "192.168.1.1", "Acesso página relatório", $contas['registros'], "", $url_completa);
+
 ?>
+
+
 
 <div class="card">
     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">

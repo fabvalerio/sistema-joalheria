@@ -5,3 +5,5 @@ CREATE TABLE login_attempts (
     last_attempt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(ip_address)
 );
+
+ALTER TABLE logs ADD COLUMN url TEXT;
