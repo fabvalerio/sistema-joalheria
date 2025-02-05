@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Relatorios\Controller;
+use App\Models\Log\Controller as LogsController;
 
 $tipo = $_GET['tipo'] ?? null;
 $inicio = $_GET['data_inicio'] ?? null;
@@ -13,6 +14,12 @@ $controller = new Controller();
 // Listar contas com paginação
 $contas = $controller->listaPages($tipo, $inicio, $fim, $pagina, 10, $url_completa);
 $r = $controller->soma($inicio, $fim);
+
+
+// LOG
+ $log = new LogsController();
+ $log->logAlteracao("admin", "192.168.1.1", "Acesso página relatório", $contas['registros'], "", $url_completa);
+
 
 ?>
 
