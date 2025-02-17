@@ -1,0 +1,16 @@
+INSERT INTO produto_definicoes (nome, tipo) VALUES
+    ('Diamante', 'pedra'),
+    ('Safira', 'pedra'),
+    ('Rubi', 'pedra'),
+    ('Esmeralda', 'pedra'),
+    ('Ametista', 'pedra'),
+    ('Topázio', 'pedra'),
+    ('Turmalina', 'pedra'),
+    ('Quartzo', 'pedra'),
+    ('Âmbar', 'pedra'),
+    ('Opala', 'pedra'),
+    ('Jade', 'pedra'),
+    ('Turquesa', 'pedra'),
+    ('Zircônia', 'pedra'),
+    ('Lápis-lazúli', 'pedra'),
+    ('Cristal', 'pedra');

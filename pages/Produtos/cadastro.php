@@ -10,6 +10,10 @@ $fornecedores = $controller->listarFornecedores();
 $grupos = $controller->listarGrupos();
 $subgrupos = $controller->listarSubgrupos();
 $cotacoes = $controller->listarCotacoes();
+$modelos = $controller->listarModelos();
+$pedras = $controller->listarPedras();
+
+
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   $dados = [
@@ -123,37 +127,84 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <!-- Modelo -->
             <div class="col-lg-2">
               <label class="form-label">Modelo</label>
-              <select class="form-select" name="modelo" id="modelo">
-                <option value="">Selecione</option>
-                <option value="3 Aros Liso 5 Com Pedras">3 Aros Liso 5 Com Pedras</option>
-                <option value="Aro Entrelaçado Com">Aro Entrelaçado Com</option>
-                <option value="Baiano">Baiano</option>
-                <option value="Bola">Bola</option>
-                <option value="Cartier">Cartier</option>
-                <option value="Elos 1 X 1">Elos 1 X 1</option>
-                <option value="Elos 2 X 1">Elos 2 X 1</option>
-                <option value="Elos 3 X 1">Elos 3 X 1</option>
-                <option value="Grume">Grume</option>
-                <option value="Piastrine">Piastrine</option>
-                <option value="Singa Pura">Singa Pura</option>
-                <option value="Veneziana">Veneziana</option>
-              </select>
-
+              <div class="input-group">
+                <select class="form-select" name="modelo" id="modelo">
+                  <option value="">Selecione</option>
+                  <?php
+                  foreach ($modelos as $modelo) {
+                    echo '<option value="' . htmlspecialchars($modelo['nome']) . '">' . htmlspecialchars($modelo['nome']) . '</option>';
+                  }
+                  ?>
+                </select>
+                <button type="button" class="btn bg-success text-white" data-bs-toggle="modal" data-bs-target="#modalNovoModelo">+</button>
+              </div>
             </div>
+            <!-- Modal para adicionar novo modelo -->
+            <div class="modal fade" id="modalNovoModelo" tabindex="-1" aria-labelledby="modalNovoModeloLabel" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="modalNovoModeloLabel">Adicionar Novo Modelo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <form id="formNovoModelo">
+                      <div class="mb-3">
+                        <label for="novoModelo" class="form-label">Nome do Modelo</label>
+                        <input type="text" class="form-control" id="novoModelo" name="novoModelo" required>
+                        <input type="hidden" class="form-control" id="tipo" name="tipo" value="modelo" required>
+                      </div>
+                      <button type="button" class="btn btn-success" onclick="salvarModelo()">Salvar</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <script>
+              // Monta a URL dinamicamente utilizando as variáveis PHP
+              var caminhoAjax = "<?php echo $url . 'pages/' . $link[1] . '/adicionar_modelo.php'; ?>";
+
+              function salvarModelo() {
+                var novoModelo = $("#novoModelo").val().trim();
+                var tipo = $("#tipo").val().trim();
+
+                if (novoModelo === '') {
+                  alert('Sr. Valério, por favor insira o nome do modelo.');
+                  return;
+                }
+
+                $.ajax({
+                  url: caminhoAjax,
+                  type: 'POST',
+                  data: {
+                    novoModelo: novoModelo,
+                    tipo: tipo
+                  },
+                  dataType: 'json',
+                  success: function(response) {
+                    if (response.success) {
+                      // Fecha o modal
+                      $("#modalNovoModelo").modal('hide');
+                      // Exibe o alerta com a mensagem de sucesso
+                      alert(response.message);
+                      // Adiciona a nova opção no select
+                      $("#modelo").append('<option value="' + novoModelo + '">' + novoModelo + '</option>');
+                      $("#modelo").val(novoModelo);
+                    } else {
+                      alert('Erro: ' + response.message);
+                    }
+                  },
+                  error: function() {
+                    alert('Sr. Valério, ocorreu um erro inesperado.');
+                  }
+                });
+              }
+            </script>
+
             <!-- Numero (Anel) -->
             <div class="col-lg-2">
               <label class="form-label">Número (Anel)</label>
-              <select class="form-select" name="numeros" id="numeros">
-                <option value="">Selecione</option>
-                <?php
-                // Gerar números de 1 a 36
-                for ($i = 1; $i <= 36; $i++) {
-                  // Formatar o número com dois dígitos
-                  $value = str_pad($i, 2, '0', STR_PAD_LEFT);
-                  echo "<option value=\"{$value}\">Nº {$value}</option>";
-                }
-                ?>
-              </select>
+              <input type="number" step="1.0" class="form-control" name="numeros" id="numeros">
             </div>
 
             <!-- Aros -->
@@ -173,10 +224,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <option value="Oca">Oca</option>
               </select>
             </div>
-
-
-
-
             <!-- Peso -->
             <div class="col-lg-2">
               <label class="form-label">Peso (g)</label>
@@ -192,23 +239,89 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
               </select>
             </div>
 
+
             <div class="col-lg-2">
-              <label class="form-label">Tipo de Pedra</label>
-              <select class="form-select" name="pedra" id="pedra">
-                <option value="Nenhuma Pedra">Sem Pedra</option>
-                <option value="Diamante">Diamante</option>
-                <option value="Safira">Safira</option>
-                <option value="Rubi">Rubi</option>
-                <option value="Esmeralda">Esmeralda</option>
-                <option value="Ametista">Ametista</option>
-                <option value="Topázio">Topázio</option>
-                <option value="Turmalina">Turmalina</option>
-                <option value="Quartzo">Quartzo</option>
-                <option value="Âmbar">Âmbar</option>
-                <option value="Opala">Opala</option>
-                <option value="Multiplas">Multiplas</option>
-              </select>
+              <label class="form-label">Pedra</label>
+              <div class="input-group">
+                <select class="form-select" name="pedra" id="pedra">
+                  <option value="">Selecione</option>
+                  <?php
+                  foreach ($pedras as $pedra) {
+                    echo '<option value="' . htmlspecialchars($pedra['nome']) . '">' . htmlspecialchars($pedra['nome']) . '</option>';
+                  }
+                  ?>
+                </select>
+                <!-- Botão para abrir o modal de nova pedra -->
+                <button type="button" class="btn bg-success text-white" data-bs-toggle="modal" data-bs-target="#modalNovaPedra">+</button>
+              </div>
             </div>
+            <!-- Modal para adicionar nova pedra -->
+            <div class="modal fade" id="modalNovaPedra" tabindex="-1" aria-labelledby="modalNovaPedraLabel" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="modalNovaPedraLabel">Adicionar Nova Pedra</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <form id="formNovaPedra">
+                      <div class="mb-3">
+                        <label for="novaPedra" class="form-label">Nome da Pedra</label>
+                        <input type="text" class="form-control" id="novaPedra" name="novaPedra" required>
+                        <input type="hidden" class="form-control" id="tipoPedra" name="tipoPedra" value="pedra" required>
+                      </div>
+                      <button type="button" class="btn btn-success" onclick="salvarPedra()">Salvar</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <script>
+              // Monta a URL dinamicamente para o mesmo arquivo PHP usado em "modelo"
+              var caminhoAjaxPedra = "<?php echo $url . 'pages/' . $link[1] . '/adicionar_modelo.php'; ?>";
+
+              function salvarPedra() {
+                var novaPedra = $("#novaPedra").val().trim();
+                var tipoPedra = $("#tipoPedra").val().trim();
+
+                if (novaPedra === '') {
+                  alert('Sr. Valério, por favor insira o nome da pedra.');
+                  return;
+                }
+
+                $.ajax({
+                  url: caminhoAjaxPedra,
+                  type: 'POST',
+                  data: {
+                    // Repare que a chave é a mesma do arquivo PHP: 'novoModelo' e 'tipo'
+                    // Estamos apenas reutilizando "novoModelo" para enviar o nome da pedra
+                    novoModelo: novaPedra,
+                    tipo: tipoPedra
+                  },
+                  dataType: 'json',
+                  success: function(response) {
+                    if (response.success) {
+                      // Fecha o modal
+                      $("#modalNovaPedra").modal('hide');
+                      // Exibe o alerta com a mensagem de sucesso
+                      alert(response.message);
+                      // Adiciona a nova opção no select de pedras
+                      $("#pedra").append('<option value="' + novaPedra + '">' + novaPedra + '</option>');
+                      $("#pedra").val(novaPedra);
+
+                    } else {
+                      alert('Erro: ' + response.message);
+                    }
+                  },
+                  error: function() {
+                    alert('Sr. Valério, ocorreu um erro inesperado.');
+                  }
+                });
+              }
+            </script>
+
+
+
 
             <!-- Pontos -->
             <div class="col-lg-2">

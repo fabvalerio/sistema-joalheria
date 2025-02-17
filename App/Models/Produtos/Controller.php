@@ -369,4 +369,20 @@ class Controller
         $db->bind(":grupo_id", $grupo_id);
         return $db->resultSet();
     }
+    // Listar todas as pedras cadastradas
+public function listarPedras()
+{
+    $db = new db();
+    $db->query("SELECT id, nome FROM produto_definicoes WHERE tipo = 'pedra' ORDER BY nome");
+    return $db->resultSet();
+}
+
+// Listar todos os modelos cadastrados
+public function listarModelos()
+{
+    $db = new db();
+    $db->query("SELECT id, nome FROM produto_definicoes WHERE tipo = 'modelo' ORDER BY nome");
+    return $db->resultSet();
+}
+
 }

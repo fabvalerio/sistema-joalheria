@@ -14,6 +14,8 @@ $fornecedores = $controller->listarFornecedores();
 $grupos = $controller->listarGrupos();
 $subgrupos = $controller->listarSubgrupos();
 $cotacoes = $controller->listarCotacoes();
+$modelos = $controller->listarModelos();
+$pedras = $controller->listarPedras();
 
 // Verificar se o produto foi encontrado
 if (!$produto) {
@@ -165,46 +167,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
               <label class="form-label">Modelo</label>
               <select class="form-select" name="modelo" id="modelo">
                 <option value="">Selecione</option>
-                <?php
-                // Exemplos de modelos
-                $modelos = [
-                  "3 Aros Liso 5 Com Pedras",
-                  "Aro Entrelaçado Com",
-                  "Baiano",
-                  "Bola",
-                  "Cartier",
-                  "Elos 1 X 1",
-                  "Elos 2 X 1",
-                  "Elos 3 X 1",
-                  "Grume",
-                  "Piastrine",
-                  "Singa Pura",
-                  "Veneziana"
-                ];
-                foreach ($modelos as $modeloNome):
-                  $selected = ($produto['modelo'] ?? '') === $modeloNome ? 'selected' : '';
+                <?php  
+                $modeloSelecionado = isset($produto['modelo']) ? $produto['modelo'] : '';
+                foreach ($modelos as $modelo) {
+                  // Verifica se o modelo atual é o já selecionado
+                  $selected = ($modeloSelecionado == $modelo['nome']) ? 'selected' : '';
+                  echo '<option value="' . htmlspecialchars($modelo['nome']) . '" ' . $selected . '>' . htmlspecialchars($modelo['nome']) . '</option>';
+              }
                 ?>
-                  <option value="<?= $modeloNome ?>" <?= $selected ?>><?= $modeloNome ?></option>
-                <?php endforeach; ?>
               </select>
             </div>
 
             <!-- Numero (Anel) -->
             <div class="col-lg-2">
   <label class="form-label">Número (Anel)</label>
-  <select class="form-select" name="numeros" id="numeros">
-    <option value="">Selecione</option>
-    <?php
-    // Gerar números de 1 a 36
-    for ($i = 1; $i <= 36; $i++) {
-        // Formatar o número com dois dígitos
-        $value = str_pad($i, 2, '0', STR_PAD_LEFT);
-        // Verificar se o número atual é o mesmo do produto e marcar como selecionado
-        $selected = ($produto['numeros'] ?? '') === $value ? 'selected' : '';
-        echo "<option value=\"{$value}\" {$selected}>Nº {$value}</option>";
-    }
-    ?>
-  </select>
+  <input type="number" step="1.0" class="form-control" name="numeros" id="numeros" value="<?= $produto['numeros'] ?? '' ?>">
 </div>
 
             <!-- Aros -->
@@ -270,25 +247,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="col-lg-2">
               <label class="form-label">Tipo de Pedra</label>
               <select class="form-select" name="pedra" id="pedra">
+              <option value="Nenhuma Pedra">Nenhuma Pedra</option>
                 <?php
-                $opcoesPedra = [
-                  "Nenhuma Pedra" => "Sem Pedra",
-                  "Diamante" => "Diamante",
-                  "Safira" => "Safira",
-                  "Rubi" => "Rubi",
-                  "Esmeralda" => "Esmeralda",
-                  "Ametista" => "Ametista",
-                  "Topázio" => "Topázio",
-                  "Turmalina" => "Turmalina",
-                  "Quartzo" => "Quartzo",
-                  "Âmbar" => "Âmbar",
-                  "Opala" => "Opala",
-                  "Multiplas" => "Multiplas"
-                ];
-                foreach ($opcoesPedra as $valor => $rotulo) {
-                  $selected = ($produto['pedra'] ?? '') == $valor ? 'selected' : '';
-                  echo "<option value='{$valor}' {$selected}>{$rotulo}</option>";
-                }
+                $pedraSelecionada = isset($produto['pedra']) ? $produto['pedra'] : '';
+                foreach ($pedras as $pedra) {
+                  // Verifica se a pedra atual é a já selecionada
+                  $selected = ($pedraSelecionada == $pedra['nome']) ? 'selected' : '';
+                  echo '<option value="' . htmlspecialchars($pedra['nome']) . '" ' . $selected . '>' . htmlspecialchars($pedra['nome']) . '</option>';
+              }     
                 ?>
               </select>
             </div>
