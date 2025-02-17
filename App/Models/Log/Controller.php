@@ -10,7 +10,7 @@ class Controller {
         $this->db = new db();
     }
 
-    public function logAlteracao($usuario, $ip, $acao, $valorAnterior, $valorAtual, $url) {
+    public function logAlteracao($usuario, $acao, $valorAnterior, $valorAtual, $url) {
         // Converte arrays para JSON
         $valorAnterior = is_array($valorAnterior) ? json_encode($valorAnterior, JSON_UNESCAPED_UNICODE) : $valorAnterior;
         $valorAtual = is_array($valorAtual) ? json_encode($valorAtual, JSON_UNESCAPED_UNICODE) : $valorAtual;
@@ -20,7 +20,7 @@ class Controller {
     
         $this->db->query($sql);
         $this->db->bind(":usuario", $usuario);
-        $this->db->bind(":ip", $ip);
+        $this->db->bind(":ip", $_SERVER['REMOTE_ADDR']);
         $this->db->bind(":acao", $acao);
         $this->db->bind(":valorAnterior", $valorAnterior ?? null);
         $this->db->bind(":valorAtual", $valorAtual ?? null);

@@ -10,26 +10,28 @@ class Controller
     public function listar()
 {
     $db = new db();
-    $db->query("
-        SELECT 
-            p.id, 
-            p.data_pedido,
-            p.forma_pagamento,
-            p.acrescimo,
-            p.desconto,
-            p.total,
-            p.valor_pago,
-            p.status_pedido,
-            p.data_entrega,
-            c.nome_pf,
-            c.nome_fantasia_pj
-        FROM 
-            pedidos p
-        LEFT JOIN 
-            clientes c ON p.cliente_id = c.id
-        ORDER BY 
-            p.data_pedido DESC
-    ");
+    $db->query("SELECT 
+                        p.id, 
+                        p.data_pedido,
+                        p.forma_pagamento,
+                        p.acrescimo,
+                        p.desconto,
+                        p.total,
+                        p.valor_pago,
+                        p.status_pedido,
+                        p.data_entrega,
+                        c.nome_pf,
+                        c.nome_fantasia_pj,
+                        f.status as status_fabrica
+                    FROM 
+                        pedidos p
+                    LEFT JOIN 
+                        clientes c ON p.cliente_id = c.id
+                    LEFT JOIN 
+                        fabrica as f ON p.id = f.pedido_id
+                    ORDER BY 
+                        p.data_pedido DESC
+                ");
     return $db->resultSet();
 }
 
@@ -40,27 +42,27 @@ class Controller
     $db = new db();
 
     // Consulta principal do pedido com os dados do cliente
-    $db->query("
-        SELECT 
-            p.id, 
-            p.data_pedido,
-            p.forma_pagamento,
-            p.acrescimo,
-            p.desconto,
-            p.total,
-            p.valor_pago,
-            p.status_pedido,
-            p.data_entrega,
-            p.observacoes,
-            c.nome_pf,
-            c.nome_fantasia_pj
-        FROM 
-            pedidos p
-        LEFT JOIN 
-            clientes c ON p.cliente_id = c.id
-        WHERE 
-            p.id = :id
-    ");
+    $db->query("SELECT 
+                            p.id, 
+                            p.data_pedido,
+                            p.forma_pagamento,
+                            p.acrescimo,
+                            p.desconto,
+                            p.total,
+                            p.valor_pago,
+                            p.status_pedido,
+                            p.data_entrega,
+                            p.observacoes,
+                            c.nome_pf,
+                            c.nome_fantasia_pj,
+                            f.status as status_fabrica
+                        FROM 
+                            pedidos p
+                        LEFT JOIN 
+                            clientes c ON p.cliente_id = c.id
+                        WHERE 
+                            p.id = :id
+                    ");
     $db->bind(':id', $id);
     $pedido = $db->single(); // Retorna uma única linha
 
@@ -190,6 +192,33 @@ class Controller
                 if (!$db->execute()) {
                     return false; // Retorna falso se a atualização de estoque falhar
                 }
+
+
+                /*
+                ** ----------------------------------------------------------------------------
+                ** FABRICA
+                ** ----------------------------------------------------------------------------
+                */
+
+                //ENVIAR PARA A FABRICA
+                if($dados['fabrica'] == true){
+                    $dbFabrica = new db();
+                    $dbFabrica->query("
+                                        INSERT INTO fabrica (
+                                            pedido_id , data_solicitacao , data_entrega
+                                        ) VALUES (
+                                            :pedido_id, :data_solicitacao , :data_entrega
+                                        )
+                                    ");
+                        $dbFabrica->bind(":pedido_id", $pedidoId);
+                        $dbFabrica->bind(":data_solicitacao", $dados['data_pedido']);
+                        $dbFabrica->bind(":data_entrega", $dados['data_entrega']);
+                        $dbFabrica->execute();
+
+                }
+
+
+
             }
 
             return true; // Cadastro bem-sucedido

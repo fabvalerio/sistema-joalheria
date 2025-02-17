@@ -2,7 +2,6 @@
 
 npx webpack --config webpack.config.js
 
-
 # Cpanel
 
 [https://www.web4br.com:2083/](https://www.web4br.com:2083/)
@@ -15,7 +14,6 @@ Senha: gK1QB3tRWLxTk5zA
 Data: webbrcom_joias
 User: webbrcom_joias
 Pass:  8I~O%zHz(Z!8
-
 
 # Diretórios
 
@@ -189,17 +187,20 @@ Listar
 
 # Como usar 2 CONTROLLER?
 
-Você vai usar "AS", exemplo abaixo
-
-```
-use App\Models\AgentesComerciais\Controller as AgentesComerciaisController;
+Você vai usar "AS", exemplo abaixouse App\Models\AgentesComerciais\Controller as AgentesComerciaisController;
 use App\Models\MetasAgentes\Controller as MetasAgentesController;
 
-$id = $link[3];
-
-$controller = new AgentesComerciaisController();
-$agentes = $controller->ver($id);
-
-$controller = new MetasAgentesController();
-$metas = $controller->listar($id);
 ```
+id = id=link[3];$controller = new AgentesComerciaisController();
+agentes = agentes=controller->ver($id);$controller = new MetasAgentesController();
+metas = metas=controller->listar($id);
+```
+
+# FUNCTION STATUS FABRICA
+
+| Id | Status      |
+| -- | ----------- |
+| 0  | Aberto      |
+| 1  | Em precesso |
+| 2  | Finalizado  |
+|    |             |

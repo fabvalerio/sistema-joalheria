@@ -13,6 +13,9 @@ $controller = $_GET['controller'] ?? 'Home';
 $action = $_GET['action'] ?? 'index';
 
 
+$_COOKIE['nome'] = 'User Teste';
+
+
 ?>
 
 <!DOCTYPE html>

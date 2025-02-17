@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
   if ($return) {
     echo notify('success', "Conta cadastrada com sucesso!");
-    echo '<meta http-equiv="refresh" content="2; url=' . $url . '!/' . $link[1] . '/listar/' . @$link[3] . '">';
+    echo '<meta http-equiv="refresh" content="2; url=' . $url . '!/' . $link[1] . '/listar/' . $link[3] . '">';
   } else {
     echo notify('danger', "Erro ao cadastrar a conta.");
   }

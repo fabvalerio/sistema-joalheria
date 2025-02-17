@@ -31,7 +31,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         'corporativo' => $_POST['corporativo'],
         'grupo' => $_POST['grupo'],
     ];
-    
 
     $return = $controller->cadastro($dados);
 
@@ -159,10 +158,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <input type="text" class="form-control" name="estado">
                 </div>
                 <div class="col-lg-6">
-                    <label for="tagsInput" class="form-label">Tags</label>
-                    <input type="text" class="form-control" id="tagsInput" placeholder="Digite e pressione Enter">
-                    <div id="tagsContainer" class="mt-2"></div>
-                    <input type="hidden" name="tags" id="tagsHiddenInput">
+                    <label for="" class="form-label">Tags</label>
+                    <input type="text" class="form-control" name="tags">
                 </div>
                 <div class="col-lg-6">
                     <label for="" class="form-label">Origem do Contato</label>
@@ -208,52 +205,4 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         tipoCliente.addEventListener('change', toggleCampos);
         toggleCampos(); // Chamada inicial
     });
-</script>
-
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const tagsInput = document.getElementById("tagsInput");
-    const tagsContainer = document.getElementById("tagsContainer");
-    const tagsHiddenInput = document.getElementById("tagsHiddenInput");
-
-    let tags = [];
-
-    tagsInput.addEventListener("keypress", function (event) {
-        if (event.key === "Enter") {
-            event.preventDefault(); // Evita quebra de linha no input
-
-            const tagText = tagsInput.value.trim();
-            if (tagText !== "" && !tags.includes(tagText)) {
-                tags.push(tagText);
-                atualizarTags();
-                tagsInput.value = ""; // Limpar campo após adicionar
-            }
-        }
-    });
-
-    function atualizarTags() {
-        tagsContainer.innerHTML = ""; // Limpa os badges antes de recriar
-
-        tags.forEach((tag, index) => {
-            const badge = document.createElement("span");
-            badge.className = "badge bg-primary me-2";
-            badge.innerHTML = `${tag} <button type="button" class="btn-close btn-close-white ms-1" data-index="${index}"></button>`;
-            
-            tagsContainer.appendChild(badge);
-        });
-
-        // Atualiza o campo oculto com os valores das tags
-        tagsHiddenInput.value = tags.join(",");
-    }
-
-    // Remover tag ao clicar no botão de fechar
-    tagsContainer.addEventListener("click", function (event) {
-        if (event.target.classList.contains("btn-close")) {
-            const index = event.target.getAttribute("data-index");
-            tags.splice(index, 1);
-            atualizarTags();
-        }
-    });
-});
 </script>

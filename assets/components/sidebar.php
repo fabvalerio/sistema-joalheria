@@ -28,11 +28,11 @@
             <i class="fas fa-fw fa-briefcase"></i>
             <span>Operações</span>
         </a>
-        <div id="menuOperacoes" class="collapse <?php echo in_array($link[1], ['Pedidos', 'Fabrica', 'ImpressaoEtiquetas', 'Consignacao', 'Consignacao']) ? 'show' : ''; ?>" aria-labelledby="headingOperacoes" data-bs-parent="#accordionSidebar">
+        <div id="menuOperacoes" class="collapse <?php echo in_array($link[1], ['Pedidos', 'ImpressaoEtiquetas', 'Consignacao', 'Consignacao']) ? 'show' : ''; ?>" aria-labelledby="headingOperacoes" data-bs-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
                 <a class="collapse-item" href="<?php echo "{$url}!/Pedidos/cadastro" ?>">Novo Pedido</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Pedidos/listar" ?>">Pedidos</a>
-                <a class="collapse-item" href="<?php echo "{$url}!/Fabrica/listar" ?>">Fábrica</a>
+                <!-- <a class="collapse-item" href="<?php echo "{$url}!/Fabrica/listar" ?>">Fábrica</a> -->
                 <a class="collapse-item" href="<?php echo "{$url}!/ImpressaoEtiquetas/listar" ?>">Impressão de Etiquetas</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Consignacao/listar" ?>">Consignação</a>
             </div>
@@ -107,6 +107,20 @@
                 <a class="collapse-item" href="<?php echo "{$url}!/Relatorios/vendas" ?>">Vendas</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Relatorios/financeiros" ?>">Financeiros</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Relatorios/estoque" ?>">Estoque</a>
+            </div>
+        </div>
+    </li>
+
+    <!-- FABRICA -->
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#fabrica"  aria-expanded=" <?php echo $link[1] == 'Fabrica' ? 'true' : 'false' ?>" aria-controls="fabrica">
+            <i class="fas fa-fw fa-users"></i>
+            <span>Fábrica</span>
+        </a>
+        <div id="fabrica" class="collapse <?php echo $link[1] == 'Fabrica' ? 'show' : '' ?>" aria-labelledby="headingfabrica" data-bs-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <a class="collapse-item" href="<?php echo "{$url}!/Fabrica/aberto" ?>">Aberto</a>
+                <a class="collapse-item" href="<?php echo "{$url}!/Fabrica/finalizado" ?>">Finalizado</a>
             </div>
         </div>
     </li>

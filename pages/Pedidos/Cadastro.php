@@ -20,6 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         'cod_vendedor' => $_POST['cod_vendedor'] ?? null,
         'status_pedido' => $_POST['status_pedido'] ?? 'Pendente',
         'data_entrega' => $_POST['data_entrega'] ?? null,
+        'fabrica' => $_POST['fabrica'] ?? false,
         'itens' => [] // Inicializa o array de itens do pedido
     ];
 
@@ -161,6 +162,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <label for="desconto" class="form-label">Desconto Adicional</label>
                     <input type="number" step="0.01" class="form-control" id="desconto" name="desconto" placeholder="Desconto (%)">
                     <input type="hidden" name="juros_aplicado" id="juros_aplicado" value="0">
+                </div>
+                <div class="col-lg-4">
+                    <label>Enviar para Fábrica</label>
+                    <div class="form-check mt-3">
+                    <input class="form-check-input" type="checkbox" name="fabrica" id="inlineRadio1" value="true">
+                    <label class="form-check-label" for="inlineRadio1">Sim</label>
+                    </div>
                 </div>
                 <div class="col-12">
                     <hr>

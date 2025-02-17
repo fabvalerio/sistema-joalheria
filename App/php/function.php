@@ -54,7 +54,11 @@ function status($var)
 
 function dia($var)
 {
-  return date('d-m-Y', strtotime($var));
+  if(!empty($var)){
+  $date =  date('d-m-Y', strtotime($var));
+  }
+
+  return $date ?? '';
 }
 
 // Função para converter perguntas de alternativa para dissertativa
@@ -265,21 +269,62 @@ function Select($tabela, $coluna, $valor, $where, $selectValue = NULL, $id = NUL
   return $resultado;
 }
 
+/* Função de Seleção */
+function SelectJoin($tabela, $coluna, $valor, $tabela2, $colunaOn1, $colunaOn2,  $where, $selectValue = NULL, $id = NULL)
+{
+
+  if (!empty($where)) $_where = " WHERE " . $where;
+
+  $visSQL = "SELECT t1.{$coluna}, t1.{$valor}  
+            FROM {$tabela} as t1
+            LEFT JOIN {$tabela2} as t2
+            ON t2.{$colunaOn1} = t1.{$colunaOn2}
+            {$_where}
+            ORDER BY t1.{$coluna} ASC";
+  $vis = new db();
+  $vis->query($visSQL);
+
+  $resultado = '';
+
+  if (!empty($vis->row())) {
+
+    $resultado .= '<select name="' . $id . '" id="' . $id . '" class="form-select" requered>';
+    $resultado .= '<option selected disabled value="">Selecione</option>' . "\n";
+
+    foreach ($vis->row() as $row) {
+
+      if ($row[$valor] == $selectValue and !empty($selectValue)) {
+        $valorSelec = 'selected="selected"';
+      } else {
+        $valorSelec = '';
+      }
+
+      $resultado .= '<option ' . $valorSelec . ' value="' . ($row[$valor]) . '">' . ($row[$coluna]) . '</option>' . "\n";
+      $valorSelec = '';
+    }
+    $resultado .= '</select>';
+  }
+
+  return $resultado;
+}
+
 
 /*Tipo de empregador*/
-function empregador($var)
+function statusFabrica($var)
 {
 
   switch ($var) {
-    case '1':
-      $res = '<span class="text-success">CLT</span>';
-      break;
     case '2':
-      $res = '<span class="text-info">PJ Médico</span>';
+      $res = '<span class="badge bg-success">Finalizado</span>';
       break;
-    case '3':
-      $res = '<span class="text-danger">PJ</span>';
+    case '1':
+      $res = '<span class="badge bg-warning">Em Processo</span>';
       break;
+    case '0':
+      $res = '<span class="badge bg-danger">Aberto</span>';
+      break;
+    default:
+      $res = '';
   }
 
   return $res;
@@ -318,84 +363,6 @@ function sexo($var)
       break;
     case '2':
       $res = 'Feminino';
-      break;
-    default:
-      $res = 'Não especificado';
-      break;
-  }
-
-  return $res;
-}
-
-/*Tipo de pix*/
-function pix($var)
-{
-  switch ($var) {
-    case '1':
-      $res = 'Telefone';
-      break;
-    case '2':
-      $res = 'CPF/CNPJ';
-      break;
-    case '3':
-      $res = 'Chave';
-      break;
-    case '4':
-        $res = 'E-mail';
-        break;
-      default:
-          $res = 'Não especificado';
-          break;
-  }
-
-  return $res;
-}
-
-/*Tipo de banco*/
-function tipoBanco($var)
-{
-  switch ($var) {
-    case '1':
-      $res = 'Conta Corrente';
-      break;
-    case '2':
-      $res = 'CPF/CNPJ';
-      break;
-    case '3':
-      $res = 'Conta Poupança';
-      break;
-    case '4':
-        $res = 'Conta Pagamento';
-        break;
-    case '5':
-        $res = 'Conta Salário';
-        break;
-    default:
-      $res = 'Não especificado';
-      break;
-  }
-
-  return $res;
-}
-
-/*Tipo de entidade*/
-function tipoEntidade($var)
-{
-  switch ($var) {
-    case '1':
-      $res = 'FIDIC';
-      break;
-    case '2':
-      $res = 'BANCOS';
-      break;
-    case '3':
-      $res = 'SECURITIZADORAS';
-      break;
-    case '4':
-      $res = 'PESSOA FISICA';
-      break;
-    case '5':
-      $res = 'OUTROS';
       break;
     default:
       $res = 'Não especificado';

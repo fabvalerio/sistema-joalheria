@@ -23,6 +23,7 @@ $pedidos = $controller->listar();
           <th>Data do Pedido</th>
           <th>Data de Entrega</th>
           <th>Status</th>
+          <th>Fábrica</th>
           <th>Total (R$)</th>
           <th>Ações</th>
         </tr>
@@ -32,7 +33,7 @@ $pedidos = $controller->listar();
           <tr>
             <td><?= htmlspecialchars($pedido['id']) ?></td>
             <td>
-              <?= htmlspecialchars($pedido['nome_pf'] ?? $pedido['nome_fantasia_pj'] ?? 'Não informado') ?>
+              <?= !empty($pedido['nome_pf']) ? $pedido['nome_pf'] : $pedido['nome_fantasia_pj']?>
             </td>
             <td><?= htmlspecialchars($pedido['forma_pagamento'] ?? 'Não informado') ?></td>
             <td><?= htmlspecialchars(date('d/m/Y', strtotime($pedido['data_pedido']))) ?></td>
@@ -41,6 +42,7 @@ $pedidos = $controller->listar();
                   : 'Não informado'; ?>
             </td>
             <td><span class="badge bg-<?= $pedido['status_pedido'] == 'Pendente' ? 'warning' : 'success' ?>"><?= htmlspecialchars($pedido['status_pedido']) ?> </span></td>
+            <td><span class="badge bg-<?= !empty($pedido['status_fabrica']) ? 'danger' : 'success' ?>"><?= ($pedido['status_fabrica'] ?? 'Balcão') ?> </span></td>
             <td>
               R$<?= isset($pedido['total']) && $pedido['total'] !== null
                   ? number_format($pedido['total'], 2, ',', '.')
@@ -66,7 +68,15 @@ $pedidos = $controller->listar();
                     <?php } ?>
                   </li>
                   <li>
-                    <a href="<?= "{$url}!/{$link[1]}/ver/{$pedido['id']}" ?>" class="dropdown-item">Ver</a>
+                    <?php if (!empty($pedido['status_fabrica'])) { ?>
+                      <a href="<?= "{$url}!/Fabrica/pedido/{$pedido['id']}" ?>"
+                        class="dropdown-item">
+                        Acompanhar Produção
+                      </a>
+                    <?php } ?>
+                  </li>
+                  <li>
+                    <a href="<?= "{$url}!/{$link[1]}/ver/{$pedido['id']}" ?>" class="dropdown-item">Visualizar</a>
                   </li>
                   <li>
                     <a href="<?= "{$url}!/{$link[1]}/deletar/{$pedido['id']}" ?>" class="dropdown-item text-danger">Excluir</a>

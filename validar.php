@@ -50,7 +50,7 @@ function login_user($cpf, $senha)
 
 	try {
 		$db = new db();
-		$sql = "SELECT id, senha, nivel_acesso 
+		$sql = "SELECT id, senha, nivel_acesso, nome_completo
                 FROM usuarios 
                 WHERE cpf = :cpf AND status = 1";
 		$db->query($sql);
@@ -62,6 +62,7 @@ function login_user($cpf, $senha)
 
 			// Gerar cookies seguros
 			setcookie("id", $user->id, time() + ((3600 * 24) * 7), "/", "", true, true);
+			setcookie("nome", $user->nome_completo, time() + ((3600 * 24) * 7), "/", "", true, true);
 			setcookie("nivel_acesso", $user->nivel_acesso, time() + ((3600 * 24) * 7), "/", "", true, true);
 
 			header('location: ' . $url . '/');
