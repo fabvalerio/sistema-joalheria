@@ -165,24 +165,77 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <!-- Modelo -->
             <div class="col-lg-2">
               <label class="form-label">Modelo</label>
-              <select class="form-select" name="modelo" id="modelo">
-                <option value="">Selecione</option>
-                <?php  
-                $modeloSelecionado = isset($produto['modelo']) ? $produto['modelo'] : '';
-                foreach ($modelos as $modelo) {
-                  // Verifica se o modelo atual é o já selecionado
-                  $selected = ($modeloSelecionado == $modelo['nome']) ? 'selected' : '';
-                  echo '<option value="' . htmlspecialchars($modelo['nome']) . '" ' . $selected . '>' . htmlspecialchars($modelo['nome']) . '</option>';
-              }
-                ?>
-              </select>
+              <div class="input-group">
+                <select class="form-select" name="modelo" id="modelo">
+                  <option value="">Selecione</option>
+                  <?php
+                  // Suponha que $modeloSelecionado contenha o modelo já selecionado, ex:
+                  $modeloSelecionado = $produto['modelo'];
+                  foreach ($modelos as $modelo) {
+                    $selected = ($modelo['nome'] == $modeloSelecionado) ? ' selected' : '';
+                    echo '<option value="' . htmlspecialchars($modelo['nome']) . '"' . $selected . '>'
+                      . htmlspecialchars($modelo['nome']) . '</option>';
+                  }
+                  ?>
+                </select>
+                <button type="button" class="btn bg-success text-white" data-bs-toggle="modal" data-bs-target="#modalNovoModelo">+</button>
+              </div>
             </div>
+            <script>
+              // Monta a URL dinamicamente utilizando as variáveis PHP
+              var caminhoAjax = "<?php echo $url . 'pages/' . $link[1] . '/adicionar_modelo.php'; ?>";
+
+              function salvarModelo() {
+                var novoModelo = $("#novoModelo").val().trim();
+                var tipo = $("#tipo").val().trim();
+
+                if (novoModelo === '') {
+                  alert('Sr. Valério, por favor insira o nome do modelo.');
+                  return;
+                }
+
+                $.ajax({
+                  url: caminhoAjax,
+                  type: 'POST',
+                  data: {
+                    novoModelo: novoModelo,
+                    tipo: tipo
+                  },
+                  dataType: 'json',
+                  success: function(response) {
+                    if (response.success) {
+                      // Fecha o modal
+                      $("#modalNovoModelo").modal('hide');
+                      // Exibe o alerta com a mensagem de sucesso
+                      alert(response.message);
+                      // Adiciona a nova opção no select
+                      $("#modelo").append('<option value="' + novoModelo + '">' + novoModelo + '</option>');
+                      $("#modelo").val(novoModelo);
+                      atualizarDescricaoEtiqueta(); // Atualiza a etiqueta após fechar o modal
+                    } else {
+                      alert('Erro: ' + response.message);
+                    }
+                  },
+                  error: function() {
+                    alert('Sr. Valério, ocorreu um erro inesperado.');
+                  }
+                });
+              }
+            </script>
+
+
 
             <!-- Numero (Anel) -->
             <div class="col-lg-2">
-  <label class="form-label">Número (Anel)</label>
-  <input type="number" step="1.0" class="form-control" name="numeros" id="numeros" value="<?= $produto['numeros'] ?? '' ?>">
-</div>
+              <label class="form-label">Numeros</label>
+              <input
+                type="number"
+                step="0.001"
+                class="form-control"
+                name="numeros"
+                id="numeros"
+                value="<?= $produto['numeros'] ?? '' ?>">
+            </div>
 
             <!-- Aros -->
             <div class="col-lg-2">
@@ -245,19 +298,68 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </div>
 
             <div class="col-lg-2">
-              <label class="form-label">Tipo de Pedra</label>
-              <select class="form-select" name="pedra" id="pedra">
-              <option value="Nenhuma Pedra">Nenhuma Pedra</option>
-                <?php
-                $pedraSelecionada = isset($produto['pedra']) ? $produto['pedra'] : '';
-                foreach ($pedras as $pedra) {
-                  // Verifica se a pedra atual é a já selecionada
-                  $selected = ($pedraSelecionada == $pedra['nome']) ? 'selected' : '';
-                  echo '<option value="' . htmlspecialchars($pedra['nome']) . '" ' . $selected . '>' . htmlspecialchars($pedra['nome']) . '</option>';
-              }     
-                ?>
-              </select>
+              <label class="form-label">Pedra</label>
+              <div class="input-group">
+                <select class="form-select" name="pedra" id="pedra">
+                  <option value="">Nenhuma Pedra</option>
+                  <?php
+                  // Suponha que $pedraSelecionada contenha o valor já selecionado, ex:
+                  $pedraSelecionada = $produto['pedra'];
+                  foreach ($pedras as $pedra) {
+                    $selected = ($pedra['nome'] == $pedraSelecionada) ? ' selected' : '';
+                    echo '<option value="' . htmlspecialchars($pedra['nome']) . '"' . $selected . '>'
+                      . htmlspecialchars($pedra['nome']) . '</option>';
+                  }
+                  ?>
+                </select>
+                <button type="button" class="btn bg-success text-white" data-bs-toggle="modal" data-bs-target="#modalNovaPedra">+</button>
+              </div>
             </div>
+            <script>
+              // Monta a URL dinamicamente para o mesmo arquivo PHP usado em "modelo"
+              var caminhoAjaxPedra = "<?php echo $url . 'pages/' . $link[1] . '/adicionar_modelo.php'; ?>";
+
+              function salvarPedra() {
+                var novaPedra = $("#novaPedra").val().trim();
+                var tipoPedra = $("#tipoPedra").val().trim();
+
+                if (novaPedra === '') {
+                  alert('Sr. Valério, por favor insira o nome da pedra.');
+                  return;
+                }
+
+                $.ajax({
+                  url: caminhoAjaxPedra,
+                  type: 'POST',
+                  data: {
+                    // Repare que a chave é a mesma do arquivo PHP: 'novoModelo' e 'tipo'
+                    // Estamos apenas reutilizando "novoModelo" para enviar o nome da pedra
+                    novoModelo: novaPedra,
+                    tipo: tipoPedra
+                  },
+                  dataType: 'json',
+                  success: function(response) {
+                    if (response.success) {
+                      // Fecha o modal
+                      $("#modalNovaPedra").modal('hide');
+                      // Exibe o alerta com a mensagem de sucesso
+                      alert(response.message);
+                      // Adiciona a nova opção no select de pedras
+                      $("#pedra").append('<option value="' + novaPedra + '">' + novaPedra + '</option>');
+                      $("#pedra").val(novaPedra);
+                      atualizarDescricaoEtiqueta(); // Atualiza a etiqueta após fechar o modal
+
+                    } else {
+                      alert('Erro: ' + response.message);
+                    }
+                  },
+                  error: function() {
+                    alert('Sr. Valério, ocorreu um erro inesperado.');
+                  }
+                });
+              }
+            </script>
+
             <!-- Pontos -->
             <div class="col-lg-2">
               <label class="form-label">Pontos</label>
@@ -400,6 +502,48 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <button type="submit" class="btn btn-primary">Salvar</button>
       </div>
     </form>
+    <!-- Modal para adicionar novo modelo -->
+    <div class="modal fade" id="modalNovoModelo" tabindex="-1" aria-labelledby="modalNovoModeloLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalNovoModeloLabel">Adicionar Novo Modelo</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="formNovoModelo">
+              <div class="mb-3">
+                <label for="novoModelo" class="form-label">Nome do Modelo</label>
+                <input type="text" class="form-control" id="novoModelo" name="novoModelo" required>
+                <input type="hidden" class="form-control" id="tipo" name="tipo" value="modelo" required>
+              </div>
+              <button type="button" class="btn btn-success" onclick="salvarModelo()">Salvar</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Modal para adicionar nova pedra -->
+    <div class="modal fade" id="modalNovaPedra" tabindex="-1" aria-labelledby="modalNovaPedraLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalNovaPedraLabel">Adicionar Nova Pedra</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="formNovaPedra">
+              <div class="mb-3">
+                <label for="novaPedra" class="form-label">Nome da Pedra</label>
+                <input type="text" class="form-control" id="novaPedra" name="novaPedra" required>
+                <input type="hidden" class="form-control" id="tipoPedra" name="tipoPedra" value="pedra" required>
+              </div>
+              <button type="button" class="btn btn-success" onclick="salvarPedra()">Salvar</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -494,7 +638,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     const pesoValue = peso.value ? `${peso.value}g` : '';
     const descricao_etiqueta_manualValue = descricao_etiqueta_manual.value || '';
     const pedravalor = pedra.options[pedra.selectedIndex]?.value ? `- com ${pedra.options[pedra.selectedIndex]?.value}` : '';
-    const numerosvalor = numeros.options[numeros.selectedIndex]?.text || '';
+    const numerosvalor = numeros.value ? `Nº ${numeros.value}` : '';
 
     // Criar a string apenas com valores definidos
     descricaoEtiqueta.value = [

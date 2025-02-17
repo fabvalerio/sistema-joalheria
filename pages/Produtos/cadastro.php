@@ -139,27 +139,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <button type="button" class="btn bg-success text-white" data-bs-toggle="modal" data-bs-target="#modalNovoModelo">+</button>
               </div>
             </div>
-            <!-- Modal para adicionar novo modelo -->
-            <div class="modal fade" id="modalNovoModelo" tabindex="-1" aria-labelledby="modalNovoModeloLabel" aria-hidden="true">
-              <div class="modal-dialog">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <h5 class="modal-title" id="modalNovoModeloLabel">Adicionar Novo Modelo</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                  </div>
-                  <div class="modal-body">
-                    <form id="formNovoModelo">
-                      <div class="mb-3">
-                        <label for="novoModelo" class="form-label">Nome do Modelo</label>
-                        <input type="text" class="form-control" id="novoModelo" name="novoModelo" required>
-                        <input type="hidden" class="form-control" id="tipo" name="tipo" value="modelo" required>
-                      </div>
-                      <button type="button" class="btn btn-success" onclick="salvarModelo()">Salvar</button>
-                    </form>
-                  </div>
-                </div>
-              </div>
-            </div>
+
             <script>
               // Monta a URL dinamicamente utilizando as variáveis PHP
               var caminhoAjax = "<?php echo $url . 'pages/' . $link[1] . '/adicionar_modelo.php'; ?>";
@@ -190,6 +170,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                       // Adiciona a nova opção no select
                       $("#modelo").append('<option value="' + novoModelo + '">' + novoModelo + '</option>');
                       $("#modelo").val(novoModelo);
+                      atualizarDescricaoEtiqueta(); // Atualiza a etiqueta após fechar o modal
                     } else {
                       alert('Erro: ' + response.message);
                     }
@@ -238,8 +219,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <option value="par">Par</option>
               </select>
             </div>
-
-
             <div class="col-lg-2">
               <label class="form-label">Pedra</label>
               <div class="input-group">
@@ -255,27 +234,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <button type="button" class="btn bg-success text-white" data-bs-toggle="modal" data-bs-target="#modalNovaPedra">+</button>
               </div>
             </div>
-            <!-- Modal para adicionar nova pedra -->
-            <div class="modal fade" id="modalNovaPedra" tabindex="-1" aria-labelledby="modalNovaPedraLabel" aria-hidden="true">
-              <div class="modal-dialog">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <h5 class="modal-title" id="modalNovaPedraLabel">Adicionar Nova Pedra</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                  </div>
-                  <div class="modal-body">
-                    <form id="formNovaPedra">
-                      <div class="mb-3">
-                        <label for="novaPedra" class="form-label">Nome da Pedra</label>
-                        <input type="text" class="form-control" id="novaPedra" name="novaPedra" required>
-                        <input type="hidden" class="form-control" id="tipoPedra" name="tipoPedra" value="pedra" required>
-                      </div>
-                      <button type="button" class="btn btn-success" onclick="salvarPedra()">Salvar</button>
-                    </form>
-                  </div>
-                </div>
-              </div>
-            </div>
+
             <script>
               // Monta a URL dinamicamente para o mesmo arquivo PHP usado em "modelo"
               var caminhoAjaxPedra = "<?php echo $url . 'pages/' . $link[1] . '/adicionar_modelo.php'; ?>";
@@ -308,6 +267,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                       // Adiciona a nova opção no select de pedras
                       $("#pedra").append('<option value="' + novaPedra + '">' + novaPedra + '</option>');
                       $("#pedra").val(novaPedra);
+                      atualizarDescricaoEtiqueta(); // Atualiza a etiqueta após fechar o modal
 
                     } else {
                       alert('Erro: ' + response.message);
@@ -405,6 +365,49 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <button type="submit" class="btn btn-primary">Salvar</button>
       </div>
     </form>
+    <!-- Modal para adicionar novo modelo -->
+    <div class="modal fade" id="modalNovoModelo" tabindex="-1" aria-labelledby="modalNovoModeloLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalNovoModeloLabel">Adicionar Novo Modelo</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="formNovoModelo">
+              <div class="mb-3">
+                <label for="novoModelo" class="form-label">Nome do Modelo</label>
+                <input type="text" class="form-control" id="novoModelo" name="novoModelo" required>
+                <input type="hidden" class="form-control" id="tipo" name="tipo" value="modelo" required>
+              </div>
+              <button type="button" class="btn btn-success" onclick="salvarModelo()">Salvar</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Modal para adicionar nova pedra -->
+    <div class="modal fade" id="modalNovaPedra" tabindex="-1" aria-labelledby="modalNovaPedraLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalNovaPedraLabel">Adicionar Nova Pedra</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="formNovaPedra">
+              <div class="mb-3">
+                <label for="novaPedra" class="form-label">Nome da Pedra</label>
+                <input type="text" class="form-control" id="novaPedra" name="novaPedra" required>
+                <input type="hidden" class="form-control" id="tipoPedra" name="tipoPedra" value="pedra" required>
+              </div>
+              <button type="button" class="btn btn-success" onclick="salvarPedra()">Salvar</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 <script>
@@ -499,7 +502,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     const pesoValue = peso.value ? `${peso.value}g` : '';
     const descricao_etiqueta_manualValue = descricao_etiqueta_manual.value || '';
     const pedravalor = pedra.options[pedra.selectedIndex]?.value ? `- com ${pedra.options[pedra.selectedIndex]?.value}` : '';
-    const numerosvalor = numeros.options[numeros.selectedIndex]?.text || '';
+    const numerosvalor = numeros.value ? `${numeros.value}` : '';
 
     // Criar a string apenas com valores definidos
     descricaoEtiqueta.value = [
