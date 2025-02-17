@@ -18,7 +18,8 @@ if (!empty($tipoFiltro)) {
 <div class="card">
     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
         <h3 class="card-title">Produto Definições</h3>
-        
+        <a href="<?= "{$url}!/{$link[1]}/cadastro" ?>" class="btn btn-white text-primary">Adicionar</a>
+
     </div>
 
     <div class="card-body">
@@ -27,9 +28,9 @@ if (!empty($tipoFiltro)) {
             <div class="col-auto">
                 <label for="tipo" class="form-label">Filtrar por Tipo:</label>
                 <select name="tipo" id="tipo" class="form-select" onchange="filtrarTipo(this.value)">
-                    <option value="" <?php if($tipoFiltro == '') echo 'selected'; ?>>Todos</option>
-                    <option value="modelo" <?php if($tipoFiltro == 'modelo') echo 'selected'; ?>>Modelo</option>
-                    <option value="pedra" <?php if($tipoFiltro == 'pedra') echo 'selected'; ?>>Pedra</option>
+                    <option value="" <?php if ($tipoFiltro == '') echo 'selected'; ?>>Todos</option>
+                    <option value="modelo" <?php if ($tipoFiltro == 'modelo') echo 'selected'; ?>>Modelo</option>
+                    <option value="pedra" <?php if ($tipoFiltro == 'pedra') echo 'selected'; ?>>Pedra</option>
                 </select>
             </div>
         </div>
@@ -55,7 +56,7 @@ if (!empty($tipoFiltro)) {
                                     Ação
                                 </button>
                                 <ul class="dropdown-menu">
-                                    
+
                                     <li>
                                         <a href="<?= "{$url}!/{$link[1]}/deletar/{$definicao['id']}" ?>" class="dropdown-item text-danger">
                                             Excluir
@@ -74,7 +75,7 @@ if (!empty($tipoFiltro)) {
     function filtrarTipo(tipo) {
         if (tipo === '') {
             // Se "Todos", redireciona para a listagem sem filtro
-            window.location.href = "<?php echo $url . '/' . $link[1] . '/listar'; ?>";
+            window.location.href = "<?php echo $url . '/!/' . $link[1] . '/listar/'; ?>";
         } else {
             // Se selecionado "modelo" ou "pedra", monta a URL amigável
             window.location.href = "<?php echo $url . '/!/' . $link[1] . '/listar/'; ?>" + tipo;

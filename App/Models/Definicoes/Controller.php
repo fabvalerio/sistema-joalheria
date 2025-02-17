@@ -10,7 +10,7 @@ class Controller
     public function listar()
     {
         $db = new db();
-        $db->query("SELECT * FROM produto_definicoes ORDER BY id ASC");
+        $db->query("SELECT * FROM produto_definicoes ORDER BY id DESC");
         return $db->resultSet();
     }
 
@@ -71,7 +71,7 @@ class Controller
     public function listarPorTipo($tipo)
 {
     $db = new db();
-    $db->query("SELECT * FROM produto_definicoes WHERE tipo = :tipo ORDER BY id ASC");
+    $db->query("SELECT * FROM produto_definicoes WHERE tipo = :tipo ORDER BY id DESC");
     $db->bind(":tipo", $tipo);
     return $db->resultSet();
 }
