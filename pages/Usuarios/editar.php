@@ -19,6 +19,12 @@ if (!$return) {
 // Obter os cargos para o select
 $cargos = $controller->cargos();
 
+// Obter a lista de diretórios disponíveis
+$diretorios = $controller->listarDiretorios();
+
+// Decodificar as permissões do banco (se existirem)
+$permissoesUsuario = !empty($return['permissoes']) ? json_decode($return['permissoes'], true) : [];
+
 // Atualizar o registro se o formulário foi enviado
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $dados = [
@@ -44,6 +50,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Atualizar a senha apenas se for informada no formulário
     if (!empty($_POST['senha'])) {
         $dados['senha'] = password_hash($_POST['senha'], PASSWORD_DEFAULT);
+    }
+
+    // Atualizar permissões
+    if (isset($_POST['permissoes'])) {
+        $permissoesUsuario = [];
+        foreach ($_POST['permissoes'] as $dir => $perms) {
+            $permissoesUsuario[$dir] = [
+                "visualizar" => isset($perms['visualizar']),
+                "manipular" => isset($perms['manipular'])
+            ];
+        }
+        // Salva as permissões como JSON
+        $dados['permissoes'] = json_encode($permissoesUsuario);
     }
 
     $returnUpdate = $controller->editar($id, $dados);
@@ -160,6 +179,39 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <option value="0" <?= $return['status'] == 'Administrador' ? 'selected' : '' ?>>Inativo</option>
                     </select>
                 </div>
+                <hr>
+            <h2>Permissões</h2>
+            <div class="row">
+                <?php foreach ($diretorios as $dir): ?>
+                    <div class="col-lg-4 mb-3">
+                        <label class="form-label fw-bold d-block"><?= htmlspecialchars($dir) ?>:</label>
+
+                        <div class="form-check form-check-inline">
+                            <input 
+                                class="form-check-input" 
+                                type="checkbox" 
+                                name="permissoes[<?= htmlspecialchars($dir) ?>][visualizar]" 
+                                value="1" 
+                                id="visualizar_<?= htmlspecialchars($dir) ?>"
+                                <?= isset($permissoesUsuario[$dir]['visualizar']) && $permissoesUsuario[$dir]['visualizar'] ? 'checked' : '' ?>
+                            >
+                            <label class="form-check-label" for="visualizar_<?= htmlspecialchars($dir) ?>">Visualizar</label>
+                        </div>
+
+                        <div class="form-check form-check-inline">
+                            <input 
+                                class="form-check-input" 
+                                type="checkbox" 
+                                name="permissoes[<?= htmlspecialchars($dir) ?>][manipular]" 
+                                value="1" 
+                                id="manipular_<?= htmlspecialchars($dir) ?>"
+                                <?= isset($permissoesUsuario[$dir]['manipular']) && $permissoesUsuario[$dir]['manipular'] ? 'checked' : '' ?>
+                            >
+                            <label class="form-check-label" for="manipular_<?= htmlspecialchars($dir) ?>">Manipular</label>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
                 <div class="col-lg-12">
                     <button type="submit" class="btn btn-primary float-end">Salvar Alterações</button>
                 </div>

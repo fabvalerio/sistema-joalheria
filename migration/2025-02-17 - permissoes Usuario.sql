@@ -1,0 +1,1 @@
+ALTER TABLE `usuarios` ADD `permissoes` LONGTEXT NULL AFTER `status`;

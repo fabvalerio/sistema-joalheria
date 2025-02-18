@@ -6,6 +6,11 @@ use App\Models\Usuarios\Controller;
 $controller = new Controller();
 // Obter os cargos
 $cargos = $controller->cargos();
+$diretorios = $controller->listarDiretorios();
+$permissoesUsuario = [];
+foreach ($diretorios as $dir) {
+    $permissoesUsuario[$dir] = ["visualizar" => false, "manipular" => false];
+}
 
 // Verificar se o formulário foi enviado
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -27,8 +32,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         'nivel_acesso' => $_POST['nivel_acesso'],
         'bairro' => $_POST['bairro'],
         'numero' => $_POST['numero'],
-        'status' => $_POST['status']
+        'status' => $_POST['status'],
+        'permissoes' => null // Inicializa as permissões como null
     ];
+    // Verifica se há permissões enviadas
+    if (isset($_POST['permissoes'])) {
+        $permissoesUsuario = [];
+        foreach ($_POST['permissoes'] as $dir => $perms) {
+            $permissoesUsuario[$dir] = [
+                "visualizar" => isset($perms['visualizar']),
+                "manipular" => isset($perms['manipular'])
+            ];
+        }
+        // Converte as permissões para JSON e adiciona no array de dados
+        $dados['permissoes'] = json_encode($permissoesUsuario);
+    }
+     // Debug para verificar o conteúdo do array
+    // echo '<pre>';
+    // echo htmlspecialchars(json_encode($permissoesUsuario, JSON_PRETTY_PRINT));
+    // echo '</pre>';
+    // exit;
 
     $controller = new Controller();
     $return = $controller->cadastro($dados);
@@ -108,7 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <label for="" class="form-label">Cidade</label>
                     <input type="text" class="form-control" id="cidade" name="cidade" required>
                 </div>
-                 <div class="col-lg-4">
+                <div class="col-lg-4">
                     <label for="" class="form-label">Bairro</label>
                     <input type="text" class="form-control" id="bairro" name="bairro" required>
                 </div>
@@ -141,6 +164,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <option value="0">Inativo</option>
                     </select>
                 </div>
+                <hr>
+                <h2>Permissões</h2>
+                <?php
+                foreach ($diretorios as $dir) {
+                    echo "<div class='col-lg-4 mb-3'>";
+                    echo "<label class='form-label fw-bold d-block'>$dir:</label>";
+
+                    echo "<div class='form-check form-check-inline'>";
+                    echo "<input class='form-check-input' type='checkbox' name='permissoes[$dir][visualizar]' value='1' id='visualizar_$dir'>";
+                    echo "<label class='form-check-label' for='visualizar_$dir'>Visualizar</label>";
+                    echo "</div>";
+
+                    echo "<div class='form-check form-check-inline'>";
+                    echo "<input class='form-check-input' type='checkbox' name='permissoes[$dir][manipular]' value='1' id='manipular_$dir'>";
+                    echo "<label class='form-check-label' for='manipular_$dir'>Manipular</label>";
+                    echo "</div>";
+
+                    echo "</div>";
+                }
+                ?>
                 <div class="col-lg-12">
                     <button type="submit" class="btn btn-primary float-end">Salvar</button>
                 </div>
@@ -166,5 +209,3 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         })
     })()
 </script>
-
-

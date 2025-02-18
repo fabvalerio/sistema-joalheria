@@ -5,6 +5,36 @@ use db; // Importa a classe de conexão com o banco de dados
 
 class Controller
 {
+    // PERMISSOES
+private $diretorioBase;
+private $arquivoPermissoes;
+
+public function __construct($diretorioBase = "pages", $arquivoPermissoes = "permissoes.json") {
+    $this->diretorioBase = $diretorioBase;
+    $this->arquivoPermissoes = $arquivoPermissoes;
+}
+
+// Lista os diretórios dentro de "pages"
+public function listarDiretorios() {
+    $diretorios = array_filter(glob($this->diretorioBase . '/*'), 'is_dir');
+    return array_map('basename', $diretorios);
+}
+
+// Salva as permissões em JSON
+public function salvarPermissoes($usuario, $permissoes) {
+    $dados = $this->carregarPermissoes();
+    $dados[$usuario] = $permissoes;
+    file_put_contents($this->arquivoPermissoes, json_encode($dados, JSON_PRETTY_PRINT));
+}
+
+// Carrega as permissões existentes
+public function carregarPermissoes() {
+    if (file_exists($this->arquivoPermissoes)) {
+        return json_decode(file_get_contents($this->arquivoPermissoes), true);
+    }
+    return [];
+}
+
     // Listar todos os registros
     public function listar()
     {
@@ -27,6 +57,7 @@ class Controller
     // Cadastrar um novo registro
     public function cadastro($dados)
     {
+
         $lista = new db();
 
         // Criação dinâmica de placeholders
@@ -41,6 +72,8 @@ class Controller
         }
 
         return $lista->execute();
+
+
     }
 
     // Editar um registro específico por ID
