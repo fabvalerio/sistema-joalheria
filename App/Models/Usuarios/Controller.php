@@ -6,34 +6,38 @@ use db; // Importa a classe de conexão com o banco de dados
 class Controller
 {
     // PERMISSOES
-private $diretorioBase;
-private $arquivoPermissoes;
+    private $diretorioBase;
+    private $arquivoPermissoes;
 
-public function __construct($diretorioBase = "pages", $arquivoPermissoes = "permissoes.json") {
-    $this->diretorioBase = $diretorioBase;
-    $this->arquivoPermissoes = $arquivoPermissoes;
-}
-
-// Lista os diretórios dentro de "pages"
-public function listarDiretorios() {
-    $diretorios = array_filter(glob($this->diretorioBase . '/*'), 'is_dir');
-    return array_map('basename', $diretorios);
-}
-
-// Salva as permissões em JSON
-public function salvarPermissoes($usuario, $permissoes) {
-    $dados = $this->carregarPermissoes();
-    $dados[$usuario] = $permissoes;
-    file_put_contents($this->arquivoPermissoes, json_encode($dados, JSON_PRETTY_PRINT));
-}
-
-// Carrega as permissões existentes
-public function carregarPermissoes() {
-    if (file_exists($this->arquivoPermissoes)) {
-        return json_decode(file_get_contents($this->arquivoPermissoes), true);
+    public function __construct($diretorioBase = "pages", $arquivoPermissoes = "permissoes.json")
+    {
+        $this->diretorioBase = $diretorioBase;
+        $this->arquivoPermissoes = $arquivoPermissoes;
     }
-    return [];
-}
+
+    // Lista os diretórios dentro de "pages"
+    public function listarDiretorios()
+    {
+        $diretorios = array_filter(glob($this->diretorioBase . '/*'), 'is_dir');
+        return array_map('basename', $diretorios);
+    }
+
+    // Salva as permissões em JSON
+    public function salvarPermissoes($usuario, $permissoes)
+    {
+        $dados = $this->carregarPermissoes();
+        $dados[$usuario] = $permissoes;
+        file_put_contents($this->arquivoPermissoes, json_encode($dados, JSON_PRETTY_PRINT));
+    }
+
+    // Carrega as permissões existentes
+    public function carregarPermissoes()
+    {
+        if (file_exists($this->arquivoPermissoes)) {
+            return json_decode(file_get_contents($this->arquivoPermissoes), true);
+        }
+        return [];
+    }
 
     // Listar todos os registros
     public function listar()
@@ -72,8 +76,6 @@ public function carregarPermissoes() {
         }
 
         return $lista->execute();
-
-
     }
 
     // Editar um registro específico por ID
@@ -109,12 +111,10 @@ public function carregarPermissoes() {
     }
     //chama lista de cargos
     public function cargos()
-{
-    $db = new db(); // Instanciar a conexão com o banco de dados
-    $db->query("SELECT * FROM cargos ORDER BY id ASC"); // Consultar todos os cargos
-    $resultados = $db->resultSet(); // Armazenar os resultados
-    return $resultados;
+    {
+        $db = new db(); // Instanciar a conexão com o banco de dados
+        $db->query("SELECT * FROM cargos ORDER BY id ASC"); // Consultar todos os cargos
+        $resultados = $db->resultSet(); // Armazenar os resultados
+        return $resultados;
+    }
 }
-
-}
-?>

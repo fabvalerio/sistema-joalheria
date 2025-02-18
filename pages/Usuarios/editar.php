@@ -97,18 +97,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <input type="email" class="form-control" name="email" value="<?= $return['email'] ?>" required>
                 </div>
                 <div class="col-lg-4">
-    <label for="" class="form-label">Cargo</label>
-    <select class="form-select" name="cargo" required>
-        <option value="">Selecione</option>
-        <?php foreach ($cargos as $cargo) : ?>
-            <option 
-                value="<?= htmlspecialchars($cargo['id']) ?>" 
-                <?= ($return['cargo'] == $cargo['id']) ? 'selected' : '' ?>>
-                <?= htmlspecialchars($cargo['cargo']) ?>
-            </option>
-        <?php endforeach; ?>
-    </select>
-</div>
+                    <label for="" class="form-label">Cargo</label>
+                    <select class="form-select" name="cargo" required>
+                        <option value="">Selecione</option>
+                        <?php foreach ($cargos as $cargo) : ?>
+                            <option
+                                value="<?= htmlspecialchars($cargo['id']) ?>"
+                                <?= ($return['cargo'] == $cargo['id']) ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($cargo['cargo']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
 
 
                 <div class="col-lg-4">
@@ -180,38 +180,36 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     </select>
                 </div>
                 <hr>
-            <h2>Permissões</h2>
-            <div class="row">
-                <?php foreach ($diretorios as $dir): ?>
-                    <div class="col-lg-4 mb-3">
-                        <label class="form-label fw-bold d-block"><?= htmlspecialchars($dir) ?>:</label>
+                <h2>Permissões</h2>
+                <div class="row">
+                    <?php foreach ($diretorios as $dir): ?>
+                        <div class="col-lg-4 mb-3">
+                            <label class="form-label fw-bold d-block"><?= htmlspecialchars($dir) ?>:</label>
 
-                        <div class="form-check form-check-inline">
-                            <input 
-                                class="form-check-input" 
-                                type="checkbox" 
-                                name="permissoes[<?= htmlspecialchars($dir) ?>][visualizar]" 
-                                value="1" 
-                                id="visualizar_<?= htmlspecialchars($dir) ?>"
-                                <?= isset($permissoesUsuario[$dir]['visualizar']) && $permissoesUsuario[$dir]['visualizar'] ? 'checked' : '' ?>
-                            >
-                            <label class="form-check-label" for="visualizar_<?= htmlspecialchars($dir) ?>">Visualizar</label>
-                        </div>
+                            <div class="form-check form-check-inline">
+                                <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    name="permissoes[<?= htmlspecialchars($dir) ?>][visualizar]"
+                                    value="1"
+                                    id="visualizar_<?= htmlspecialchars($dir) ?>"
+                                    <?= isset($permissoesUsuario[$dir]['visualizar']) && $permissoesUsuario[$dir]['visualizar'] ? 'checked' : '' ?>>
+                                <label class="form-check-label" for="visualizar_<?= htmlspecialchars($dir) ?>">Visualizar</label>
+                            </div>
 
-                        <div class="form-check form-check-inline">
-                            <input 
-                                class="form-check-input" 
-                                type="checkbox" 
-                                name="permissoes[<?= htmlspecialchars($dir) ?>][manipular]" 
-                                value="1" 
-                                id="manipular_<?= htmlspecialchars($dir) ?>"
-                                <?= isset($permissoesUsuario[$dir]['manipular']) && $permissoesUsuario[$dir]['manipular'] ? 'checked' : '' ?>
-                            >
-                            <label class="form-check-label" for="manipular_<?= htmlspecialchars($dir) ?>">Manipular</label>
+                            <div class="form-check form-check-inline">
+                                <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    name="permissoes[<?= htmlspecialchars($dir) ?>][manipular]"
+                                    value="1"
+                                    id="manipular_<?= htmlspecialchars($dir) ?>"
+                                    <?= isset($permissoesUsuario[$dir]['manipular']) && $permissoesUsuario[$dir]['manipular'] ? 'checked' : '' ?>>
+                                <label class="form-check-label" for="manipular_<?= htmlspecialchars($dir) ?>">Manipular</label>
+                            </div>
                         </div>
-                    </div>
-                <?php endforeach; ?>
-            </div>
+                    <?php endforeach; ?>
+                </div>
                 <div class="col-lg-12">
                     <button type="submit" class="btn btn-primary float-end">Salvar Alterações</button>
                 </div>

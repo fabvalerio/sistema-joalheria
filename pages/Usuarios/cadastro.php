@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Converte as permissões para JSON e adiciona no array de dados
         $dados['permissoes'] = json_encode($permissoesUsuario);
     }
-     // Debug para verificar o conteúdo do array
+    // Debug para verificar o conteúdo do array
     // echo '<pre>';
     // echo htmlspecialchars(json_encode($permissoesUsuario, JSON_PRETTY_PRINT));
     // echo '</pre>';
