@@ -5,8 +5,7 @@
       <div class="col-md-6 text-center">
         <!-- Ícone ou número de erro -->
         <div class="display-1 fw-bold text-secondary mb-4" style="
-    color: #ff1f1f !important;!i;!;
-">
+    color: #ff1f1f !important;">
           Acesso Negado
         </div>
         <!-- Título da mensagem -->
