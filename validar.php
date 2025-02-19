@@ -1,89 +1,56 @@
 <?php
-
 ob_start();
 session_start();
-
-//print_r($_POST);
 
 include 'db/db.class.php';
 include 'app/php/htaccess.php';
 
-function is_ip_blocked($ip)
-{
-	$db = new db();
-	$sql = "SELECT attempts, last_attempt 
-            FROM login_attempts 
-            WHERE ip_address = :ip";
-	$db->query($sql);
-	$db->bind(":ip", $ip);
-	$db->execute();
-	$record = $db->single();
-
-	if ($record) {
-		$timeDiff = time() - strtotime($record->last_attempt);
-		if ($record->attempts >= 5 && $timeDiff < 900) {
-			return true; // Bloqueado por 15 minutos
-		}
-	}
-	return false;
-}
-
-function increment_login_attempts($ip)
-{
-	$db = new db();
-	$sql = "INSERT INTO login_attempts (ip_address, attempts, last_attempt) 
-            VALUES (:ip, 1, NOW())
-            ON DUPLICATE KEY UPDATE attempts = attempts + 1, last_attempt = NOW()";
-	$db->query($sql);
-	$db->bind(":ip", $ip);
-	$db->execute();
-}
-
-function login_user($cpf, $senha)
-{
-	$ip = $_SERVER['REMOTE_ADDR'];
-
-	if (is_ip_blocked($ip)) {
-		header("HTTP/1.1 429 Too Many Requests");
-		die("Você excedeu o número de tentativas de login. Tente novamente mais tarde.");
-	}
-
-	try {
-		$db = new db();
-		$sql = "SELECT id, senha, nivel_acesso, nome_completo
-                FROM usuarios 
-                WHERE cpf = :cpf AND status = 1";
-		$db->query($sql);
-		$db->bind(":cpf", $cpf);
-		$db->execute();
-		$user = $db->single();
-
-		if ($user && password_hash($senha, PASSWORD_DEFAULT)) {
-
-			// Gerar cookies seguros
-			setcookie("id", $user->id, time() + ((3600 * 24) * 7), "/", "", true, true);
-			setcookie("nome", $user->nome_completo, time() + ((3600 * 24) * 7), "/", "", true, true);
-			setcookie("nivel_acesso", $user->nivel_acesso, time() + ((3600 * 24) * 7), "/", "", true, true);
-
-			header('location: ' . $url . '/');
-			exit;
-		}
-
-		// Incrementar tentativas de login
-		increment_login_attempts($ip);
-
-		header('location: ' . $url . 'login.php?alert=error');
-		exit;
-	} catch (PDOException $e) {
-		throw new PDOException("Erro ao conectar ao banco de dados: " . $e->getMessage());
-	}
-}
-
-// Obter dados do POST
 $_cpf = trim($_POST['cpf']);
 $_senha = $_POST['senha'];
 
+// Debug: Confirme que os dados foram recebidos corretamente
+echo "<script>console.log('CPF recebido: {$_cpf}');</script>";
+echo "<script>console.log('Senha recebida: {$_senha}');</script>";
 
+// Conectar ao banco e buscar usuário
+$db = new db();
+$sql = "SELECT id, senha, nivel_acesso, nome_completo, permissoes FROM usuarios WHERE cpf = :cpf AND status = 1";
+$db->query($sql);
+$db->bind(":cpf", $_cpf);
+$db->execute();
+$user = $db->single();
 
-// Iniciar processo de login
-login_user($_cpf, $_senha);
+// Debug: Confirme se o usuário foi encontrado
+if (!$user) {
+    error_log("Usuário com CPF {$_cpf} não encontrado.");
+    header("Location: login.php?alert=error");
+    exit;
+}
+
+// **Correção: Acesse a senha corretamente, independente do tipo de retorno**
+$senha_armazenada = is_array($user) ? $user['senha'] : $user->senha;
+
+// Debug: Verificar senha armazenada
+error_log("Senha armazenada no banco: " . $senha_armazenada);
+error_log("Senha digitada: " . $_senha);
+
+// Verificar a senha com `password_verify()`
+if (password_verify($_senha, $senha_armazenada)) {
+    // Criar cookies seguros
+    setcookie("id", $user['id'], time() + (3600 * 24 * 7), "/", "", false, true);
+    setcookie("nome", $user['nome_completo'], time() + (3600 * 24 * 7), "/", "", false, true);
+    setcookie("nivel_acesso", $user['nivel_acesso'], time() + (3600 * 24 * 7), "/", "", false, true);
+    $permissoesJson = json_encode($user['permissoes']); // Garante que é uma string JSON válida
+    setcookie("permissoes", $permissoesJson, time() + (3600 * 24 * 7), "/", "", false, true);
+    
+
+    error_log("Login bem-sucedido para CPF: " . $_cpf);
+    header("Location: {$url}");
+    exit;
+} else {
+    error_log("Falha na verificação da senha para CPF: " . $_cpf);
+}
+
+// Se a senha estiver errada, redireciona para a tela de login
+header("Location: login.php?alert=error");
+exit;

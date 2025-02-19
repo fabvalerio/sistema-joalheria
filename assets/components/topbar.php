@@ -7,7 +7,7 @@
 
 <!-- Topbar  -->
 <div class="lead ms-4">
-    Seja bem-vindo.
+    Seja bem-vindo <?php echo $_COOKIE['nome']; ?>
 </div>
 
 </nav>

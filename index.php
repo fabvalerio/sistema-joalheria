@@ -1,22 +1,42 @@
-
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+// Garante que não há saída antes do início da sessão
+ob_start();
 
+// Inicia a sessão apenas se ainda não estiver ativa
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
+// Verifica se o usuário está autenticado
+if (!isset($_COOKIE['id']) || empty($_COOKIE['id'])) {
+    // Redireciona para a página de login se não estiver autenticado
+    $url = "http://" . $_SERVER['HTTP_HOST'] . "/";
+    header("Location: " . $url . "login.php");
+    exit();
+
+}
+
+// Incluir arquivos necessários APÓS verificar a sessão
 include 'db/db.class.php';
 include 'App/php/htaccess.php';
 include 'App/php/function.php';
 include 'App/php/notify.php';
 
+// Controlador e ação padrão
 $controller = $_GET['controller'] ?? 'Home';
 $action = $_GET['action'] ?? 'index';
 
+// Finaliza o buffer de saída para evitar erros
+ob_end_flush();
 
-$_COOKIE['nome'] = 'User Teste';
-
+//PERMISSÕES
+if (isset($_COOKIE['permissoes'])) {
+    $permissoes = json_decode($_COOKIE['permissoes'], true);
+}
+//permissoes em $permissoes
 
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">

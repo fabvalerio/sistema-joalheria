@@ -1,5 +1,4 @@
 <?php
-
 // Inicia a saída do buffer para evitar problemas de envio de cabeçalho
 ob_start();
 session_start();
@@ -7,7 +6,15 @@ session_start();
 include 'php/htaccess.php';
 include 'db/db.class.php';
 
+// Função para logout do usuário
 function logout_user() {
+    global $url; // Garantir que a variável $url esteja disponível
+
+    // Se a variável $url não estiver definida, definir um valor padrão
+    if (!isset($url)) {
+        $url = "/"; // Redireciona para a raiz do site caso $url não esteja configurado corretamente
+    }
+
     // Verifica se há cookies de sessão configurados
     if (isset($_COOKIE['session_token'])) {
         $sessionToken = $_COOKIE['session_token'];
@@ -23,34 +30,32 @@ function logout_user() {
             $db->execute();
 
             // Expirar o cookie "session_token"
-            setcookie('session_token', '', time() - 3600, "/", "", true, true);
+            setcookie('session_token', '', time() - 3600, "/", "", false, true);
         } catch (PDOException $e) {
             // Log de erro (opcional)
-            error_log("Erro ao remover sessão: " . $e->getMessage());
+            error_log("Erro ao remover sessão do banco: " . $e->getMessage());
         }
     }
 
-    // Remove outros cookies definidos
-    if (isset($_COOKIE['admin_user'])) {
-        setcookie('admin_user', '', time() - 3600, '/'); // Expirar o cookie em toda a aplicação
+    // Remover cookies de autenticação
+    $cookies = ['id', 'nome', 'nivel_acesso', 'admin_user', 'admin_nivel'];
+    foreach ($cookies as $cookie) {
+        if (isset($_COOKIE[$cookie])) {
+            setcookie($cookie, '', time() - 3600, '/', '', false, true);
+        }
     }
 
-    if (isset($_COOKIE['admin_nivel'])) {
-        setcookie('admin_nivel', '', time() - 3600, '/'); // Expirar o cookie em toda a aplicação
-    }
-
-    // Destrói a sessão ativa
+    // Destruir a sessão ativa
     if (session_status() === PHP_SESSION_ACTIVE) {
         session_unset();
         session_destroy();
     }
 
-    // Exibir mensagem de saída (opcional)
-    echo '<h2>Saindo...</h2>';
+    // Mensagem de saída para depuração (pode ser removida em produção)
+    error_log("Usuário deslogado com sucesso!");
 
     // Redirecionar para a página de login
-    global $url; // Certifique-se de que a variável $url esteja configurada corretamente
-    header("Location: {$url}admin/login.php");
+    header("Location: {$url}login.php");
     exit;
 }
 
