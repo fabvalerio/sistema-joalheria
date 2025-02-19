@@ -46,7 +46,7 @@ if( empty($link[0]) ){
 	if( is_dir("pages/".$link[1]) ){
 		$paginaExibi = "pages/".$link[1]."/".$link[2].".php";
 	}else{
-        $paginaExibi = "404.html";
+        $paginaExibi = "404.php";
 	}
 	
 }else{
@@ -54,7 +54,7 @@ if( empty($link[0]) ){
     if( is_file("pages/".$link[0]."/".$link[1].".php") ){
       $paginaExibi = "pages/".$link[0]."/".$link[1].".php";
     }else{
-       $paginaExibi = "404.html";
+       $paginaExibi = "404.php";
     }
 
 }

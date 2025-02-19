@@ -7,6 +7,8 @@
 
 <!-- Topbar  -->
 <div class="lead ms-4">
+    <!-- <h6><?php echo $_COOKIE['permissoes']; ?></h6> -->
+    <!-- <h6><?php echo $permitido; ?></h6> -->
     Seja bem-vindo <?php echo $_COOKIE['nome']; ?>
 </div>
 
