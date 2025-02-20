@@ -18,35 +18,32 @@ $pedras = $controller->listarPedras();
         <h3 class="card-title">Orçamento de Fulano de Tal</h3>
         <a href="<?php echo "{$url}!/{$link[1]}/listar" ?>" class="btn btn-warning text-primary">Voltar</a>
     </div>
+    <form method="POST" action="<?php echo "{$url}!/{$link[1]}/{$link[2]}" ?>" class="needs-validation" novalidate>
+        <div class="row g-3" style="flex: 1 1 auto; padding: 2rem;">
+            <div class="col-lg-4">
+                <label class="form-label">Data pedido</label>
+                <input type="date" name="pedido" class="form-control">
+            </div>
 
-    <div class="card-body-container">
-        <!-- Orçamento inicial com data-orcamento-id="0" -->
-        <div class="card-body orcamento" data-orcamento-id="0" style="
-    margin: 1vw;
-    border: 2px solid #0000000f;
-    border-radius: 20px;
-">
-            <form method="POST" action="<?php echo "{$url}!/{$link[1]}/{$link[2]}" ?>" class="needs-validation" novalidate>
+            <div class="col-lg-4">
+                <label class="form-label">Data Entrega</label>
+                <input type="date" name="entrega" class="form-control">
+            </div>
+
+            <div class="col-lg-4">
+                <label class="form-label">Status de Pagamento</label>
+                <select name="pagamento" class="form-select">
+                    <option value="Pago">Pago</option>
+                    <option value="Aberto">Aberto</option>
+                    <option value="Parcial">Parcial</option>
+                </select>
+            </div>
+        </div>
+        <div class="card-body-container">
+            <!-- Orçamento inicial com data-orcamento-id="0" -->
+            <div class="card-body orcamento" data-orcamento-id="0" style="margin: 1vw; border: 2px solid #0000000f; border-radius: 20px;">
+
                 <div class="row g-3">
-                    <div class="col-lg-4">
-                        <label class="form-label">Data pedido</label>
-                        <input type="date" name="pedido[]" class="form-control">
-                    </div>
-
-                    <div class="col-lg-4">
-                        <label class="form-label">Data Entrega</label>
-                        <input type="date" name="entrega[]" class="form-control">
-                    </div>
-
-                    <div class="col-lg-4">
-                        <label class="form-label">Status de Pagamento</label>
-                        <select name="pagamento[]" class="form-select">
-                            <option value="Pago">Pago</option>
-                            <option value="Aberto">Aberto</option>
-                            <option value="Parcial">Parcial</option>
-                        </select>
-                    </div>
-
                     <div class="col-lg-12">
                         <label class="form-label">Descrição</label>
                         <input type="text" name="descricao[0]" class="form-control" required placeholder="Descrição do Orçamento">
@@ -91,9 +88,10 @@ $pedras = $controller->listarPedras();
                     </div>
 
                 </div>
-            </form>
+
+            </div>
         </div>
-    </div>
+    </form>
 
     <div class="card-footer">
         <button type="button" class="btn btn-success w-100" id="addOrcamento">Adicionar Orçamento</button>
@@ -177,7 +175,7 @@ $pedras = $controller->listarPedras();
 
     function toggleCotacaoMaterial(event) {
         // Obter o nome do material selecionado
-        let material = event.target.getAttribute("data-material");
+        let material = event.target.getAttribute("data-material").replace(/\s+/g, '_');
 
         // Obter o contêiner do orçamento e o ID único deste orçamento
         let orcamento = event.target.closest(".orcamento");
@@ -211,7 +209,7 @@ $pedras = $controller->listarPedras();
     }
 
     function toggleCotacaoPedra(event) {
-        let pedra = event.target.getAttribute("data-pedra");
+        let pedra = event.target.getAttribute("data-pedra").replace(/\s+/g, '_');
         // Para manter a consistência, também adicionamos o identificador único no name dos inputs de pedra
         let orcamento = event.target.closest(".orcamento");
         let orcamentoId = orcamento.getAttribute("data-orcamento-id");
