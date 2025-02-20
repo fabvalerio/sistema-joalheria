@@ -46,9 +46,9 @@ $pedras = $controller->listarPedras();
                 <div class="row g-3">
                     <div class="col-lg-12">
                         <label class="form-label">Descrição</label>
-                        <input type="text" name="descricao[0]" class="form-control" required placeholder="Descrição do Orçamento">
+                        <input type="text" name="descricao[0]" id="descricao" data-material="descricao" class="form-control" required placeholder="Descrição do Orçamento">
                     </div>
-
+                    <hr>
                     <div class="col-lg-12">
                         <label class="form-label">Material</label>
                         <div>
@@ -65,7 +65,7 @@ $pedras = $controller->listarPedras();
                             <!-- Aqui serão adicionadas as cotações dinamicamente -->
                         </ul>
                     </div>
-
+                    <hr>
                     <div class="col-lg-12">
                         <label class="form-label">Pedra</label>
                         <div>
@@ -75,12 +75,16 @@ $pedras = $controller->listarPedras();
                             <?php endforeach; ?>
                         </div>
                     </div>
-
                     <div class="col-lg-12">
                         <label class="form-label">Cotação da Pedra</label>
                         <ul class="list-group cotacao-pedra">
                             <!-- Aqui serão adicionadas as cotações dinamicamente -->
                         </ul>
+                    </div>
+                    <hr>
+                    <div class="col-lg-12">
+                        <label class="form-label">Detalhes do trabalho</label>
+                        <textarea class="form-control" name="detalhes[0]" id="detalhes" data-material="detalhes" rows="3"></textarea>
                     </div>
 
                     <div class="col-lg-12 text-end">
@@ -114,18 +118,18 @@ $pedras = $controller->listarPedras();
         clone.setAttribute("data-orcamento-id", uniqueId);
 
         // Atualizar os atributos de id, for e name dos elementos clonados
-        clone.querySelectorAll("input, select, label").forEach((element) => {
+        clone.querySelectorAll("input, select, label, textarea").forEach((element) => {
             if (element.id) {
                 element.id = element.id + "_" + uniqueId;
             }
             if (element.hasAttribute("for")) {
                 element.setAttribute("for", element.getAttribute("for") + "_" + uniqueId);
             }
-            if (element.tagName === "INPUT" || element.tagName === "SELECT") {
+            if (element.tagName === "INPUT" || element.tagName === "SELECT" || element.tagName === "TEXTAREA") {
                 if (element.name) {
                     // Remove qualquer valor entre colchetes (ex.: [0]) e concatena o uniqueId, mantendo os colchetes no final
                     let baseName = element.name.replace(/\[\d*\]$/, "");
-                    element.name = baseName + "_" + uniqueId + "[]";
+                    element.name = baseName + "[" + uniqueId + "]";
                 }
                 // Limpar o valor do input ou select
                 element.value = "";
