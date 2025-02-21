@@ -60,12 +60,7 @@ $pedidos = $controller->listar();
                         class="dropdown-item">
                         Alterar para PAGO
                       </a>
-                    <?php } else { ?>
-                      <a href="<?= "{$url}!/{$link[1]}/mudarStatus/{$pedido['id']}/Pendente" ?>"
-                        class="dropdown-item">
-                        Alterar para PENDENTE
-                      </a>
-                    <?php } ?>
+                    <?php }  ?>
                   </li>
                   <li>
                     <?php if (!empty($pedido['status_fabrica'])) { ?>
