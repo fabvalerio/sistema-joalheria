@@ -1,243 +1,668 @@
 <?php
 
-use App\Models\Produtos\Controller;
+use App\Models\Orcamento\Controller;
 
-// Instanciar o Controller
 $controller = new Controller();
+$clientes = $controller->listarClientes(); // Obter lista de clientes
+$produtos = $controller->listarProdutos(); // Obter lista de produtos para o modal
+$cartaos = $controller->listarCartoes(); // Obter lista de cartões
 
-// Obter listas de fornecedores, grupos, subgrupos e cotações
-$fornecedores = $controller->listarFornecedores();
-$grupos = $controller->listarGrupos();
-$subgrupos = $controller->listarSubgrupos();
-$cotacoes = $controller->listarCotacoes();
-$modelos = $controller->listarModelos();
-$pedras = $controller->listarPedras();
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $dados = [
+        'cliente_id' => $_POST['cliente_id'] ?? null,
+        'data_pedido' => $_POST['data_pedido'] ?? null,
+        'forma_pagamento' => $_POST['forma_pagamento'] ?? null,
+        'acrescimo' => $_POST['acrescimo'] ?? 0,
+        'desconto' => $_POST['desconto'] ?? 0,
+        'observacoes' => $_POST['observacoes'] ?? null,
+        'total' => $_POST['total'] ?? 0,
+        'valor_pago' => $_POST['valor_pago'] ?? 0,
+        'cod_vendedor' => $_POST['cod_vendedor'] ?? null,
+        'status_pedido' => $_POST['status_pedido'] ?? 'Pendente',
+        'data_entrega' => $_POST['data_entrega'] ?? null,
+        'fabrica' => $_POST['fabrica'] ?? false,
+        'itens' => [] // Inicializa o array de itens do pedido
+    ];
+
+    // Capturar os produtos enviados via POST
+    if (!empty($_POST['produtos'])) {
+        foreach ($_POST['produtos'] as $produto) {
+            if (!empty($produto['id']) && !empty($produto['quantidade']) && !empty($produto['preco'])) {
+                $dados['itens'][] = [
+                    'descricao_produto' => $produto['descricao_produto'],
+                    'produto_id' => (int)$produto['id'], // ID do produto
+                    'quantidade' => (float)$produto['quantidade'], // Quantidade
+                    'valor_unitario' => (float)$produto['preco'], // Valor unitário
+                    'desconto_percentual' => (float)($produto['desconto_percentual'] ?? 0), // Desconto percentual
+                    'estoque_antes' => (int)$produto['estoque_atual'],
+                    'tipo_movimentacao' => 'Pedido',
+                    //data de hoje
+                    'data_movimentacao' => date('Y-m-d'),
+                    'motivo' => 'Pedido',
+                    //estoque atualizado estoque_antes - quantidade
+                    'estoque_atualizado' => (int)$produto['estoque_atual'] - (int)$produto['quantidade']
+                ];
+            }
+        }
+    }
+    // Debug para verificar o conteúdo do array
+    // echo '<pre>';
+    // print_r($dados['itens']); // Acessa a chave correta
+    // echo '</pre>';
+    // exit;
+
+
+    $return = $controller->cadastro($dados);
+
+    if ($return) {
+        echo notify('success', "Pedido cadastrado com sucesso!");
+        echo '<meta http-equiv="refresh" content="2; url=' . $url . '!/' . $link[1] . '/listar">';
+    } else {
+        echo notify('danger', "Erro ao cadastrar o pedido.");
+    }
+}
+
 ?>
+
 <div class="card">
     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-        <h3 class="card-title">Orçamento de Fulano de Tal</h3>
+        <h3 class="card-title">Cadastro de Pedido</h3>
         <a href="<?php echo "{$url}!/{$link[1]}/listar" ?>" class="btn btn-warning text-primary">Voltar</a>
     </div>
-    <form method="POST" action="<?php echo "{$url}!/{$link[1]}/{$link[2]}" ?>" class="needs-validation" novalidate>
-        <div class="row g-3" style="flex: 1 1 auto; padding: 2rem;">
-            <div class="col-lg-4">
-                <label class="form-label">Data pedido</label>
-                <input type="date" name="pedido" class="form-control">
-            </div>
 
-            <div class="col-lg-4">
-                <label class="form-label">Data Entrega</label>
-                <input type="date" name="entrega" class="form-control">
-            </div>
-
-            <div class="col-lg-4">
-                <label class="form-label">Status de Pagamento</label>
-                <select name="pagamento" class="form-select">
-                    <option value="Pago">Pago</option>
-                    <option value="Aberto">Aberto</option>
-                    <option value="Parcial">Parcial</option>
-                </select>
-            </div>
-        </div>
-        <div class="card-body-container">
-            <!-- Orçamento inicial com data-orcamento-id="0" -->
-            <div class="card-body orcamento" data-orcamento-id="0" style="margin: 1vw; border: 2px solid #0000000f; border-radius: 20px;">
-
-                <div class="row g-3">
-                    <div class="col-lg-12">
-                        <label class="form-label">Descrição</label>
-                        <input type="text" name="descricao[0]" id="descricao" data-material="descricao" class="form-control" required placeholder="Descrição do Orçamento">
-                    </div>
+    <div class="card-body">
+        <form method="POST" action="<?php echo "{$url}!/{$link[1]}/{$link[2]}" ?>" class="needs-validation" novalidate>
+            <div class="row g-3">
+                <div class="col-12">
                     <hr>
-                    <div class="col-lg-12">
-                        <label class="form-label">Material</label>
-                        <div>
-                            <?php foreach ($grupos as $grupo): ?>
-                                <input type="checkbox" class="btn-check material-checkbox" id="<?= htmlspecialchars($grupo['nome_grupo']) ?>1" data-material="<?= htmlspecialchars($grupo['nome_grupo']) ?>">
-                                <label class="btn btn-outline-success" for="<?= htmlspecialchars($grupo['nome_grupo']) ?>1"><?= htmlspecialchars($grupo['nome_grupo']) ?></label>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-12">
-                        <label class="form-label">Cotação do Material</label>
-                        <ul class="list-group cotacao-material">
-                            <!-- Aqui serão adicionadas as cotações dinamicamente -->
-                        </ul>
-                    </div>
-                    <hr>
-                    <div class="col-lg-12">
-                        <label class="form-label">Pedra</label>
-                        <div>
-                            <?php foreach ($pedras as $pedra): ?>
-                                <input type="checkbox" class="btn-check pedra-checkbox mt-1" name="pedra_<?= htmlspecialchars($pedra['nome']) ?>[0]" id="<?= htmlspecialchars($pedra['nome']) ?>1" data-pedra="<?= htmlspecialchars($pedra['nome']) ?>">
-                                <label class="btn btn-outline-success mt-2" for="<?= htmlspecialchars($pedra['nome']) ?>1"><?= htmlspecialchars($pedra['nome']) ?></label>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-                    <div class="col-lg-12">
-                        <label class="form-label">Cotação da Pedra</label>
-                        <ul class="list-group cotacao-pedra">
-                            <!-- Aqui serão adicionadas as cotações dinamicamente -->
-                        </ul>
-                    </div>
-                    <hr>
-                    <div class="col-lg-12">
-                        <label class="form-label">Detalhes do trabalho</label>
-                        <textarea class="form-control" name="detalhes[0]" id="detalhes" data-material="detalhes" rows="3"></textarea>
-                    </div>
-
-                    <div class="col-lg-12 text-end">
-                        <button type="button" class="btn btn-danger btn-remover">Remover</button>
-                    </div>
-
+                    <h4 class="card-title">Dados do Pedido</h4>
+                </div>
+                <!-- Dados principais -->
+                <div class="col-lg-6">
+                    <label for="cliente_id" class="form-label">Cliente</label>
+                    <select class="form-select" id="cliente_id" name="cliente_id" required>
+                        <option value="" disabled selected>Selecione um cliente</option>
+                        <?php foreach ($clientes as $cliente): ?>
+                            <?php if (isset($cliente['nome_pf']) && !empty($cliente['nome_pf'])) { ?>
+                                <option value="<?php echo $cliente['id']; ?>"><?php echo $cliente['nome_pf']; ?></option>
+                            <?php } else { ?>
+                                <option value="<?php echo $cliente['id']; ?>"><?php echo $cliente['nome_fantasia_pj']; ?></option>
+                            <?php } ?>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-lg-2">
+                    <label for="data_pedido" class="form-label">Data do Pedido</label>
+                    <input type="date" class="form-control" id="data_pedido" name="data_pedido" required>
+                </div>
+                <div class="col-lg-2">
+                    <label for="data_entrega" class="form-label">Data de Entrega</label>
+                    <input type="date" class="form-control" id="data_entrega" name="data_entrega">
                 </div>
 
+                <div class="col-lg-4" style="display: none;">
+                    <label for="cod_vendedor" class="form-label">Código do Vendedor</label>
+                    <input type="text" class="form-control" id="cod_vendedor" name="cod_vendedor" value="2">
+                </div>
+                <div class="col-lg-2">
+                    <label for="status_pedido" class="form-label">Status do Pedido</label>
+                    <select class="form-select" id="status_pedido" name="status_pedido" required>
+                        <option value="Pendente">Pendente</option>
+                        <option value="Pago">Pago</option>
+                        
+                    </select>
+                </div>
+
+                <div class="col-12">
+                    <hr>
+                    <h4 class="card-title">Produtos do Pedido</h4>
+                </div>
+
+                <!-- Seção de Produtos -->
+                <div class="col-lg-12">
+                    <div id="product-list">
+                        <!-- Campo inicial para produtos -->
+                        <div class="row g-3 align-items-end product-item mb-2">
+                            <div class="col-lg-4">
+                                <label class="form-label">Produto</label>
+                                <input type="text" class="form-control product-input" name="produtos[0][descricao_produto]" placeholder="Clique para selecionar um produto" readonly data-index="0">
+                                <input type="hidden" name="produtos[0][id]" class="product-id">
+                                <input type="hidden" name="produtos[0][valor_unitario]" class="product-price">
+                                <input type="hidden" name="produtos[0][estoque_atual]" class="estoque_atual">
+                            </div>
+                            <div class="col-lg-2">
+                                <label class="form-label">Preço</label>
+                                <input type="number" step="0.01" class="form-control product-price-display" name="produtos[0][preco]" placeholder="Preço" readonly>
+                            </div>
+                            <div class="col-lg-2">
+                                <label class="form-label">Quantidade</label>
+                                <input type="number" class="form-control" name="produtos[0][quantidade]" placeholder="Quantidade" required>
+                            </div>
+                            <div class="col-lg-2">
+                                <label class="form-label">Desconto (%)</label>
+                                <input type="number" step="0.01" class="form-control" name="produtos[0][desconto_percentual]" placeholder="Desconto (%)">
+                            </div>
+                            <div class="col-lg-2">
+                                <button type="button" class="btn btn-success btn-add">Adicionar +</button>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+                <div class="col-12">
+                    <hr>
+                    <h4 class="card-title">Complementos</h4>
+                </div>
+                <div class="col-lg-4">
+                    <label for="acrescimo" class="form-label">Acréscimo Adicional</label>
+                    <input type="number" step="0.01" class="form-control" id="acrescimo" name="acrescimo" placeholder="Acrescimo (%)">
+                </div>
+                <div class="col-lg-4">
+                    <label for="desconto" class="form-label">Desconto Adicional</label>
+                    <input type="number" step="0.01" class="form-control" id="desconto" name="desconto" placeholder="Desconto (%)">
+                    <input type="hidden" name="juros_aplicado" id="juros_aplicado" value="0">
+                </div>
+                <div class="col-lg-4">
+                    <label>Enviar para Fábrica</label>
+                    <div class="form-check mt-3">
+                    <input class="form-check-input" type="checkbox" name="fabrica" id="inlineRadio1" value="true">
+                    <label class="form-check-label" for="inlineRadio1">Sim</label>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <hr>
+                    <h4 class="card-title">Pagamento</h4>
+                </div>
+                <div class="col-lg-4">
+                    <label for="forma_pagamento" class="form-label">Forma de Pagamento</label>
+                    <select class="form-select" id="forma_pagamento" name="forma_pagamento" required>
+                        <option value="" selected>Selecione uma forma de pagamento</option>
+                        <option value="Dinheiro">Dinheiro</option>
+                        <option value="Cartão de Crédito">Cartão de Crédito</option>
+                        <option value="Cartão de Débito">Cartão de Débito</option>
+                        <option value="Pix">Pix</option>
+                    </select>
+                </div>
+
+                <!-- Select de cartões (inicialmente oculto) -->
+                <div class="col-lg-4" id="cartao_container" style="display: none;">
+                    <label for="cartao_tipo" class="form-label">Selecione o Cartão</label>
+                    <select class="form-select" id="cartao_tipo" name="cartao_tipo">
+                        <option value="" disabled selected>Selecione um cartão</option>
+                    </select>
+                </div>
+
+                <script>
+                    document.addEventListener('DOMContentLoaded', () => {
+                        const formaPagamento = document.getElementById('forma_pagamento');
+                        const cartaoContainer = document.getElementById('cartao_container');
+                        const cartaoTipo = document.getElementById('cartao_tipo');
+
+                        formaPagamento.addEventListener('change', async () => {
+                            const selectedValue = formaPagamento.value;
+
+                            // Mostrar o select de cartões apenas para Crédito ou Débito
+                            if (selectedValue === 'Cartão de Crédito' || selectedValue === 'Cartão de Débito') {
+                                cartaoContainer.style.display = 'block';
+
+                                // Fazer uma chamada AJAX para buscar os cartões
+                                try {
+                                    const response = await fetch(`<?php echo $url; ?>pages/Pedidos/listar_cartoes.php?tipo=${selectedValue === 'Cartão de Crédito' ? 'Crédito' : 'Débito'}`);
+                                    const cartoes = await response.json();
+
+                                    // Limpar as opções do select
+                                    cartaoTipo.innerHTML = '<option value="" disabled selected>Selecione um cartão</option>';
+
+                                    // Preencher o select com os cartões retornados
+                                    cartoes.forEach(cartao => {
+                                        const option = document.createElement('option');
+                                        option.value = cartao.id; // Ajuste conforme o nome do campo ID na tabela
+                                        option.textContent = cartao.bandeira; // Ajuste conforme o nome do campo nome na tabela
+                                        cartaoTipo.appendChild(option);
+                                    });
+                                } catch (error) {
+                                    console.error('Erro ao buscar cartões:', error);
+                                }
+                            } else {
+                                cartaoContainer.style.display = 'none';
+                                cartaoTipo.innerHTML = '<option value="" disabled selected>Selecione um cartão</option>'; // Resetar opções
+                            }
+                        });
+                    });
+                </script>
+                <div class="col-lg-4" id="parcelas_container" style="display: none;">
+                    <label for="numero_parcelas" class="form-label">Número de Parcelas</label>
+                    <select class="form-select" id="numero_parcelas" name="numero_parcelas">
+                        <option value="" disabled selected>Selecione o número de parcelas</option>
+                    </select>
+                </div>
+
+                <div class="col-12">
+                    <hr>
+                </div>
+
+                <script>
+                    document.addEventListener('DOMContentLoaded', () => {
+                        const formaPagamento = document.getElementById('forma_pagamento');
+                        const cartaoContainer = document.getElementById('cartao_container');
+                        const cartaoTipo = document.getElementById('cartao_tipo');
+                        const parcelasContainer = document.getElementById('parcelas_container');
+                        const numeroParcelas = document.getElementById('numero_parcelas');
+
+                        // Evento para mostrar ou esconder os cartões
+                        formaPagamento.addEventListener('change', async () => {
+                            const selectedValue = formaPagamento.value;
+
+                            // Mostrar o select de cartões apenas para Crédito ou Débito
+                            if (selectedValue === 'Cartão de Crédito' || selectedValue === 'Cartão de Débito') {
+                                cartaoContainer.style.display = 'block';
+
+                                // Fazer uma chamada AJAX para buscar os cartões
+                                try {
+                                    const response = await fetch(`<?php echo $url; ?>pages/Pedidos/listar_cartoes.php?tipo=${selectedValue === 'Cartão de Crédito' ? 'Crédito' : 'Débito'}`);
+                                    const cartoes = await response.json();
+
+                                    // Limpar as opções do select
+                                    cartaoTipo.innerHTML = '<option value="" disabled selected>Selecione um cartão</option>';
+
+                                    // Preencher o select com os cartões retornados
+                                    cartoes.forEach(cartao => {
+                                        const option = document.createElement('option');
+                                        option.value = cartao.id; // Ajuste conforme o nome do campo ID na tabela
+                                        option.dataset.maxParcelas = cartao.max_parcelas; // Adiciona max_parcelas como atributo de dados
+                                        option.textContent = cartao.bandeira; // Ajuste conforme o nome do campo nome na tabela
+                                        cartaoTipo.appendChild(option);
+                                        option.dataset.juros_parcela_1 = cartao.juros_parcela_1;
+                                        option.dataset.juros_parcela_2 = cartao.juros_parcela_2;
+                                        option.dataset.juros_parcela_3 = cartao.juros_parcela_3;
+                                        option.dataset.juros_parcela_4 = cartao.juros_parcela_4;
+                                        option.dataset.juros_parcela_5 = cartao.juros_parcela_5;
+                                        option.dataset.juros_parcela_6 = cartao.juros_parcela_6;
+                                        option.dataset.juros_parcela_7 = cartao.juros_parcela_7;
+                                        option.dataset.juros_parcela_8 = cartao.juros_parcela_8;
+                                        option.dataset.juros_parcela_9 = cartao.juros_parcela_9;
+                                        option.dataset.juros_parcela_10 = cartao.juros_parcela_10;
+                                        option.dataset.juros_parcela_11 = cartao.juros_parcela_11;
+                                        option.dataset.juros_parcela_12 = cartao.juros_parcela_12;
+                                    });
+                                } catch (error) {
+                                    console.error('Erro ao buscar cartões:', error);
+                                }
+                            } else {
+                                cartaoContainer.style.display = 'none';
+                                cartaoTipo.innerHTML = '<option value="" disabled selected>Selecione um cartão</option>'; // Resetar opções
+                                parcelasContainer.style.display = 'none'; // Esconde o select de parcelas se o cartão for ocultado
+                                numeroParcelas.innerHTML = '<option value="" disabled selected>Selecione o número de parcelas</option>';
+                            }
+                        });
+
+                        // Evento para mostrar o número de parcelas ao selecionar um cartão
+                        cartaoTipo.addEventListener('change', () => {
+                            const selectedCardOption = cartaoTipo.options[cartaoTipo.selectedIndex];
+                            const maxParcelas = selectedCardOption.dataset.maxParcelas;
+                            const juros_parcela_1 = selectedCardOption.dataset.juros_parcela_1;
+                            const juros_parcela_2 = selectedCardOption.dataset.juros_parcela_2;
+                            const juros_parcela_3 = selectedCardOption.dataset.juros_parcela_3;
+                            const juros_parcela_4 = selectedCardOption.dataset.juros_parcela_4;
+                            const juros_parcela_5 = selectedCardOption.dataset.juros_parcela_5;
+                            const juros_parcela_6 = selectedCardOption.dataset.juros_parcela_6;
+                            const juros_parcela_7 = selectedCardOption.dataset.juros_parcela_7;
+                            const juros_parcela_8 = selectedCardOption.dataset.juros_parcela_8;
+                            const juros_parcela_9 = selectedCardOption.dataset.juros_parcela_9;
+                            const juros_parcela_10 = selectedCardOption.dataset.juros_parcela_10;
+                            const juros_parcela_11 = selectedCardOption.dataset.juros_parcela_11;
+                            const juros_parcela_12 = selectedCardOption.dataset.juros_parcela_12;
+
+                            if (maxParcelas) {
+                                parcelasContainer.style.display = 'block';
+                                numeroParcelas.innerHTML = '<option value="" disabled selected>Selecione o número de parcelas</option>';
+
+                                // Preencher o select de parcelas
+                                for (let i = 1; i <= maxParcelas; i++) {
+                                    const option = document.createElement('option');
+                                    option.value = i;
+                                    option.textContent = i + (i > 1 ? ' Parcelas( Juros: ' + eval(`juros_parcela_${i}`) + '% )' : ' Parcela ( Juros: ' + eval(`juros_parcela_${i}`) + '% )');
+                                    // criar data-juros no option
+                                    option.dataset.juros_parcela_i = eval(`juros_parcela_${i}`);
+                                    numeroParcelas.appendChild(option);
+                                }
+                            } else {
+                                parcelasContainer.style.display = 'none';
+                                numeroParcelas.innerHTML = '<option value="" disabled selected>Selecione o número de parcelas</option>';
+                            }
+                        });
+                    });
+                </script>
+
+                <div class="col-lg-12">
+                    <label for="total" class="form-label">Total do Pedido</label>
+                    <input type="number" step="0.01" class="form-control text-white" id="total" name="total" style="background-color: #198754;" readonly>
+                </div>
+                <div class="col-lg-2">
+                    <label for="valor_pago" class="form-label">Valor Pago</label>
+                    <input type="number" step="0.01" class="form-control" id="valor_pago" name="valor_pago">
+                </div>
+                <div class="col-lg-12">
+                    <label for="observacoes" class="form-label">Observações</label>
+                    <textarea class="form-control" id="observacoes" name="observacoes" rows="3"></textarea>
+                </div>
+
+
+                <!-- Modal para Seleção de Produtos -->
+                <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="productModalLabel">Selecione um Produto</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <table class="table table-bordered table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Nome</th>
+                                            <th>Preço</th>
+                                            <th>Estoque Atual</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="modalProductList">
+                                        <?php foreach ($produtos as $produto): ?>
+                                            <tr>
+                                                <td><?php echo $produto['id']; ?></td>
+                                                <td><?php echo $produto['nome_produto']; ?></td>
+                                                <td><?php echo $produto['preco']; ?></td>
+                                                <td><?php echo $produto['estoque']; ?></td>
+                                                <td>
+                                                    <button type="button" class="btn btn-primary btn-select-product"
+                                                        data-id="<?php echo $produto['id']; ?>"
+                                                        data-name="<?php echo $produto['nome_produto']; ?>"
+                                                        data-price="<?php echo $produto['preco']; ?>"
+                                                        data-estoque="<?php echo $produto['estoque']; ?>">
+                                                        Selecionar
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </form>
+            <!-- Botão de Cadastro -->
+            <div class="col-lg-12 mt-4">
+                <button type="submit" class="btn btn-primary float-end">Cadastrar Pedido</button>
+            </div>
+        </form>
 
-    <div class="card-footer">
-        <button type="button" class="btn btn-success w-100" id="addOrcamento">Adicionar Orçamento</button>
-    </div>
-</div>
 
-<script>
-    // Utilizaremos um contador para gerar um ID único para cada orçamento adicionado
-    let contadorOrcamento = 1;
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const productList = document.getElementById('product-list');
+                const modalElement = document.getElementById('productModal');
+                const modal = new bootstrap.Modal(modalElement); // Certifique-se de que o Bootstrap está carregado
+                const totalField = document.getElementById('total');
+                let activeIndex = null; // Índice do produto sendo editado no momento
+                let productIndex = 0;
 
-    document.getElementById("addOrcamento").addEventListener("click", function() {
-        let container = document.querySelector(".card-body-container");
-        let original = document.querySelector(".card-body");
-        let clone = original.cloneNode(true);
+                // Função para calcular o total
+                function calculateTotal() {
+                    let total = 0;
+                    const productItems = document.querySelectorAll('.product-item');
+                    productItems.forEach(item => {
+                        const price = parseFloat(item.querySelector('.product-price').value) || 0;
+                        const quantity = parseFloat(item.querySelector('input[name*="[quantidade]"]').value) || 0;
+                        const discount = parseFloat(item.querySelector('input[name*="[desconto_percentual]"]').value) || 0;
 
-        // Gerar um identificador único usando o contador
-        let uniqueId = contadorOrcamento++;
+                        const subtotal = price * quantity * (1 - discount / 100);
+                        total += subtotal;
+                    });
+                    totalField.value = total.toFixed(2);
 
-        // Atribuir o ID único ao novo orçamento
-        clone.setAttribute("data-orcamento-id", uniqueId);
-
-        // Atualizar os atributos de id, for e name dos elementos clonados
-        clone.querySelectorAll("input, select, label, textarea").forEach((element) => {
-            if (element.id) {
-                element.id = element.id + "_" + uniqueId;
-            }
-            if (element.hasAttribute("for")) {
-                element.setAttribute("for", element.getAttribute("for") + "_" + uniqueId);
-            }
-            if (element.tagName === "INPUT" || element.tagName === "SELECT" || element.tagName === "TEXTAREA") {
-                if (element.name) {
-                    // Remove qualquer valor entre colchetes (ex.: [0]) e concatena o uniqueId, mantendo os colchetes no final
-                    let baseName = element.name.replace(/\[\d*\]$/, "");
-                    element.name = baseName + "[" + uniqueId + "]";
+                    // Atualiza o baseTotal e aplica juros
+                    if (typeof window.initializeBaseTotal === 'function') window.initializeBaseTotal();
+                    if (typeof window.applyJuros === 'function') window.applyJuros();
                 }
-                // Limpar o valor do input ou select
-                element.value = "";
-            }
-        });
 
-        // Limpar as listas de cotações para que não sejam copiadas do orçamento anterior
-        clone.querySelectorAll(".cotacao-material").forEach(el => el.innerHTML = "");
-        clone.querySelectorAll(".cotacao-pedra").forEach(el => el.innerHTML = "");
+                // Abrir o modal ao clicar no input de produto
+                document.addEventListener('click', function(e) {
+                    if (e.target && e.target.classList.contains('product-input')) {
+                        activeIndex = e.target.dataset.index; // Armazena o índice do produto selecionado
+                        modal.show(); // Abre o modal
+                    }
+                });
 
-        // Desmarcar todos os checkboxes do novo orçamento
-        clone.querySelectorAll("input[type=checkbox]").forEach(checkbox => {
-            checkbox.checked = false;
-        });
+                // Selecionar produto no modal
+                document.addEventListener('click', function(e) {
+                    if (e.target && e.target.classList.contains('btn-select-product')) {
+                        const productId = e.target.getAttribute('data-id');
+                        const productName = e.target.getAttribute('data-name');
+                        const productPrice = e.target.getAttribute('data-price');
+                        const activeInput = document.querySelector(`.product-input[data-index="${activeIndex}"]`);
+                        const estoque_atual = e.target.getAttribute('data-estoque');
 
-        // Re-adicionar os eventos para os checkboxes de materiais e pedras
-        clone.querySelectorAll(".material-checkbox").forEach(checkbox => {
-            checkbox.addEventListener("change", toggleCotacaoMaterial);
-        });
-        clone.querySelectorAll(".pedra-checkbox").forEach(checkbox => {
-            checkbox.addEventListener("change", toggleCotacaoPedra);
-        });
+                        if (activeInput) {
+                            activeInput.value = productName;
+                            const parentItem = activeInput.closest('.product-item');
+                            parentItem.querySelector('.product-id').value = productId;
+                            parentItem.querySelector('.product-price').value = productPrice;
+                            parentItem.querySelector('.estoque_atual').value = estoque_atual;
+                            parentItem.querySelector('.product-price-display').value = productPrice;
+                        }
 
-        clone.querySelector(".btn-remover").addEventListener("click", function() {
-            removeOrcamento(this);
-        });
+                        modal.hide(); // Fecha o modal
+                    }
+                });
 
-        container.appendChild(clone);
-    });
-
-    function removeOrcamento(button) {
-        let container = document.querySelector(".card-body-container");
-        if (container.children.length > 1) {
-            button.closest(".card-body").remove();
-        } else {
-            alert("O orçamento principal não pode ser removido!");
-        }
-    }
-
-    // Adicionar eventos aos checkboxes do primeiro orçamento
-    document.querySelectorAll(".material-checkbox").forEach(checkbox => {
-        checkbox.addEventListener("change", toggleCotacaoMaterial);
-    });
-    document.querySelectorAll(".pedra-checkbox").forEach(checkbox => {
-        checkbox.addEventListener("change", toggleCotacaoPedra);
-    });
-
-    function toggleCotacaoMaterial(event) {
-        // Obter o nome do material selecionado
-        let material = event.target.getAttribute("data-material").replace(/\s+/g, '_');
-
-        // Obter o contêiner do orçamento e o ID único deste orçamento
-        let orcamento = event.target.closest(".orcamento");
-        let orcamentoId = orcamento.getAttribute("data-orcamento-id");
-
-        // Selecionar a lista de cotações de material deste orçamento
-        let cotacaoContainer = orcamento.querySelector(".cotacao-material");
-
-        if (event.target.checked) {
-            // Ao adicionar, incluímos o número (orcamentoId) dentro dos colchetes para diferenciar
-            let html = `
-            <li class="list-group-item d-flex justify-content-between align-items-center cotacao-${material}">
-                <span class="badge text-bg-success rounded-pill">${material.charAt(0).toUpperCase() + material.slice(1)}</span>
-                <div class="d-flex">
-                    <input type="text" name="cotacao_${material}[${orcamentoId}]" class="form-control me-2" placeholder="Cotação">
-                    <input type="text" name="gramas_${material}[${orcamentoId}]" class="form-control me-2" placeholder="GR">
-                    <input type="text" name="margem_${material}[${orcamentoId}]" class="form-control me-2" placeholder="Margem (%)">
-                    <span class="input-group-text">R$</span>
-                    <input type="text" name="total_${material}[${orcamentoId}]" class="form-control" placeholder="Total">
+                // Adicionar novo campo de produto
+                document.addEventListener('click', function(e) {
+                    if (e.target && e.target.classList.contains('btn-add')) {
+                        e.preventDefault();
+                        productIndex++;
+                        const productItem = document.createElement('div');
+                        productItem.classList.add('row', 'g-3', 'align-items-end', 'product-item', 'mb-2');
+                        productItem.innerHTML = `
+                <div class="col-lg-4">
+                    <input type="text" class="form-control product-input" placeholder="Clique para selecionar um produto" name="produtos[${productIndex}][descricao_produto]" readonly data-index="${productIndex}">
+                    <input type="hidden" name="produtos[${productIndex}][id]" class="product-id">
+                    <input type="hidden" name="produtos[${productIndex}][valor_unitario]" class="product-price">
+                    <input type="hidden" name="produtos[${productIndex}][estoque_atual]" class="estoque_atual">
                 </div>
-            </li>
-            `;
-            cotacaoContainer.insertAdjacentHTML("beforeend", html);
-        } else {
-            // Remove a cotação se o checkbox for desmarcado
-            let rowToRemove = cotacaoContainer.querySelector(`.cotacao-${material}`);
-            if (rowToRemove) {
-                rowToRemove.remove();
-            }
-        }
-    }
-
-    function toggleCotacaoPedra(event) {
-        let pedra = event.target.getAttribute("data-pedra").replace(/\s+/g, '_');
-        // Para manter a consistência, também adicionamos o identificador único no name dos inputs de pedra
-        let orcamento = event.target.closest(".orcamento");
-        let orcamentoId = orcamento.getAttribute("data-orcamento-id");
-        let cotacaoContainer = orcamento.querySelector(".cotacao-pedra");
-
-        if (event.target.checked) {
-            let html = `
-            <li class="list-group-item d-flex justify-content-between align-items-center cotacao-${pedra}">
-                <span class="badge text-bg-primary rounded-pill">${pedra.charAt(0).toUpperCase() + pedra.slice(1)}</span>
-                <div class="d-flex">
-                    <input type="text" name="cotacao_${pedra}[${orcamentoId}]" class="form-control me-2" placeholder="Cotação">
-                    <input type="text" name="quantidade_${pedra}[${orcamentoId}]" class="form-control me-2" placeholder="QL">
-                    <input type="text" name="margem_${pedra}[${orcamentoId}]" class="form-control me-2" placeholder="Margem (%)">
-                    <span class="input-group-text">R$</span>
-                    <input type="text" name="total_${pedra}[${orcamentoId}]" class="form-control" placeholder="Total">
+                <div class="col-lg-2">
+                    <input type="number" step="0.01" class="form-control product-price-display" name="produtos[${productIndex}][preco]" placeholder="Preço" readonly>
                 </div>
-            </li>
-            `;
-            cotacaoContainer.insertAdjacentHTML("beforeend", html);
-        } else {
-            let rowToRemove = cotacaoContainer.querySelector(`.cotacao-${pedra}`);
-            if (rowToRemove) {
-                rowToRemove.remove();
-            }
-        }
-    }
-</script>
+                <div class="col-lg-2">
+                    <input type="number" class="form-control" name="produtos[${productIndex}][quantidade]" placeholder="Quantidade" required>
+                </div>
+                <div class="col-lg-2">
+                    <input type="number" step="0.01" class="form-control" name="produtos[${productIndex}][desconto_percentual]" placeholder="Desconto (%)">
+                </div>
+                <div class="col-lg-2">
+                    <button type="button" class="btn btn-danger btn-remove">-</button>
+                </div>`;
+                        productList.appendChild(productItem);
+                    }
+                });
+
+                // Recalcular total ao alterar quantidade ou desconto
+                document.addEventListener('input', function(e) {
+                    if (e.target && (e.target.matches('input[name*="[quantidade]"]') || e.target.matches('input[name*="[desconto_percentual]"]'))) {
+                        calculateTotal();
+                    }
+                });
+
+                // Remover um campo de produto
+                document.addEventListener('click', function(e) {
+                    if (e.target && e.target.classList.contains('btn-remove')) {
+                        e.preventDefault();
+                        e.target.closest('.product-item').remove();
+                        calculateTotal();
+                    }
+                });
+            });
+
+            document.addEventListener('DOMContentLoaded', () => {
+                const totalField = document.getElementById('total'); // Campo de total
+                const acrescimoField = document.getElementById('acrescimo'); // Campo de acréscimo geral
+                const descontoField = document.getElementById('desconto'); // Campo de desconto geral
+                const productList = document.getElementById('product-list'); // Lista de produtos
+
+                // Função para calcular o total base dos produtos
+                function calculateBaseTotal() {
+                    let baseTotal = 0;
+                    const productItems = document.querySelectorAll('.product-item');
+                    productItems.forEach(item => {
+                        const price = parseFloat(item.querySelector('.product-price').value) || 0;
+                        const quantity = parseFloat(item.querySelector('input[name*="[quantidade]"]').value) || 0;
+                        const discount = parseFloat(item.querySelector('input[name*="[desconto_percentual]"]').value) || 0;
+
+                        const subtotal = price * quantity * (1 - discount / 100);
+                        baseTotal += subtotal;
+                    });
+                    return baseTotal;
+                }
+
+                // Função para aplicar acréscimo e desconto ao total
+                function applyAcrescimoDesconto() {
+                    let baseTotal = calculateBaseTotal();
+
+                    const acrescimo = parseFloat(acrescimoField.value) || 0;
+                    const desconto = parseFloat(descontoField.value) || 0;
+
+                    // Calcula o total com acréscimo e desconto
+                    const total = baseTotal * (1 + acrescimo / 100) * (1 - desconto / 100);
+                    totalField.value = total.toFixed(2);
+
+                    // Atualiza o baseTotal e aplica juros
+                    if (typeof window.initializeBaseTotal === 'function') window.initializeBaseTotal();
+                    if (typeof window.applyJuros === 'function') window.applyJuros();
+                }
+
+                // Eventos para recalcular o total ao alterar produtos, acréscimo ou desconto
+                document.addEventListener('input', function(e) {
+                    if (
+                        e.target.matches('input[name*="[quantidade]"]') ||
+                        e.target.matches('input[name*="[desconto_percentual]"]') ||
+                        e.target.id === 'acrescimo' ||
+                        e.target.id === 'desconto'
+                    ) {
+                        applyAcrescimoDesconto();
+                    }
+                });
+
+                // Recalcula o total inicial ao carregar a página
+                applyAcrescimoDesconto();
+            });
+
+
+            ///juros cartao
+
+            document.addEventListener('DOMContentLoaded', () => {
+                const numeroParcelas = document.getElementById('numero_parcelas'); // Select de parcelas
+                const totalField = document.getElementById('total'); // Campo de total
+                let timeout; // Variável para controlar o delay
+                let previousTotalValue = totalField.value; // Armazena o valor anterior do total
+                const juros_aplicado = document.getElementById('juros_aplicado'); // Campo hidden para armazenar o juros aplicado
+
+                // Função para aplicar juros ao total
+                function applyJuros() {
+                    // Subtrai o valor do juros_aplicado do total
+                    const totalSemJuros = parseFloat(totalField.value || 0) - parseFloat(juros_aplicado.value || 0);
+                    const selectedOption = numeroParcelas.options[numeroParcelas.selectedIndex]; // Option selecionado
+                    const juros = parseFloat(selectedOption?.dataset?.juros_parcela_i || 0); // Obtém o valor do data-juros_parcela_i
+
+                    // Verifica se é possível aplicar o juros
+                    if (totalSemJuros && !isNaN(juros)) {
+                        const totalComJuros = totalSemJuros * (1 + juros / 100); // Aplica o juros
+                        const jurosAplicado = totalComJuros - totalSemJuros; // Calcula o valor do juros aplicado
+
+                        // Atualiza os campos
+                        totalField.value = totalComJuros.toFixed(2); // Atualiza o campo de total
+                        juros_aplicado.value = jurosAplicado.toFixed(2); // Atualiza o hidden com o novo valor de juros
+                    }
+                }
+
+                // Função para inicializar o valor base total
+                function initializeBaseTotal() {
+                    const baseTotal = parseFloat(totalField.value || 0); // Obtém o valor atual do total ou usa 0
+                    totalField.dataset.baseTotal = baseTotal; // Armazena o valor inicial do total como base
+                    juros_aplicado.value = '0'; // Reseta o campo de juros
+                }
+
+                // Inicializa o valor base do total ao carregar a página
+                initializeBaseTotal();
+
+                // Evento para atualizar os juros ao mudar o número de parcelas
+                numeroParcelas.addEventListener('change', () => {
+                    // Aplica o delay antes de recalcular os juros
+                    clearTimeout(timeout); // Cancela qualquer timeout anterior
+                    timeout = setTimeout(() => {
+                        applyJuros(); // Aplica os juros com base na parcela selecionada
+                    }, 1000); // Delay de 1 segundo
+                });
+
+                // Observa mudanças no valor do campo de total
+                const observer = new MutationObserver(() => {
+                    const currentTotalValue = totalField.value;
+
+                    // Verifica se o valor do total realmente mudou
+                    if (currentTotalValue !== previousTotalValue) {
+                        previousTotalValue = currentTotalValue; // Atualiza o valor anterior
+
+                        // Aplica o delay antes de recalcular os juros
+                        clearTimeout(timeout); // Cancela qualquer timeout anterior
+                        timeout = setTimeout(() => {
+                            applyJuros(); // Recalcula os juros com o novo total
+                        }, 1000); // Delay de 1 segundo
+                    }
+                });
+
+                // Configurar o observer para monitorar alterações no atributo 'value' do totalField
+                observer.observe(totalField, {
+                    attributes: true,
+                    attributeFilter: ['value']
+                });
+
+                // Tornando as funções globais
+                window.applyJuros = applyJuros; // Agora você pode chamar applyJuros() globalmente
+                window.initializeBaseTotal = initializeBaseTotal; // Para garantir que o baseTotal seja atualizado
+            });
+
+            // Botão para alterar cartão
+            document.addEventListener('DOMContentLoaded', () => {
+                const alterarCartaoButton = document.getElementById('altera cartão'); // Botão para alterar o cartão
+                const formaPagamentoSelect = document.getElementById('forma_pagamento'); // Select de forma de pagamento
+
+                // Evento de clique no botão
+                alterarCartaoButton.addEventListener('click', () => {
+                    formaPagamentoSelect.selectedIndex = 0; // Define o select para a primeira opção
+                });
+            });
+
+            document.addEventListener('DOMContentLoaded', () => {
+                const cartaoTipo = document.getElementById('cartao_tipo'); // Select de cartão
+                const formaPagamento = document.getElementById('forma_pagamento'); // Select de forma de pagamento
+                const jurosAplicado = document.getElementById('juros_aplicado'); // Campo hidden de juros aplicado
+                const totalField = document.getElementById('total'); // Campo de total
+
+                // Função para subtrair o valor de juros do total
+                function removeJurosFromTotal() {
+                    const juros = parseFloat(jurosAplicado.value || 0); // Obtém o valor do juros aplicado
+                    const total = parseFloat(totalField.value || 0); // Obtém o valor atual do total
+
+                    if (!isNaN(juros) && !isNaN(total)) {
+                        const newTotal = total - juros; // Subtrai o juros do total
+                        totalField.value = newTotal.toFixed(2); // Atualiza o total com o novo valor
+                        jurosAplicado.value = '0'; // Reseta o campo de juros aplicado
+                    }
+                }
+
+                // Adiciona os eventos de mudança nos selects
+                cartaoTipo.addEventListener('change', removeJurosFromTotal);
+                formaPagamento.addEventListener('change', removeJurosFromTotal);
+            });
+        </script>
