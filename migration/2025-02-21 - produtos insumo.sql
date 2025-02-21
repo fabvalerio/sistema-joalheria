@@ -1,0 +1,1 @@
+ALTER TABLE `produtos` ADD `insumo` INT NULL AFTER `url`;

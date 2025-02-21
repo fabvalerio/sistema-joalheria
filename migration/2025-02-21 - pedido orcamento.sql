@@ -1,0 +1,1 @@
+ALTER TABLE `pedidos` ADD `orcamento` INT NULL AFTER `data_entrega`;

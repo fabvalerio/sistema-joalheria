@@ -31,6 +31,7 @@
         <div id="menuOperacoes" class="collapse <?php echo in_array($link[1], ['Pedidos', 'ImpressaoEtiquetas', 'Consignacao', 'Consignacao']) ? 'show' : ''; ?>" aria-labelledby="headingOperacoes" data-bs-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
                 <a class="collapse-item" href="<?php echo "{$url}!/Pedidos/cadastro" ?>">Novo Pedido</a>
+                <a class="collapse-item" href="<?php echo "{$url}!/Orcamento/cadastro" ?>">Novo Orçamento</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Pedidos/listar" ?>">Pedidos</a>
                 <!-- <a class="collapse-item" href="<?php echo "{$url}!/Fabrica/listar" ?>">Fábrica</a> -->
                 <a class="collapse-item" href="<?php echo "{$url}!/ImpressaoEtiquetas/listar" ?>">Impressão de Etiquetas</a>
@@ -49,6 +50,7 @@
         <div id="gerenciamentoProdutos" class="collapse <?php echo in_array($link[1], ['Produtos', 'GrupoProdutos', 'SubGrupoProdutos', 'Tipos', 'Cotacoes', 'EntradaMercadorias', 'MovimentacaoEstoque']) ? 'show' : ''; ?>" aria-labelledby="headingGerProdutos" data-bs-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
                 <a class="collapse-item" href="<?php echo "{$url}!/Produtos/listar" ?>">Produtos</a>
+                <a class="collapse-item" href="<?php echo "{$url}!/Insumos/listar" ?>">Insumos</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/GrupoProdutos/listar" ?>">Grupo de Produtos</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/SubGrupoProdutos/listar" ?>">Subgrupo de Produtos</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Definicoes/listar" ?>">Definições</a>
