@@ -9,7 +9,7 @@ $produtos = $controller->listar();
 
 <div class="card">
     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-        <h3 class="card-title">Produtos</h3>
+        <h3 class="card-title">Insumos</h3>
         <a href="<?php echo "{$url}!/{$link[1]}/cadastro"; ?>" class="btn btn-white text-primary">Adicionar</a>
     </div>
 

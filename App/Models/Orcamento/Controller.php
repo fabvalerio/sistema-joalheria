@@ -29,6 +29,8 @@ class Controller
                         clientes c ON p.cliente_id = c.id
                     LEFT JOIN 
                         fabrica as f ON p.id = f.pedido_id
+                    WHERE 
+                        p.orcamento = '1'
                     ORDER BY 
                         p.data_pedido DESC
                 ");
@@ -104,10 +106,10 @@ class Controller
         $db->query("
             INSERT INTO pedidos (
                 cliente_id, data_pedido, forma_pagamento, acrescimo, desconto, 
-                observacoes, total, valor_pago, cod_vendedor, status_pedido, data_entrega
+                observacoes, total, valor_pago, cod_vendedor, status_pedido, data_entrega, orcamento
             ) VALUES (
                 :cliente_id, :data_pedido, :forma_pagamento, :acrescimo, :desconto, 
-                :observacoes, :total, :valor_pago, :cod_vendedor, :status_pedido, :data_entrega
+                :observacoes, :total, :valor_pago, :cod_vendedor, :status_pedido, :data_entrega, 1
             )
         ");
 
@@ -372,6 +374,7 @@ class Controller
             produtos p
         LEFT JOIN 
             estoque e ON p.id = e.produtos_id
+        WHERE p.insumo = 1
         ORDER BY 
             p.descricao_etiqueta ASC
     ");

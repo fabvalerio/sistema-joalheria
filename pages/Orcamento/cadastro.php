@@ -63,10 +63,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 
 ?>
-
+<link href="<?php echo $url?>vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
 <div class="card">
     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-        <h3 class="card-title">Cadastro de Pedido</h3>
+        <h3 class="card-title">Cadastro de Orçamento</h3>
         <a href="<?php echo "{$url}!/{$link[1]}/listar" ?>" class="btn btn-warning text-primary">Voltar</a>
     </div>
 
@@ -75,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="row g-3">
                 <div class="col-12">
                     <hr>
-                    <h4 class="card-title">Dados do Pedido</h4>
+                    <h4 class="card-title">Dados do Orçamento</h4>
                 </div>
                 <!-- Dados principais -->
                 <div class="col-lg-6">
@@ -109,13 +109,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <select class="form-select" id="status_pedido" name="status_pedido" required>
                         <option value="Pendente">Pendente</option>
                         <option value="Pago">Pago</option>
-                        
+
                     </select>
                 </div>
 
                 <div class="col-12">
                     <hr>
-                    <h4 class="card-title">Produtos do Pedido</h4>
+                    <h4 class="card-title">Itens do Pedido</h4>
                 </div>
 
                 <!-- Seção de Produtos -->
@@ -124,7 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <!-- Campo inicial para produtos -->
                         <div class="row g-3 align-items-end product-item mb-2">
                             <div class="col-lg-4">
-                                <label class="form-label">Produto</label>
+                                <label class="form-label">Item</label>
                                 <input type="text" class="form-control product-input" name="produtos[0][descricao_produto]" placeholder="Clique para selecionar um produto" readonly data-index="0">
                                 <input type="hidden" name="produtos[0][id]" class="product-id">
                                 <input type="hidden" name="produtos[0][valor_unitario]" class="product-price">
@@ -166,8 +166,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <div class="col-lg-4">
                     <label>Enviar para Fábrica</label>
                     <div class="form-check mt-3">
-                    <input class="form-check-input" type="checkbox" name="fabrica" id="inlineRadio1" value="true">
-                    <label class="form-check-label" for="inlineRadio1">Sim</label>
+                        <input class="form-check-input" type="checkbox" name="fabrica" id="inlineRadio1" value="true">
+                        <label class="form-check-label" for="inlineRadio1">Sim</label>
                     </div>
                 </div>
                 <div class="col-12">
@@ -358,6 +358,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
+                            <button type="button" class="btn btn-primary btn-select-product-branco"
+                            data-id="0"
+                                                        data-name=""
+                                                        data-price="0"
+                                                        data-estoque="1000">
+                                                        Campo em Branco
+                                                    </button>
                                 <table class="table table-bordered table-hover">
                                     <thead>
                                         <tr>
@@ -388,6 +395,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                         <?php endforeach; ?>
                                     </tbody>
                                 </table>
+                                <!-- botao para adicionar um novo -->
+                                
                             </div>
                         </div>
                     </div>
@@ -452,6 +461,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             parentItem.querySelector('.product-price').value = productPrice;
                             parentItem.querySelector('.estoque_atual').value = estoque_atual;
                             parentItem.querySelector('.product-price-display').value = productPrice;
+                        }
+
+                        modal.hide(); // Fecha o modal
+                    }
+                });
+                // Selecionar produto no modal branco
+                document.addEventListener('click', function(e) {
+                    if (e.target && e.target.classList.contains('btn-select-product-branco')) {
+                        const productId = e.target.getAttribute('data-id');
+                        const productName = e.target.getAttribute('data-name');
+                        const productPrice = e.target.getAttribute('data-price');
+                        const activeInput = document.querySelector(`.product-input[data-index="${activeIndex}"]`);
+                        const estoque_atual = e.target.getAttribute('data-estoque');
+
+                        if (activeInput) {
+                            activeInput.value = productName;
+                            const parentItem = activeInput.closest('.product-item');
+                            parentItem.querySelector('.product-id').value = productId;
+                            parentItem.querySelector('.product-price').value = productPrice;
+                            parentItem.querySelector('.estoque_atual').value = estoque_atual;
+                            parentItem.querySelector('.product-price-display').value = productPrice;
+                            //tira o readonly do input .product-input[data-index="${activeIndex}"]
+                            parentItem.querySelector('.product-input').removeAttribute('readonly');
+                            //tira o read only do price
+                            parentItem.querySelector('.product-price-display').removeAttribute('readonly');
+                            //evita clique no .product-input[data-index="${activeIndex}"]
+                            parentItem.querySelector('.product-input').setAttribute('onclick', 'event.stopPropagation();');
+                            
                         }
 
                         modal.hide(); // Fecha o modal
@@ -666,3 +703,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 formaPagamento.addEventListener('change', removeJurosFromTotal);
             });
         </script>
+          <!-- Arquivos JavaScript do DataTables -->
+    <script src="<?php echo $url?>vendor/datatables/jquery.dataTables.min.js"></script>
+    <script src="<?php echo $url?>vendor/datatables/dataTables.bootstrap4.min.js"></script>
+    <script src="<?php echo $url?>js/demo/datatables-demo.js"></script>
+    
+    <!-- Inicialização da Tabela com DataTables -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            $('#example').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.11.3/i18n/Portuguese-Brasil.json"
+                }
+            });
+        });
+    </script>

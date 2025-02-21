@@ -33,6 +33,7 @@ class Controller
             LEFT JOIN subgrupo_produtos sg ON p.subgrupo_id = sg.id
             LEFT JOIN cotacoes c ON p.cotacao = c.id
             LEFT JOIN estoque e ON p.id = e.produtos_id
+            Where p.insumo = 1
             ORDER BY p.descricao_etiqueta
         ");
         return $db->resultSet();
@@ -100,11 +101,11 @@ class Controller
         INSERT INTO produtos (
             descricao_etiqueta, fornecedor_id, modelo, macica_ou_oca, numeros, pedra, 
             nat_ou_sint, peso, aros, cm, pontos, mm, grupo_id, subgrupo_id, unidade, 
-            estoque_princ, cotacao, preco_ql, peso_gr, custo, margem, em_reais, capa
+            estoque_princ, cotacao, preco_ql, peso_gr, custo, margem, em_reais, capa, insumo
         ) VALUES (
             :descricao_etiqueta, :fornecedor_id, :modelo, :macica_ou_oca, :numeros, :pedra, 
             :nat_ou_sint, :peso, :aros, :cm, :pontos, :mm, :grupo_id, :subgrupo_id, :unidade, 
-            :estoque_princ, :cotacao, :preco_ql, :peso_gr, :custo, :margem, :em_reais, :capa
+            :estoque_princ, :cotacao, :preco_ql, :peso_gr, :custo, :margem, :em_reais, :capa, 1
         )
     ");
 
