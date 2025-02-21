@@ -1,0 +1,1 @@
+ALTER TABLE pedidos_itens DROP FOREIGN KEY ped_prod;

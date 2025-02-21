@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Capturar os produtos enviados via POST
     if (!empty($_POST['produtos'])) {
         foreach ($_POST['produtos'] as $produto) {
-            if (!empty($produto['id']) && !empty($produto['quantidade']) && !empty($produto['preco'])) {
+            if (!empty($produto['quantidade']) && !empty($produto['preco'])) {
                 $dados['itens'][] = [
                     'descricao_produto' => $produto['descricao_produto'],
                     'produto_id' => (int)$produto['id'], // ID do produto
@@ -359,7 +359,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             </div>
                             <div class="modal-body">
                             <button type="button" class="btn btn-primary btn-select-product-branco"
-                            data-id="0"
+                            data-id=""
                                                         data-name=""
                                                         data-price="0"
                                                         data-estoque="1000">
@@ -488,7 +488,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             parentItem.querySelector('.product-price-display').removeAttribute('readonly');
                             //evita clique no .product-input[data-index="${activeIndex}"]
                             parentItem.querySelector('.product-input').setAttribute('onclick', 'event.stopPropagation();');
-                            
                         }
 
                         modal.hide(); // Fecha o modal
@@ -702,19 +701,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 cartaoTipo.addEventListener('change', removeJurosFromTotal);
                 formaPagamento.addEventListener('change', removeJurosFromTotal);
             });
+
+            document.addEventListener('change', function(event) {
+  // Verifica se o input que disparou o evento é de preço
+  if (event.target.matches('input[name*="[preco]"]')) {
+    const inputPreco = event.target;
+    const nome = inputPreco.getAttribute('name');
+    const regex = /produtos\[(\d+)\]\[preco\]/;
+    const match = nome.match(regex);
+
+    if(match) {
+      const indice = match[1];
+      // Seleciona o input oculto correspondente com o mesmo índice
+      const inputValorUnitario = document.querySelector('input[name="produtos[' + indice + '][valor_unitario]"]');
+      if(inputValorUnitario) {
+        inputValorUnitario.value = inputPreco.value;
+      }
+    }
+  }
+});
         </script>
-          <!-- Arquivos JavaScript do DataTables -->
-    <script src="<?php echo $url?>vendor/datatables/jquery.dataTables.min.js"></script>
-    <script src="<?php echo $url?>vendor/datatables/dataTables.bootstrap4.min.js"></script>
-    <script src="<?php echo $url?>js/demo/datatables-demo.js"></script>
-    
-    <!-- Inicialização da Tabela com DataTables -->
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            $('#example').DataTable({
-                "language": {
-                    "url": "//cdn.datatables.net/plug-ins/1.11.3/i18n/Portuguese-Brasil.json"
-                }
-            });
-        });
-    </script>

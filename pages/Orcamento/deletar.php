@@ -74,7 +74,7 @@ if (isset($link['4']) && $link['4'] == 'deletar') {
             <tbody>
                 <?php foreach ($return['itens'] as $item): ?>
                     <tr>
-                        <td><?= htmlspecialchars($item['nome_produto'] ?? 'Produto não encontrado') ?></td>
+                        <td><?= htmlspecialchars($item['nome_produto'] ?? $item['descricao_produto']) ?></td>
                         <td><?= htmlspecialchars($item['quantidade'] ?? '0') ?></td>
                         <td>R$<?= number_format($item['valor_unitario'], 2, ',', '.') ?></td>
                         <td>R$<?= number_format(($item['quantidade'] ?? 0) * ($item['valor_unitario'] ?? 0), 2, ',', '.') ?></td>

@@ -56,8 +56,8 @@ class Controller
                             p.data_entrega,
                             p.observacoes,
                             c.nome_pf,
-                            c.nome_fantasia_pj,
-                            f.status as status_fabrica
+                            c.nome_fantasia_pj
+                            -- f.status as status_fabrica
                         FROM 
                             pedidos p
                         LEFT JOIN 
@@ -75,7 +75,8 @@ class Controller
             pi.quantidade, 
             pi.valor_unitario, 
             pi.desconto_percentual, 
-            pr.descricao_etiqueta AS nome_produto
+            pr.descricao_etiqueta AS nome_produto,
+            pi.descricao_produto AS descricao_produto
         FROM 
             pedidos_itens pi
         LEFT JOIN 
@@ -137,28 +138,30 @@ class Controller
 
             // Inserir os itens do pedido
             foreach ($dados['itens'] as $item) {
-                if (!isset($item['produto_id'], $item['quantidade'], $item['valor_unitario'])) {
+                if (!isset($item['quantidade'], $item['valor_unitario'])) {
                     continue; // Ignorar itens inválidos
                 }
 
                 $db->query("
                     INSERT INTO pedidos_itens (
-                        pedido_id, produto_id, quantidade, valor_unitario, desconto_percentual
+                        pedido_id, produto_id, quantidade, valor_unitario, desconto_percentual, descricao_produto
                     ) VALUES (
-                        :pedido_id, :produto_id, :quantidade, :valor_unitario, :desconto_percentual
+                        :pedido_id, :produto_id, :quantidade, :valor_unitario, :desconto_percentual, :descricao_produto
                     )
                 ");
                 $db->bind(":pedido_id", $pedidoId);
                 $db->bind(":produto_id", $item['produto_id']);
                 $db->bind(":quantidade", $item['quantidade']);
                 $db->bind(":valor_unitario", $item['valor_unitario']);
+                $db->bind(":descricao_produto", $item['descricao_produto']);
                 $db->bind(":desconto_percentual", $item['desconto_percentual'] ?? 0);
 
                 if (!$db->execute()) {
                     return false; // Retorna falso se a inserção de um item falhar
                 }
 
-
+//if status_pedido for pago
+                if ($item['produto_id'] != null) {
                 //inserir em movimentação de estoque
                 $db->query("
                     INSERT INTO movimentacao_estoque (
@@ -193,6 +196,7 @@ class Controller
 
                 if (!$db->execute()) {
                     return false; // Retorna falso se a atualização de estoque falhar
+                }
                 }
 
 

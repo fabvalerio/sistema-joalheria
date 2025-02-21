@@ -97,7 +97,7 @@ $itens = $dados['itens'];
             <tbody>
                 <?php foreach ($itens as $item): ?>
                     <tr>
-                        <td><?= htmlspecialchars($item['nome_produto'] ?? 'Produto não encontrado') ?></td>
+                        <td><?= htmlspecialchars($item['nome_produto'] ?? $item['descricao_produto']) ?></td>
                         <td><?= htmlspecialchars($item['quantidade']) ?></td>
                         <td>
                             R$<?= isset($item['valor_unitario']) 
