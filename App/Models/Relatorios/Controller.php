@@ -150,7 +150,7 @@ class Controller
         $db = new db();
 
         // Calcular o número total de registros
-        $queryTotal = "SELECT COUNT(*) as total FROM pedidos WHERE id > 0 " . $where;
+        $queryTotal = "SELECT COUNT(*) as total FROM pedidos WHERE id > 0 AND orcamento is null " . $where . " " . $where2;
         $db->query($queryTotal);
         $totalRegistros = $db->resultSet()[0]['total'];
 
@@ -164,7 +164,7 @@ class Controller
                     FROM pedidos 
                     LEFT JOIN clientes 
                     ON pedidos.cliente_id = clientes.id
-                    WHERE pedidos.id > 0 " . $where . " " . $where2 . " AND orcamento = '' ORDER BY pedidos.data_pedido ASC LIMIT {$itensPorPagina} OFFSET {$offset}";
+                    WHERE pedidos.id > 0 AND orcamento is null " . $where . " " . $where2 . " ORDER BY pedidos.data_pedido ASC LIMIT {$itensPorPagina} OFFSET {$offset}";
         $db->query($query);
         $registros = $db->resultSet();
 
@@ -224,8 +224,8 @@ class Controller
 
         // Construir a query base
         $query = "SELECT *,
-                    (SELECT SUM(total) FROM pedidos WHERE status_pedido = 'Pendente' {$where}) AS Pendente,
-                    (SELECT SUM(total) FROM pedidos WHERE status_pedido = 'Pago' {$where}) AS Pago
+                    (SELECT SUM(total) FROM pedidos WHERE orcamento is null AND status_pedido = 'Pendente' {$where}) AS Pendente,
+                    (SELECT SUM(total) FROM pedidos WHERE orcamento is null AND status_pedido = 'Pago' {$where}) AS Pago
                     FROM pedidos
                     ORDER BY data_pedido ASC";
 
