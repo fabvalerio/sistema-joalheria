@@ -29,10 +29,10 @@
         </a>
         <div id="operacoesVendas" class="collapse <?php echo in_array($link[1], ['Pedidos', 'Orcamento']) ? 'show' : ''; ?>" aria-labelledby="headingOperacoesVendas" data-bs-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
-                <a class="collapse-item" href="<?php echo "{$url}!/Pedidos/cadastro" ?>">Novo Pedido</a>
-                <a class="collapse-item" href="<?php echo "{$url}!/Pedidos/listar" ?>">Pedidos</a>
-                <a class="collapse-item" href="<?php echo "{$url}!/Orcamento/cadastro" ?>">Novo Orçamento</a>
-                <a class="collapse-item" href="<?php echo "{$url}!/Orcamento/listar" ?>">Orçamentos</a>
+                <a class="collapse-item" href="<?php echo "{$url}!/Pedidos/cadastro" ?>">Nova Venda</a>
+                <a class="collapse-item" href="<?php echo "{$url}!/Pedidos/listar" ?>">Todas Vendas</a>
+                <a class="collapse-item" href="<?php echo "{$url}!/Orcamento/cadastro" ?>">Novo Pedido</a>
+                <a class="collapse-item" href="<?php echo "{$url}!/Orcamento/listar" ?>">Todos Pedidos</a>
             </div>
         </div>
     </li>
