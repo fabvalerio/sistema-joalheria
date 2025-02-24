@@ -32,8 +32,8 @@ $r = $controller->somaVendas($inicio, $fim);
                                 <label class="form-label fw-bold">Tipo</label>
                                 <select name="tipo" id="tipo" class="form-select">
                                     <option value="" <?php echo ($tipo == '') ? 'selected' : ''; ?>>Todos</option>
-                                    <option value="Cartão de Crédito" <?php echo ($tipo == 'Cartão de Crédito') ? 'selected' : ''; ?>>Cartão de Crédito</option>
-                                    <option value="Cartão de Débito" <?php echo ($tipo == 'Cartão de Débito') ? 'selected' : ''; ?>>Cartão de Débito</option>
+                                    <option value="Crédito" <?php echo ($tipo == 'Cartão de Crédito') ? 'selected' : ''; ?>>Cartão de Crédito</option>
+                                    <option value="Débito" <?php echo ($tipo == 'Cartão de Débito') ? 'selected' : ''; ?>>Cartão de Débito</option>
                                     <option value="Dinheiro" <?php echo ($tipo == 'Dinheiro') ? 'selected' : ''; ?>>Dinheiro</option>
                                 </select>
                             </div>
