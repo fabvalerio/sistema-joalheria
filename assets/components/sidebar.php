@@ -1,69 +1,86 @@
 <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
-    <!-- Sidebar - Brand -->
-    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="<?php echo $url?>">
-        <div class="sidebar-brand-text mx-3">
-            <img src="<?php echo $url ?>assets/logo.png" alt="Joalheria" style="width: 100px;">
-        </div>
-    </a>
-
-    <!-- Divider -->
+    <!-- Seção: Início -->
+    <li class="nav-item brand">
+        <a class="sidebar-brand d-flex align-items-center justify-content-center" href="<?php echo $url?>">
+            <div class="sidebar-brand-text mx-3">
+                <img src="<?php echo $url ?>assets/logo.png" alt="Joalheria" style="width: 100px;">
+            </div>
+        </a>
+    </li>
     <hr class="sidebar-divider my-0" />
-
-    <!-- Nav Item - Dashboard -->
     <li class="nav-item active">
         <a class="nav-link" href="<?php echo $url?>">
             <i class="fas fa-fw fa-tachometer-alt"></i>
             <span>Meu Painel</span>
         </a>
     </li>
-
-    <!-- Divider -->
     <hr class="sidebar-divider" />
 
-    <!-- OPERACOES -->
+    <!-- Seção: Vendas e Operações -->
+    <div class="sidebar-heading">
+        Vendas e Operações
+    </div>
     <li class="nav-item">
-        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#menuOperacoes" 
-           aria-expanded="false" aria-controls="menuOperacoes">
-            <i class="fas fa-fw fa-briefcase"></i>
-            <span>Operações</span>
+        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#operacoesVendas" 
+           aria-expanded="false" aria-controls="operacoesVendas">
+            <i class="fas fa-fw fa-shopping-cart"></i>
+            <span>Pedidos & Orçamentos</span>
         </a>
-        <div id="menuOperacoes" class="collapse <?php echo in_array($link[1], ['Pedidos', 'ImpressaoEtiquetas', 'Consignacao', 'Consignacao']) ? 'show' : ''; ?>" aria-labelledby="headingOperacoes" data-bs-parent="#accordionSidebar">
+        <div id="operacoesVendas" class="collapse <?php echo in_array($link[1], ['Pedidos', 'Orcamento']) ? 'show' : ''; ?>" aria-labelledby="headingOperacoesVendas" data-bs-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
                 <a class="collapse-item" href="<?php echo "{$url}!/Pedidos/cadastro" ?>">Novo Pedido</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Pedidos/listar" ?>">Pedidos</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Orcamento/cadastro" ?>">Novo Orçamento</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Orcamento/listar" ?>">Orçamentos</a>
-                <!-- <a class="collapse-item" href="<?php echo "{$url}!/Fabrica/listar" ?>">Fábrica</a> -->
+            </div>
+        </div>
+    </li>
+    <!-- Serviços Adicionais -->
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#servicosExtras" 
+           aria-expanded="false" aria-controls="servicosExtras">
+            <i class="fas fa-fw fa-print"></i>
+            <span>Serviços Extras</span>
+        </a>
+        <div id="servicosExtras" class="collapse <?php echo in_array($link[1], ['ImpressaoEtiquetas', 'Consignacao']) ? 'show' : ''; ?>" aria-labelledby="headingServicosExtras" data-bs-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
                 <a class="collapse-item" href="<?php echo "{$url}!/ImpressaoEtiquetas/listar" ?>">Impressão de Etiquetas</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Consignacao/listar" ?>">Consignação</a>
             </div>
         </div>
     </li>
+    <hr class="sidebar-divider" />
 
-    <!-- GERENCIAMENTO DE PRODUTOS -->
+    <!-- Seção: Estoque e Produtos -->
+    <div class="sidebar-heading">
+        Estoque e Produtos
+    </div>
     <li class="nav-item">
-        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#gerenciamentoProdutos" 
-           aria-expanded="false" aria-controls="gerenciamentoProdutos">
+        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#produtosEstoque" 
+           aria-expanded="false" aria-controls="produtosEstoque">
             <i class="fas fa-fw fa-box"></i>
-            <span>Gerenciamento Produtos</span>
+            <span>Produtos & Estoque</span>
         </a>
-        <div id="gerenciamentoProdutos" class="collapse <?php echo in_array($link[1], ['Produtos', 'GrupoProdutos', 'SubGrupoProdutos', 'Tipos', 'Cotacoes', 'EntradaMercadorias', 'MovimentacaoEstoque']) ? 'show' : ''; ?>" aria-labelledby="headingGerProdutos" data-bs-parent="#accordionSidebar">
+        <div id="produtosEstoque" class="collapse <?php echo in_array($link[1], ['Produtos', 'Insumos', 'GrupoProdutos', 'SubGrupoProdutos', 'Definicoes', 'Cotacoes', 'EntradaMercadorias', 'MovimentacaoEstoque']) ? 'show' : ''; ?>" aria-labelledby="headingProdutosEstoque" data-bs-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
                 <a class="collapse-item" href="<?php echo "{$url}!/Produtos/listar" ?>">Produtos</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Insumos/listar" ?>">Insumos</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/GrupoProdutos/listar" ?>">Grupo de Produtos</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/SubGrupoProdutos/listar" ?>">Subgrupo de Produtos</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Definicoes/listar" ?>">Definições</a>
-                <!-- <a class="collapse-item" href="<?php echo "{$url}!/Tipos/listar" ?>">Tipos</a> -->
                 <a class="collapse-item" href="<?php echo "{$url}!/Cotacoes/listar" ?>">Cotações</a>
-                <a class="collapse-item" href="<?php echo "{$url}!/EntradaMercadorias/listar" ?>">Entrada de Mercadoria</a>
-                <a class="collapse-item" href="<?php echo "{$url}!/MovimentacaoEstoque/listar" ?>">Movimentação de Estoque</a>
+                <a class="collapse-item" href="<?php echo "{$url}!/EntradaMercadorias/listar" ?>">Entrada de Mercadorias</a>
+                <a class="collapse-item" href="<?php echo "{$url}!/MovimentacaoEstoque/listar" ?>">Estoque</a>
             </div>
         </div>
     </li>
+    <hr class="sidebar-divider" />
 
-    <!-- FINANCEIRO -->
+    <!-- Seção: Financeiro -->
+    <div class="sidebar-heading">
+        Financeiro
+    </div>
     <li class="nav-item">
         <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#financeiro" 
            aria-expanded="false" aria-controls="financeiro">
@@ -80,8 +97,12 @@
             </div>
         </div>
     </li>
+    <hr class="sidebar-divider" />
 
-    <!-- CADASTROS -->
+    <!-- Seção: Cadastros -->
+    <div class="sidebar-heading">
+        Cadastros
+    </div>
     <li class="nav-item">
         <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#cadastros" 
            aria-expanded="false" aria-controls="cadastros">
@@ -99,14 +120,19 @@
             </div>
         </div>
     </li>
+    <hr class="sidebar-divider" />
 
-    <!-- RELATORIOS -->
+    <!-- Seção: Relatórios e Fábrica -->
+    <div class="sidebar-heading">
+        Relatórios & Fábrica
+    </div>
     <li class="nav-item">
-        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#relatorios"  aria-expanded=" <?php echo $link[1] == 'Relatorios' ? 'true' : 'false' ?>" aria-controls="relatorios">
-            <i class="fas fa-fw fa-users"></i>
+        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#relatorios" 
+           aria-expanded="false" aria-controls="relatorios">
+            <i class="fas fa-fw fa-chart-line"></i>
             <span>Relatórios</span>
         </a>
-        <div id="relatorios" class="collapse <?php echo $link[1] == 'Relatorios' ? 'show' : '' ?>" aria-labelledby="headingrelatorios" data-bs-parent="#accordionSidebar">
+        <div id="relatorios" class="collapse <?php echo $link[1] == 'Relatorios' ? 'show' : ''; ?>" aria-labelledby="headingRelatorios" data-bs-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
                 <a class="collapse-item" href="<?php echo "{$url}!/Relatorios/vendas" ?>">Vendas</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Relatorios/financeiros" ?>">Financeiros</a>
@@ -114,35 +140,29 @@
             </div>
         </div>
     </li>
-
-    <!-- FABRICA -->
     <li class="nav-item">
-        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#fabrica"  aria-expanded=" <?php echo $link[1] == 'Fabrica' ? 'true' : 'false' ?>" aria-controls="fabrica">
-            <i class="fas fa-fw fa-users"></i>
+        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#fabrica" 
+           aria-expanded="false" aria-controls="fabrica">
+            <i class="fas fa-fw fa-industry"></i>
             <span>Fábrica</span>
         </a>
-        <div id="fabrica" class="collapse <?php echo $link[1] == 'Fabrica' ? 'show' : '' ?>" aria-labelledby="headingfabrica" data-bs-parent="#accordionSidebar">
+        <div id="fabrica" class="collapse <?php echo $link[1] == 'Fabrica' ? 'show' : ''; ?>" aria-labelledby="headingFabrica" data-bs-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
                 <a class="collapse-item" href="<?php echo "{$url}!/Fabrica/aberto" ?>">Aberto</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Fabrica/finalizado" ?>">Finalizado</a>
             </div>
         </div>
     </li>
-
-    <!-- Divider -->
     <hr class="sidebar-divider d-none d-md-block" />
 
-    <!-- Sair -->
+    <!-- Seção: Sair -->
     <li class="nav-item">
         <a class="nav-link" href="<?php echo "{$url}sair.php"?>">
             <i class="fas fa-fw fa-sign-out-alt"></i>
             <span>Sair</span>
         </a>
     </li>
-
-    <!-- Sidebar Toggler (Sidebar) -->
     <div class="text-center d-none d-md-inline">
         <button class="rounded-circle border-0" id="sidebarToggle"></button>
     </div>
-
 </ul>
