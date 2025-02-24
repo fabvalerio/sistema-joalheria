@@ -29,6 +29,8 @@ class Controller
                         clientes c ON p.cliente_id = c.id
                     LEFT JOIN 
                         fabrica as f ON p.id = f.pedido_id
+                        WHERE 
+                        p.orcamento is null
                     ORDER BY 
                         p.data_pedido DESC
                 ");
