@@ -166,3 +166,10 @@
         <button class="rounded-circle border-0" id="sidebarToggle"></button>
     </div>
 </ul>
+<script>
+  document.getElementById("sidebarToggle").addEventListener("click", function() {
+    document.getElementById("accordionSidebar").classList.toggle("toggled");
+  });
+</script>
+
+
