@@ -166,10 +166,14 @@
         <button class="rounded-circle border-0" id="sidebarToggle"></button>
     </div>
 </ul>
+<!--se o $link[1] nao existir nao coloca o js-->
+<?php if (isset($link[1])) { ?>
 <script>
   document.getElementById("sidebarToggle").addEventListener("click", function() {
     document.getElementById("accordionSidebar").classList.toggle("toggled");
   });
 </script>
+<?php } ?>
+
 
 
