@@ -102,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                 <div class="col-lg-4" style="display: none;">
                     <label for="cod_vendedor" class="form-label">Código do Vendedor</label>
-                    <input type="text" class="form-control" id="cod_vendedor" name="cod_vendedor" value="2">
+                    <input type="text" class="form-control" id="cod_vendedor" name="cod_vendedor" value="cod_vendedor">
                 </div>
                 <div class="col-lg-2">
                     <label for="status_pedido" class="form-label">Status do Pedido</label>
