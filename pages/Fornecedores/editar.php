@@ -33,6 +33,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         'agencia' => $_POST['agencia'],
         'conta' => $_POST['conta'],
         'pix' => $_POST['pix'],
+        'cep' => $_POST['cep'],
+        'whatsapp' => $_POST['whatsapp'],
+        'numero' => $_POST['numero'],
+        'bairro' => $_POST['bairro'],
     ];
 
     $return = $controller->editar($id, $dados);
@@ -89,20 +93,36 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <input type="text" class="form-control" name="telefone" value="<?= htmlspecialchars($fornecedor['telefone']) ?>">
                 </div>
                 <div class="col-lg-4">
+                    <label for="" class="form-label">WhatsApp</label>
+                    <input type="text" class="form-control" name="whatsapp" value="<?= htmlspecialchars($fornecedor['whatsapp']) ?>">
+                </div>
+                <div class="col-lg-4">
                     <label for="" class="form-label">E-mail</label>
                     <input type="email" class="form-control" name="email" value="<?= htmlspecialchars($fornecedor['email']) ?>">
                 </div>
                 <div class="col-lg-4">
+                    <label for="" class="form-label">CEP</label>
+                    <input type="text" class="form-control" id="cep" name="cep" value="<?= htmlspecialchars($fornecedor['cep']) ?>">
+                </div>
+                <div class="col-lg-6">
                     <label for="" class="form-label">Endereço</label>
-                    <input type="text" class="form-control" name="endereco" value="<?= htmlspecialchars($fornecedor['endereco']) ?>">
+                    <input type="text" class="form-control" id="endereco" name="endereco" value="<?= htmlspecialchars($fornecedor['endereco']) ?>">
+                </div>
+                <div class="col-lg-2">
+                    <label for="" class="form-label">Numero</label>
+                    <input type="text" class="form-control" id="numero" name="numero" value="<?= htmlspecialchars($fornecedor['numero']) ?>">
                 </div>
                 <div class="col-lg-4">
                     <label for="" class="form-label">Cidade</label>
-                    <input type="text" class="form-control" name="cidade" value="<?= htmlspecialchars($fornecedor['cidade']) ?>">
+                    <input type="text" class="form-control" id="cidade" name="cidade" value="<?= htmlspecialchars($fornecedor['cidade']) ?>">
+                </div>
+                <div class="col-lg-4">
+                    <label for="" class="form-label">Bairro</label>
+                    <input type="text" class="form-control" id="bairro" name="bairro" value="<?= htmlspecialchars($fornecedor['bairro']) ?>">
                 </div>
                 <div class="col-lg-4">
                     <label for="" class="form-label">Estado</label>
-                    <input type="text" class="form-control" name="estado" value="<?= htmlspecialchars($fornecedor['estado']) ?>">
+                    <input type="text" class="form-control" id="estado" name="estado" value="<?= htmlspecialchars($fornecedor['estado']) ?>">
                 </div>
                 <div class="col-lg-4">
                     <label for="" class="form-label">Contato</label>

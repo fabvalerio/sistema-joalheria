@@ -1,0 +1,1 @@
+ALTER TABLE `fornecedores` ADD `cep` VARCHAR(50) NOT NULL AFTER `email`, ADD `whatsapp` VARCHAR(50) NOT NULL AFTER `cep`, ADD `numero` VARCHAR(20) NOT NULL AFTER `endereco`, ADD `bairro` VARCHAR(100) NOT NULL AFTER `cidade`;

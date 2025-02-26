@@ -29,12 +29,12 @@ class Controller
                 razao_social, nome_fantasia, cnpj, insc_estadual, insc_municipal, 
                 condicao_pagto, vigencia_acordo, telefone, email, endereco, 
                 cidade, estado, contato, site, banco, numero_banco, 
-                agencia, conta, pix
+                agencia, conta, pix, numero, whatsapp, cep, bairro
             ) VALUES (
                 :razao_social, :nome_fantasia, :cnpj, :insc_estadual, :insc_municipal, 
                 :condicao_pagto, :vigencia_acordo, :telefone, :email, :endereco, 
                 :cidade, :estado, :contato, :site, :banco, :numero_banco, 
-                :agencia, :conta, :pix
+                :agencia, :conta, :pix, :numero, :whatsapp, :cep, :bairro
             )
         ");
         foreach ($dados as $key => $value) {
@@ -66,7 +66,11 @@ class Controller
                 numero_banco = :numero_banco, 
                 agencia = :agencia, 
                 conta = :conta, 
-                pix = :pix 
+                pix = :pix, 
+                numero = :numero, 
+                whatsapp = :whatsapp, 
+                bairro = :bairro,
+                cep = :cep
             WHERE id = :id
         ");
         foreach ($dados as $key => $value) {
