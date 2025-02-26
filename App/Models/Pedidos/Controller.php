@@ -106,10 +106,10 @@ class Controller
         $db->query("
             INSERT INTO pedidos (
                 cliente_id, data_pedido, forma_pagamento, acrescimo, desconto, 
-                observacoes, total, valor_pago, cod_vendedor, status_pedido, data_entrega
+                observacoes, total, valor_pago, cod_vendedor, status_pedido, data_entrega, observacoes
             ) VALUES (
                 :cliente_id, :data_pedido, :forma_pagamento, :acrescimo, :desconto, 
-                :observacoes, :total, :valor_pago, :cod_vendedor, :status_pedido, :data_entrega
+                :observacoes, :total, :valor_pago, :cod_vendedor, :status_pedido, :data_entrega, :observacoes
             )
         ");
 
@@ -124,7 +124,8 @@ class Controller
             'valor_pago',
             'cod_vendedor',
             'status_pedido',
-            'data_entrega'
+            'data_entrega',
+            'observacoes'
         ];
 
         foreach ($campos as $campo) {
