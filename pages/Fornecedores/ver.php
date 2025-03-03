@@ -55,12 +55,24 @@ if (!$fornecedor) {
                 <p><?= htmlspecialchars($fornecedor['telefone']) ?></p>
             </div>
             <div class="col-lg-4">
+                <label class="form-label fw-bold">WhatsApp</label>
+                <p><?= htmlspecialchars($fornecedor['whatsapp']) ?></p>
+            </div>
+            <div class="col-lg-4">
                 <label class="form-label fw-bold">E-mail</label>
                 <p><?= htmlspecialchars($fornecedor['email']) ?></p>
             </div>
             <div class="col-lg-4">
                 <label class="form-label fw-bold">Endereço</label>
                 <p><?= htmlspecialchars($fornecedor['endereco']) ?></p>
+            </div>
+            <div class="col-lg-4">
+                <label class="form-label fw-bold">Número</label>
+                <p><?= htmlspecialchars($fornecedor['numero']) ?></p>
+            </div>
+            <div class="col-lg-4">
+                <label class="form-label fw-bold">Complemento</label>
+                <p><?= htmlspecialchars($fornecedor['complemento']) ?></p>
             </div>
             <div class="col-lg-4">
                 <label class="form-label fw-bold">Cidade</label>

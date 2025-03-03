@@ -14,29 +14,30 @@ if (!$fornecedor) {
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $dados = [
-        'razao_social' => $_POST['razao_social'],
-        'nome_fantasia' => $_POST['nome_fantasia'],
-        'cnpj' => $_POST['cnpj'],
-        'insc_estadual' => $_POST['insc_estadual'],
-        'insc_municipal' => $_POST['insc_municipal'],
-        'condicao_pagto' => $_POST['condicao_pagto'],
-        'vigencia_acordo' => $_POST['vigencia_acordo'],
-        'telefone' => $_POST['telefone'],
-        'email' => $_POST['email'],
-        'endereco' => $_POST['endereco'],
-        'cidade' => $_POST['cidade'],
-        'estado' => $_POST['estado'],
-        'contato' => $_POST['contato'],
-        'site' => $_POST['site'],
-        'banco' => $_POST['banco'],
-        'numero_banco' => $_POST['numero_banco'],
-        'agencia' => $_POST['agencia'],
-        'conta' => $_POST['conta'],
-        'pix' => $_POST['pix'],
-        'cep' => $_POST['cep'],
-        'whatsapp' => $_POST['whatsapp'],
-        'numero' => $_POST['numero'],
-        'bairro' => $_POST['bairro'],
+        'razao_social' => $_POST['razao_social'] ?? '',
+        'nome_fantasia' => $_POST['nome_fantasia'] ?? '',
+        'cnpj' => $_POST['cnpj'] ?? '',
+        'insc_estadual' => $_POST['insc_estadual'] ?? '',
+        'insc_municipal' => $_POST['insc_municipal'] ?? '',
+        'condicao_pagto' => $_POST['condicao_pagto'] ?? '',
+        'vigencia_acordo' => $_POST['vigencia_acordo'] ?? '',
+        'telefone' => $_POST['telefone'] ?? '',
+        'email' => $_POST['email'] ?? '',
+        'endereco' => $_POST['endereco'] ?? '',
+        'cidade' => $_POST['cidade'] ?? '',
+        'estado' => $_POST['estado'] ?? '',
+        'contato' => $_POST['contato'] ?? '',
+        'site' => $_POST['site'] ?? '',
+        'banco' => $_POST['banco'] ?? '',
+        'numero_banco' => $_POST['numero_banco'] ?? '',
+        'agencia' => $_POST['agencia'] ?? '',
+        'conta' => $_POST['conta'] ?? '',
+        'pix' => $_POST['pix'] ?? '',
+        'cep' => $_POST['cep'] ?? '',
+        'whatsapp' => $_POST['whatsapp'] ?? '',
+        'numero' => $_POST['numero'] ?? '',
+        'complemento' => $_POST['complemento'] ?? '',
+        'bairro' => $_POST['bairro'] ?? ''
     ];
 
     $return = $controller->editar($id, $dados);
@@ -104,13 +105,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <label for="" class="form-label">CEP</label>
                     <input type="text" class="form-control" id="cep" name="cep" value="<?= htmlspecialchars($fornecedor['cep']) ?>">
                 </div>
-                <div class="col-lg-6">
+                <div class="col-lg-4">
                     <label for="" class="form-label">Endereço</label>
                     <input type="text" class="form-control" id="endereco" name="endereco" value="<?= htmlspecialchars($fornecedor['endereco']) ?>">
                 </div>
                 <div class="col-lg-2">
                     <label for="" class="form-label">Numero</label>
                     <input type="text" class="form-control" id="numero" name="numero" value="<?= htmlspecialchars($fornecedor['numero']) ?>">
+                </div>
+                <div class="col-lg-2">
+                    <label for="" class="form-label">Complemento</label>
+                    <input type="text" class="form-control" id="complemento" name="complemento" value="<?= htmlspecialchars($fornecedor['complemento']) ?>">
                 </div>
                 <div class="col-lg-4">
                     <label for="" class="form-label">Cidade</label>

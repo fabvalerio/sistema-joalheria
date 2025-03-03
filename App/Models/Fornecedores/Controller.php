@@ -23,25 +23,39 @@ class Controller
 
     public function cadastro($dados)
     {
-        $db = new db();
-        $db->query("
-            INSERT INTO fornecedores (
-                razao_social, nome_fantasia, cnpj, insc_estadual, insc_municipal, 
-                condicao_pagto, vigencia_acordo, telefone, email, endereco, 
-                cidade, estado, contato, site, banco, numero_banco, 
-                agencia, conta, pix, numero, whatsapp, cep, bairro
-            ) VALUES (
-                :razao_social, :nome_fantasia, :cnpj, :insc_estadual, :insc_municipal, 
-                :condicao_pagto, :vigencia_acordo, :telefone, :email, :endereco, 
-                :cidade, :estado, :contato, :site, :banco, :numero_banco, 
-                :agencia, :conta, :pix, :numero, :whatsapp, :cep, :bairro
-            )
-        ");
-        foreach ($dados as $key => $value) {
-            $db->bind(":$key", $value);
+        try {
+            $lista = new db();
+    
+            // Criação dinâmica de placeholders
+            $campos = implode(", ", array_keys($dados));
+            $placeholders = ":" . implode(", :", array_keys($dados));
+    
+            $sql = "INSERT INTO fornecedores ($campos) VALUES ($placeholders)";
+            $lista->query($sql);
+    
+            foreach ($dados as $campo => $valor) {
+                $lista->bind(":$campo", $valor);
+            }
+    
+            if ($lista->execute()) {
+                return [
+                    'status' => 'success',
+                    'message' => 'Cadastro realizado com sucesso!'
+                ];
+            } else {
+                return [
+                    'status' => 'error',
+                    'message' => 'Erro ao cadastrar. Tente novamente mais tarde.'
+                ];
+            }
+        } catch (Exception $e) {
+            return [
+                'status' => 'error',
+                'message' => 'Erro no banco de dados: ' . $e->getMessage()
+            ];
         }
-        return $db->execute();
     }
+    
 
     public function editar($id, $dados)
     {
