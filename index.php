@@ -194,21 +194,26 @@ if ($_COOKIE['nivel_acesso'] != "Administrador") {
 
 
     <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
     <!-- jQuery Mask Plugin -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
 
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            document.querySelector("form").addEventListener("keypress", function(event) {
+    document.addEventListener("DOMContentLoaded", function() {
+        var form = document.querySelector("form");
+        
+        // Verifica se o formulário existe na página antes de adicionar o evento
+        if (form) {
+            form.addEventListener("keypress", function(event) {
                 // Verifica se a tecla pressionada é "Enter"
                 if (event.key === "Enter") {
                     event.preventDefault(); // Bloqueia o comportamento padrão
                 }
             });
-        });
-    </script>
+        }
+    });
+</script>
 
 
 </body>

@@ -15,6 +15,43 @@ if (!empty($tipoFiltro)) {
 }
 
 ?>
+
+<!-- Custom styles for this page -->
+<link href="<?php echo $url?>vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+
+<!-- Page level plugins -->
+<script src="<?php echo $url?>vendor/datatables/jquery.dataTables.min.js"></script>
+<script src="<?php echo $url?>vendor/datatables/dataTables.bootstrap4.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+    $('#example1').DataTable({
+        "language": {
+            "sEmptyTable": "Nenhum dado disponível na tabela",
+            "sInfo": "Mostrando de _START_ até _END_ de _TOTAL_ entradas",
+            "sInfoEmpty": "Mostrando 0 até 0 de 0 entradas",
+            "sInfoFiltered": "(filtrado de _MAX_ entradas totais)",
+            "sInfoPostFix": "",
+            "sLengthMenu": "Mostrar _MENU_ entradas",
+            "sLoadingRecords": "Carregando...",
+            "sProcessing": "Processando...",
+            "sSearch": "Pesquisar:",
+            "sZeroRecords": "Nenhum registro encontrado",
+            "oPaginate": {
+                "sFirst": "Primeiro",
+                "sPrevious": "Anterior",
+                "sNext": "Próximo",
+                "sLast": "Último"
+            },
+            "oAria": {
+                "sSortAscending": ": ativar para ordenar a coluna de forma ascendente",
+                "sSortDescending": ": ativar para ordenar a coluna de forma descendente"
+            }
+        }
+    });
+    });
+</script>
+
 <div class="card">
     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
         <h3 class="card-title">Produto Definições</h3>
