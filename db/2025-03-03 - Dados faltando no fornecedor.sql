@@ -1,0 +1,1 @@
+ALTER TABLE `fornecedores` ADD `numero` VARCHAR(20) NULL AFTER `endereco`, ADD `complemento` VARCHAR(200) NULL AFTER `numero`;
