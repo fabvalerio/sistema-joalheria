@@ -64,11 +64,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   <div class="card-body">
     <form method="POST" action="" class="needs-validation" novalidate>
       <div class="row g-3">
-        <!-- Descrição Etiqueta (gerada automaticamente) -->
-        <div class="col-lg-12">
-          <label class="form-label">Descrição Etiqueta</label>
-          <input type="text" class="form-control bg-secondary text-white" name="descricao_etiqueta" id="descricao_etiqueta" readonly>
-        </div>
         <div class="col-12">
           <hr>
         </div>
@@ -118,6 +113,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
               <label class="form-label">Foto de Capa do Produto (Opcional) </label>
               <input type="file" class="form-control" name="capa" id="capa" accept="image/*">
               <input type="hidden" name="capa_base64" id="capa_base64">
+            </div>
+            <!-- Descrição Etiqueta (gerada automaticamente) -->
+            <div class="col-lg-12">
+              <label class="form-label">Descrição Etiqueta</label>
+              <input type="text" class="form-control bg-secondary text-white" name="descricao_etiqueta" id="descricao_etiqueta" readonly>
             </div>
             <!-- Descrição Adicional Etiqueta (Manual) -->
             <div class="col-lg-12">
@@ -181,21 +181,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 });
               }
             </script>
-
-            <!-- Numero (Anel) -->
-            <div class="col-lg-2">
-              <label class="form-label">Número (Anel)</label>
-              <input type="number" step="1.0" class="form-control" name="numeros" id="numeros">
-            </div>
-
-            <!-- Aros -->
-            <div class="col-lg-2">
-              <label class="form-label">Aros</label>
-              <input type="number" step="0.001" class="form-control" name="aros" id="aros">
-            </div>
-
-
-
             <!-- Material (Maciça/Oca) -->
             <div class="col-lg-2">
               <label class="form-label">Material (Maciça/Oca)</label>
@@ -205,20 +190,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <option value="Oca">Oca</option>
               </select>
             </div>
+
             <!-- Peso -->
             <div class="col-lg-2">
               <label class="form-label">Peso (g)</label>
               <input type="number" step="0.001" class="form-control" name="peso" id="peso">
             </div>
 
-            <!-- Unidade -->
+            <!-- Aros -->
             <div class="col-lg-2">
-              <label class="form-label">Unidade</label>
-              <select class="form-select" name="unidade" id="unidade">
-                <option value="unidade">Unidade</option>
-                <option value="par">Par</option>
-              </select>
+              <label class="form-label">Aros</label>
+              <input type="number" step="0.001" class="form-control" name="aros" id="aros">
             </div>
+
+            <div class="col-lg-2">
+              <label class="form-label">Centímetros (cm)</label>
+              <input type="text" class="form-control" name="cm" id="cm" placeholder="Digite o valor em centímetros">
+            </div>
+
+            <!-- Numero (Anel) -->
+            <div class="col-lg-2">
+              <label class="form-label">Número (Anel)</label>
+              <input type="number" step="1.0" class="form-control" name="numeros" id="numeros">
+            </div>
+
             <div class="col-lg-2">
               <label class="form-label">Pedra</label>
               <div class="input-group">
@@ -280,15 +275,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
               }
             </script>
 
-
-
-
-            <!-- Pontos -->
-            <div class="col-lg-2">
-              <label class="form-label">Pontos</label>
-              <input type="number" step="0.001" class="form-control" name="pontos" id="pontos">
-            </div>
-
             <!-- Natural ou Sintético -->
             <div class="col-lg-2">
               <label class="form-label">Natural ou Sintético</label>
@@ -299,16 +285,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
               </select>
             </div>
 
+            <!-- Pontos -->
+            <div class="col-lg-2">
+              <label class="form-label">Pontos</label>
+              <input type="number" step="0.001" class="form-control" name="pontos" id="pontos">
+            </div>
+
+
+
             <!-- Milímetros (mm) -->
             <div class="col-lg-2">
               <label class="form-label">Milímetros (mm)</label>
               <input type="text" class="form-control" name="mm" id="mm" placeholder="Digite o valor em milímetros">
             </div>
 
+
+            <!-- Unidade -->
             <div class="col-lg-2">
-              <label class="form-label">Centímetros (cm)</label>
-              <input type="text" class="form-control" name="cm" id="cm" placeholder="Digite o valor em centímetros">
+              <label class="form-label">Unidade</label>
+              <select class="form-select" name="unidade" id="unidade">
+                <option value="unidade">Unidade</option>
+                <option value="par">Par</option>
+              </select>
             </div>
+
+
 
             <div class="col-lg-2">
               <label class="form-label">Quantidade</label>
@@ -355,6 +356,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
               </div>
             </div>
+            <div class="col-lg-12">
+                    <label for="observacoes" class="form-label">Observações</label>
+                    <textarea class="form-control" id="observacoes" name="observacoes" rows="3"></textarea>
+                </div>
           </div>
         </div>
 
@@ -502,12 +507,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     const pesoValue = peso.value ? `${peso.value}g` : '';
     const descricao_etiqueta_manualValue = descricao_etiqueta_manual.value || '';
     const pedravalor = pedra.options[pedra.selectedIndex]?.value ? `- com ${pedra.options[pedra.selectedIndex]?.value}` : '';
-    const numerosvalor = numeros.value ? `${numeros.value}` : '';
+    const numerosvalor = numeros.value ? `Nº${numeros.value}` : '';
 
     // Criar a string apenas com valores definidos
     descricaoEtiqueta.value = [
+      `${grupoText} -`,
       subgrupoText,
-      `- ${grupoText}`,
       pedravalor,
       modeloText ? `- ${modeloText}` : '',
       numerosvalor ? `- ${numerosvalor}` : '',
