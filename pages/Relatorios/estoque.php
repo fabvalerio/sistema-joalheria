@@ -57,7 +57,7 @@ $movimentacoes = $controller->movimentos($tipo, $inicio, $fim, $pagina, 10, $url
                                 let dataFinal = $("#data_final").val();
 
                                 // Monta a URL com os parâmetros
-                                let url = "/!/Relatorios/estoque/&tipo=" + encodeURIComponent(tipo) + 
+                                let url = "/sistema-joias/!/Relatorios/estoque/&tipo=" + encodeURIComponent(tipo) + 
                                         "&data_inicio=" + encodeURIComponent(dataInicio) + 
                                         "&data_final=" + encodeURIComponent(dataFinal);
 

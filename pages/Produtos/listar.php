@@ -69,7 +69,7 @@ $produtos = $controller->listar();
             <tbody>
                 <?php foreach ($produtos as $produto): ?>
                     <tr class="align-middle">
-                        <td><?= htmlspecialchars($produto['id']) ?></td>
+                        <td><?= str_pad($produto['id'], 5, '0', STR_PAD_LEFT) ?></td>
                         <td>
                             <img
                                 src="<?= isset($produto['capa']) && !empty($produto['capa']) ? htmlspecialchars($produto['capa']) : $url . '/assets/img_padrao.webp'; ?>"

@@ -205,7 +205,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             <div class="col-lg-2">
               <label class="form-label">Centímetros (cm)</label>
-              <input type="text" class="form-control" name="cm" id="cm" placeholder="Digite o valor em centímetros">
+              <input type="number" class="form-control" name="cm" id="cm" placeholder="Digite o valor em centímetros">
             </div>
 
             <!-- Numero (Anel) -->
@@ -296,7 +296,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <!-- Milímetros (mm) -->
             <div class="col-lg-2">
               <label class="form-label">Milímetros (mm)</label>
-              <input type="text" class="form-control" name="mm" id="mm" placeholder="Digite o valor em milímetros">
+              <input type="number" class="form-control" name="mm" id="mm" placeholder="Digite o valor em milímetros">
             </div>
 
 
