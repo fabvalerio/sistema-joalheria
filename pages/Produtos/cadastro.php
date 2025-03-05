@@ -477,11 +477,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   const unidade = document.getElementById('unidade');
   const descricao_etiqueta_manual = document.getElementById('descricao_etiqueta_manual');
   const numeros = document.getElementById('numeros');
+  const aros = document.getElementById('aros');
+  const cm = document.getElementById('cm');
+
 
 
   // Adicionar listeners para atualização da descrição
 
-  [fornecedor, grupo, subgrupo, modelo, macica_ou_oca, nat_ou_sint, unidade, peso, pedra, numeros].forEach(select => {
+  [fornecedor, grupo, subgrupo, modelo, macica_ou_oca, nat_ou_sint, unidade, peso, pedra, numeros, aros, cm].forEach(select => {
     select.addEventListener('change', () => {
       if (fornecedor.value && grupo.value && subgrupo.value) {
         camposAdicionais.style.display = 'block';
@@ -504,13 +507,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     const macica_ou_ocaText = macica_ou_oca.options[macica_ou_oca.selectedIndex]?.value || '';
     const pesoValue = peso.value ? `${peso.value}g` : '';
     //aros
-    const valoaros = aros.value ? `Aros${aros.value}` : '';
+    const valoaros = aros.value ? `Aros ${aros.value}` : '';
     //cm
     const valocm = cm.value ? `${cm.value}Cm` : '';
     const numerosvalor = numeros.value ? `Nº${numeros.value}` : '';
     const pedravalor = pedra.options[pedra.selectedIndex]?.value ? `- com ${pedra.options[pedra.selectedIndex]?.value}` : '';
     const nat_ou_sintText = nat_ou_sint.options[nat_ou_sint.selectedIndex]?.value || '';
-    //const unidadeText = unidade.options[unidade.selectedIndex]?.text || '';    
+    const unidadeText = unidade.options[unidade.selectedIndex]?.text || '';    
     const descricao_etiqueta_manualValue = descricao_etiqueta_manual.value || '';
     
 
@@ -526,7 +529,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       numerosvalor ? `- ${numerosvalor}` : '',
       pedravalor,
       nat_ou_sintText ? `- ${nat_ou_sintText}` : '',
-      // ? `- ${unidadeText}` : '',
+      unidadeText ? `- ${unidadeText}` : '',
       descricao_etiqueta_manualValue ? `- [ ${descricao_etiqueta_manualValue} ]` : ''
     ].filter(text => text.trim() !== '').join(' ');
 
