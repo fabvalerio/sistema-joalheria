@@ -12,5 +12,7 @@
             "email": "valerio.fabio@gmail.com"
         }
     ],
-    "require": {}
+    "require": {
+        "picqer/php-barcode-generator": "^3.2"
+    }
 }
