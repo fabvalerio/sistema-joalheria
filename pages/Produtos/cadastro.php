@@ -499,27 +499,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   // Atualizar Descrição Etiqueta automaticamente
   function atualizarDescricaoEtiqueta() {
     const grupoText = grupo.options[grupo.selectedIndex]?.text || '';
-    const subgrupoText = subgrupo.options[subgrupo.selectedIndex]?.text || '';
+    // subgrupoText = subgrupo.options[subgrupo.selectedIndex]?.text || '';
     const modeloText = modelo.options[modelo.selectedIndex]?.value || '';
     const macica_ou_ocaText = macica_ou_oca.options[macica_ou_oca.selectedIndex]?.value || '';
-    const nat_ou_sintText = nat_ou_sint.options[nat_ou_sint.selectedIndex]?.value || '';
-    const unidadeText = unidade.options[unidade.selectedIndex]?.text || '';
     const pesoValue = peso.value ? `${peso.value}g` : '';
-    const descricao_etiqueta_manualValue = descricao_etiqueta_manual.value || '';
-    const pedravalor = pedra.options[pedra.selectedIndex]?.value ? `- com ${pedra.options[pedra.selectedIndex]?.value}` : '';
+    //aros
+    const valoaros = aros.value ? `Aros${aros.value}` : '';
+    //cm
+    const valocm = cm.value ? `${cm.value}Cm` : '';
     const numerosvalor = numeros.value ? `Nº${numeros.value}` : '';
+    const pedravalor = pedra.options[pedra.selectedIndex]?.value ? `- com ${pedra.options[pedra.selectedIndex]?.value}` : '';
+    const nat_ou_sintText = nat_ou_sint.options[nat_ou_sint.selectedIndex]?.value || '';
+    //const unidadeText = unidade.options[unidade.selectedIndex]?.text || '';    
+    const descricao_etiqueta_manualValue = descricao_etiqueta_manual.value || '';
+    
 
     // Criar a string apenas com valores definidos
     descricaoEtiqueta.value = [
-      `${grupoText} -`,
-      subgrupoText,
-      pedravalor,
+      `${grupoText} `,
+      //subgrupoText, 
       modeloText ? `- ${modeloText}` : '',
-      numerosvalor ? `- ${numerosvalor}` : '',
       macica_ou_ocaText ? `- ${macica_ou_ocaText}` : '',
-      nat_ou_sintText ? `- ${nat_ou_sintText}` : '',
-      unidadeText ? `- ${unidadeText}` : '',
       pesoValue ? `- ${pesoValue}` : '',
+      valoaros ? `- ${valoaros}` : '',
+      valocm ? `- ${valocm}` : '',
+      numerosvalor ? `- ${numerosvalor}` : '',
+      pedravalor,
+      nat_ou_sintText ? `- ${nat_ou_sintText}` : '',
+      // ? `- ${unidadeText}` : '',
       descricao_etiqueta_manualValue ? `- [ ${descricao_etiqueta_manualValue} ]` : ''
     ].filter(text => text.trim() !== '').join(' ');
 
