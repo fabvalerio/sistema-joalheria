@@ -507,7 +507,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     const macica_ou_ocaText = macica_ou_oca.options[macica_ou_oca.selectedIndex]?.value || '';
     const pesoValue = peso.value ? `${peso.value}g` : '';
     //aros
-    const valoaros = aros.value ? `Aros ${aros.value}` : '';
+    const valoaros = aros.value ? `${aros.value} Aros` : '';
     //cm
     const valocm = cm.value ? `${cm.value}Cm` : '';
     const numerosvalor = numeros.value ? `Nº${numeros.value}` : '';
