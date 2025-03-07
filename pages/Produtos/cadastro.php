@@ -106,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
           <div class="row g-3">
             <div class="col-lg-12">
               <div id="preview-container" style="text-align: center;">
-                <img id="preview-thumb" src="" alt="Preview da Imagem" style="max-width: 100%; max-height: 200px; display: none; border: 1px solid #ddd; padding: 5px; border-radius: 5px;">
+                <img id="preview-thumb" src="" alt="Preview da Imagem" style="max-width: 100%; max-height: 108px; display: none; border: 1px solid #ddd; padding: 5px; border-radius: 5px;">
               </div>
             </div>
             <div class="col-lg-12">
@@ -479,12 +479,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   const numeros = document.getElementById('numeros');
   const aros = document.getElementById('aros');
   const cm = document.getElementById('cm');
+  const mm = document.getElementById('mm');
+  const pontos = document.getElementById('pontos');
 
 
 
   // Adicionar listeners para atualização da descrição
 
-  [fornecedor, grupo, subgrupo, modelo, macica_ou_oca, nat_ou_sint, unidade, peso, pedra, numeros, aros, cm].forEach(select => {
+  [fornecedor, grupo, subgrupo, modelo, macica_ou_oca, nat_ou_sint, unidade, peso, pedra, numeros, aros, cm, mm, pontos].forEach(select => {
     select.addEventListener('change', () => {
       if (fornecedor.value && grupo.value && subgrupo.value) {
         camposAdicionais.style.display = 'block';
@@ -502,25 +504,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   // Atualizar Descrição Etiqueta automaticamente
   function atualizarDescricaoEtiqueta() {
     const grupoText = grupo.options[grupo.selectedIndex]?.text || '';
-    // subgrupoText = subgrupo.options[subgrupo.selectedIndex]?.text || '';
+    const subgrupoText = subgrupo.options[subgrupo.selectedIndex]?.text || '';
     const modeloText = modelo.options[modelo.selectedIndex]?.value || '';
     const macica_ou_ocaText = macica_ou_oca.options[macica_ou_oca.selectedIndex]?.value || '';
     const pesoValue = peso.value ? `${peso.value}g` : '';
     //aros
-    const valoaros = aros.value ? `${aros.value} Aros` : '';
+    const valoaros = aros.value ? `${aros.value}Mm` : '';
     //cm
     const valocm = cm.value ? `${cm.value}Cm` : '';
+    //mm
+    const valomm = mm.value ? `${mm.value}Mm` : '';
     const numerosvalor = numeros.value ? `Nº${numeros.value}` : '';
-    const pedravalor = pedra.options[pedra.selectedIndex]?.value ? `- com ${pedra.options[pedra.selectedIndex]?.value}` : '';
+    const pedravalor = pedra.options[pedra.selectedIndex]?.value ? `- ${pedra.options[pedra.selectedIndex]?.value}` : '';
     const nat_ou_sintText = nat_ou_sint.options[nat_ou_sint.selectedIndex]?.value || '';
     const unidadeText = unidade.options[unidade.selectedIndex]?.text || '';    
     const descricao_etiqueta_manualValue = descricao_etiqueta_manual.value || '';
+    const pontosText = pontos.value ? `${pontos.value}` : '';
     
 
     // Criar a string apenas com valores definidos
     descricaoEtiqueta.value = [
-      `${grupoText} `,
-      //subgrupoText, 
+      
+      subgrupoText, 
+      ` - ${grupoText} `,
       modeloText ? `- ${modeloText}` : '',
       macica_ou_ocaText ? `- ${macica_ou_ocaText}` : '',
       pesoValue ? `- ${pesoValue}` : '',
@@ -529,7 +535,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       numerosvalor ? `- ${numerosvalor}` : '',
       pedravalor,
       nat_ou_sintText ? `- ${nat_ou_sintText}` : '',
-      unidadeText ? `- ${unidadeText}` : '',
+      valomm ? `- ${valomm}` : '',
+      pontosText ? `- ${pontosText} pontos` : '',
       descricao_etiqueta_manualValue ? `- [ ${descricao_etiqueta_manualValue} ]` : ''
     ].filter(text => text.trim() !== '').join(' ');
 
