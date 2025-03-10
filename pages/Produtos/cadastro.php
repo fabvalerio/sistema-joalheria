@@ -526,7 +526,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     descricaoEtiqueta.value = [
       
       subgrupoText, 
-      ` - ${grupoText} `,
+      // ` - ${grupoText} `,
       modeloText ? `- ${modeloText}` : '',
       macica_ou_ocaText ? `- ${macica_ou_ocaText}` : '',
       pesoValue ? `- ${pesoValue}` : '',
