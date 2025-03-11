@@ -12,6 +12,7 @@ $subgrupos = $controller->listarSubgrupos();
 $cotacoes = $controller->listarCotacoes();
 $modelos = $controller->listarModelos();
 $pedras = $controller->listarPedras();
+$formatos = $controller->listarFormatos();
 
 
 
@@ -39,7 +40,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     'custo' => $_POST['custo'] ?? null,
     'margem' => $_POST['margem'] ?? null,
     'em_reais' => $_POST['em_reais'] ?? null,
-    'capa' => $_POST['capa_base64'] ?? null
+    'capa' => $_POST['capa_base64'] ?? null,
+    'formato' => $_POST['formato'],
+    'observacoes' => $_POST['observacoes']
   ];
 
   $return = $controller->cadastro($dados);
@@ -274,6 +277,66 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 });
               }
             </script>
+            <div class="col-lg-2">
+              <label class="form-label">formato</label>
+              <div class="input-group">
+                <select class="form-select" name="formato" id="formato">
+                  <option value="">Selecione</option>
+                  <?php
+                  foreach ($formatos as $formato) {
+                    echo '<option value="' . htmlspecialchars($formato['nome']) . '">' . htmlspecialchars($formato['nome']) . '</option>';
+                  }
+                  ?>
+                </select>
+                <!-- Botão para abrir o modal de nova formato -->
+                <button type="button" class="btn bg-success text-white" data-bs-toggle="modal" data-bs-target="#modalNovaformato">+</button>
+              </div>
+            </div>
+
+            <script>
+              // Monta a URL dinamicamente para o mesmo arquivo PHP usado em "modelo"
+              var caminhoAjaxformato = "<?php echo $url . 'pages/' . $link[1] . '/adicionar_modelo.php'; ?>";
+
+              function salvarformato() {
+                var novaformato = $("#novaformato").val().trim();
+                var tipoformato = $("#tipoformato").val().trim();
+
+                if (novaformato === '') {
+                  alert('Sr. Valério, por favor insira o nome da formato.');
+                  return;
+                }
+
+                $.ajax({
+                  url: caminhoAjaxformato,
+                  type: 'POST',
+                  data: {
+                    // Repare que a chave é a mesma do arquivo PHP: 'novoModelo' e 'tipo'
+                    // Estamos apenas reutilizando "novoModelo" para enviar o nome da formato
+                    novoModelo: novaformato,
+                    tipo: tipoformato
+                  },
+                  dataType: 'json',
+                  success: function(response) {
+                    if (response.success) {
+                      // Fecha o modal
+                      $("#modalNovaformato").modal('hide');
+                      // Exibe o alerta com a mensagem de sucesso
+                      alert(response.message);
+                      // Adiciona a nova opção no select de formatos
+                      $("#formato").append('<option value="' + novaformato + '">' + novaformato + '</option>');
+                      $("#formato").val(novaformato);
+                      atualizarDescricaoEtiqueta(); // Atualiza a etiqueta após fechar o modal
+
+                    } else {
+                      alert('Erro: ' + response.message);
+                    }
+                  },
+                  error: function() {
+                    alert('Sr. Valério, ocorreu um erro inesperado.');
+                  }
+                });
+              }
+            </script>
 
             <!-- Natural ou Sintético -->
             <div class="col-lg-2">
@@ -313,7 +376,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             <div class="col-lg-2">
               <label class="form-label">Quantidade</label>
-              <input type="number" step="0.001" class="form-control" name="estoque_princ" id="estoque_princ">
+              <input type="number" step="0.001" class="form-control" name="estoque_princ" id="estoque_princ" value="1">
             </div>
             <div class="col-12">
               <hr>
@@ -412,6 +475,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
       </div>
     </div>
+    <!-- Modal para adicionar nova formato -->
+    <div class="modal fade" id="modalNovaformato" tabindex="-1" aria-labelledby="modalNovaformatoLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalNovaformatoLabel">Adicionar Nova formato</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="formNovaformato">
+              <div class="mb-3">
+                <label for="novaformato" class="form-label">Nome da formato</label>
+                <input type="text" class="form-control" id="novaformato" name="novaformato" required>
+                <input type="hidden" class="form-control" id="tipoformato" name="tipoformato" value="formato" required>
+              </div>
+              <button type="button" class="btn btn-success" onclick="salvarformato()">Salvar</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
 
   </div>
 </div>
@@ -481,12 +565,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   const cm = document.getElementById('cm');
   const mm = document.getElementById('mm');
   const pontos = document.getElementById('pontos');
+  const formato = document.getElementById('formato');
 
 
 
   // Adicionar listeners para atualização da descrição
 
-  [fornecedor, grupo, subgrupo, modelo, macica_ou_oca, nat_ou_sint, unidade, peso, pedra, numeros, aros, cm, mm, pontos].forEach(select => {
+  [fornecedor, grupo, subgrupo, modelo, macica_ou_oca, nat_ou_sint, unidade, peso, pedra, numeros, aros, cm, mm, pontos, formato].forEach(select => {
     select.addEventListener('change', () => {
       if (fornecedor.value && grupo.value && subgrupo.value) {
         camposAdicionais.style.display = 'block';
@@ -520,20 +605,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     const unidadeText = unidade.options[unidade.selectedIndex]?.text || '';    
     const descricao_etiqueta_manualValue = descricao_etiqueta_manual.value || '';
     const pontosText = pontos.value ? `${pontos.value}` : '';
+    const formatoText = formato.options[formato.selectedIndex]?.value || '';
     
 
     // Criar a string apenas com valores definidos
     descricaoEtiqueta.value = [
-      
       subgrupoText, 
       // ` - ${grupoText} `,
       modeloText ? `- ${modeloText}` : '',
+      ` - ${grupoText} `,
       macica_ou_ocaText ? `- ${macica_ou_ocaText}` : '',
       pesoValue ? `- ${pesoValue}` : '',
       valoaros ? `- Aro ${valoaros}` : '',
       valocm ? `- ${valocm}` : '',
       numerosvalor ? `- ${numerosvalor}` : '',
       pedravalor,
+      formatoText ? `- ${formatoText}` : '',
       nat_ou_sintText ? `- ${nat_ou_sintText}` : '',
       pontosText ? `- ${pontosText} Pontos` : '',
       valomm ? `- ${valomm}` : '',

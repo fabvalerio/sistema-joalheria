@@ -1,0 +1,1 @@
+ALTER TABLE `produtos` ADD `formato` VARCHAR(150) NULL AFTER `insumo`, ADD `observacoes` TEXT NULL AFTER `formato`;

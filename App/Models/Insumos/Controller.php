@@ -386,4 +386,11 @@ public function listarModelos()
     return $db->resultSet();
 }
 
+// Listar todos os formatos cadastrados
+public function listarFormatos()
+{
+    $db = new db();
+    $db->query("SELECT id, nome FROM produto_definicoes WHERE tipo = 'formato' ORDER BY nome");
+    return $db->resultSet();
+}
 }
