@@ -530,13 +530,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       modeloText ? `- ${modeloText}` : '',
       macica_ou_ocaText ? `- ${macica_ou_ocaText}` : '',
       pesoValue ? `- ${pesoValue}` : '',
-      valoaros ? `- ${valoaros}` : '',
+      valoaros ? `- Aro ${valoaros}` : '',
       valocm ? `- ${valocm}` : '',
       numerosvalor ? `- ${numerosvalor}` : '',
       pedravalor,
       nat_ou_sintText ? `- ${nat_ou_sintText}` : '',
+      pontosText ? `- ${pontosText} Pontos` : '',
       valomm ? `- ${valomm}` : '',
-      pontosText ? `- ${pontosText} pontos` : '',
       descricao_etiqueta_manualValue ? `- [ ${descricao_etiqueta_manualValue} ]` : ''
     ].filter(text => text.trim() !== '').join(' ');
 
