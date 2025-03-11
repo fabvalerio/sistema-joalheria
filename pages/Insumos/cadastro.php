@@ -198,7 +198,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             <!-- Peso -->
             <div class="col-lg-2">
-              <label class="form-label">Peso (g)</label>
+              <label class="form-label">Peso (Gr)</label>
               <input type="number" step="0.001" class="form-control" name="peso" id="peso">
             </div>
 
@@ -593,7 +593,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     const subgrupoText = subgrupo.options[subgrupo.selectedIndex]?.text || '';
     const modeloText = modelo.options[modelo.selectedIndex]?.value || '';
     const macica_ou_ocaText = macica_ou_oca.options[macica_ou_oca.selectedIndex]?.value || '';
-    const pesoValue = peso.value ? `${peso.value}g` : '';
+    const pesoValue = peso.value ? `${peso.value}Gr` : '';
     //aros
     const valoaros = aros.value ? `${aros.value}Mm` : '';
     //cm
