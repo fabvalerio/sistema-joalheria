@@ -280,7 +280,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
               }
             </script>
             <div class="col-lg-2">
-              <label class="form-label">formato</label>
+              <label class="form-label">Formato</label>
               <div class="input-group">
                 <select class="form-select" name="formato" id="formato">
                   <option value="">Selecione</option>
@@ -482,13 +482,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="modalNovaformatoLabel">Adicionar Nova formato</h5>
+            <h5 class="modal-title" id="modalNovaformatoLabel">Adicionar Novo Formato</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <form id="formNovaformato">
               <div class="mb-3">
-                <label for="novaformato" class="form-label">Nome da formato</label>
+                <label for="novaformato" class="form-label">Nome do Formato</label>
                 <input type="text" class="form-control" id="novaformato" name="novaformato" required>
                 <input type="hidden" class="form-control" id="tipoformato" name="tipoformato" value="formato" required>
               </div>
