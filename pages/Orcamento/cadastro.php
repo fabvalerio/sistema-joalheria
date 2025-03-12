@@ -147,6 +147,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             </div>
                         </div>
                     </div>
+                    <div class="col-lg-12">
+                    <label for="observacoes" class="form-label">Observações</label>
+                    <textarea class="form-control" id="observacoes" name="observacoes" rows="3"></textarea>
+                </div>
 
 
                 </div>
@@ -342,10 +346,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <div class="col-lg-2">
                     <label for="valor_pago" class="form-label">Valor Pago</label>
                     <input type="number" step="0.01" class="form-control" id="valor_pago" name="valor_pago">
-                </div>
-                <div class="col-lg-12">
-                    <label for="observacoes" class="form-label">Observações</label>
-                    <textarea class="form-control" id="observacoes" name="observacoes" rows="3"></textarea>
                 </div>
 
 

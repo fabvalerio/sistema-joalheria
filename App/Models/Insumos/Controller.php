@@ -80,7 +80,8 @@ class Controller
             f.nome_fantasia AS fornecedor_nome,
             g.nome_grupo    AS grupo_nome,
             sg.nome_subgrupo AS subgrupo_nome,
-            c.nome          AS cotacao_nome
+            c.nome          AS cotacao_nome,
+            c.valor         AS cotacao_valor
 
         FROM 
             produtos p
