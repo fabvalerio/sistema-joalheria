@@ -370,4 +370,9 @@ function sexo($var)
   }
 
   return $res;
+  
+}
+
+function cotacao($preco_ql, $peso_gr, $cotacao_valor, $margem){
+  return ($preco_ql * $peso_gr * $cotacao_valor) * (1 + $margem/100);
 }

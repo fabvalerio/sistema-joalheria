@@ -178,6 +178,10 @@ if (!$produto) {
       <div class="col-lg-4">
         <label class="form-label fw-bold">Em Reais</label><br>
         <?php
+                            //conta de valor dinamica com cotação
+                            $produto['em_reais'] =  cotacao($produto['preco_ql'], $produto['peso_gr'], $produto['cotacao_valor'], $produto['margem']);
+                            ?>
+        <?php
           $emReaisFormatado = isset($produto['em_reais']) 
             ? 'R$ ' . number_format($produto['em_reais'], 2, ',', '.') 
             : 'R$ 0,00';

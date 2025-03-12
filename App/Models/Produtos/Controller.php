@@ -25,7 +25,11 @@ class Controller
                 p.em_reais AS em_reais,
                 p.capa AS capa,
                 e.quantidade AS estoque_princ,
-                e.quantidade_minima AS estoque_min
+                e.quantidade_minima AS estoque_min,
+                c.valor AS cotacao_valor,
+                p.peso_gr AS peso_gr,
+                p.custo AS custo,
+                p.margem AS margem
             FROM 
                 produtos p
             LEFT JOIN fornecedores f ON p.fornecedor_id = f.id

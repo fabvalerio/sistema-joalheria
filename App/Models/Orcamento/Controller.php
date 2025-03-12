@@ -374,8 +374,14 @@ class Controller
             p.descricao_etiqueta AS nome_produto, 
             p.em_reais AS preco, 
             e.quantidade AS estoque
+            c.valor AS cotacao_valor,
+                p.peso_gr AS peso_gr,
+                p.custo AS custo,
+                p.margem AS margem,
+                p.preco_ql
         FROM 
             produtos p
+            LEFT JOIN cotacoes c ON p.cotacao = c.id
         LEFT JOIN 
             estoque e ON p.id = e.produtos_id
         WHERE p.insumo = 1

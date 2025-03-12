@@ -84,6 +84,10 @@ $produtos = $controller->listar();
                         <td><?= htmlspecialchars($produto['subgrupo'] ?? 'Não informado') ?></td>
                         <td><?= htmlspecialchars($produto['modelo'] ?? 'Não informado') ?></td>
                         <td>
+                        <?php
+                            //conta de valor dinamica com cotação
+                            $produto['em_reais'] =  cotacao($produto['preco_ql'], $produto['peso_gr'], $produto['cotacao_valor'], $produto['margem']);
+                            ?>
                             R$<?= isset($produto['em_reais']) && $produto['em_reais'] !== null
                                     ? number_format($produto['em_reais'], 2, ',', '.')
                                     : '0,00'; ?>

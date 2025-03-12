@@ -370,12 +370,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                     </thead>
                                     <tbody id="modalProductList">
                                         <?php foreach ($produtos as $produto): ?>
+                                            <?php
+                            //conta de valor dinamica com cotação
+                            $produto['preco'] =  cotacao($produto['preco_ql'], $produto['peso_gr'], $produto['cotacao_valor'], $produto['margem']);
+                            ?>
                                             <tr>
                                                 <td><?php echo $produto['id']; ?></td>
                                                 <td><?php echo $produto['nome_produto']; ?></td>
-                                                <td><?php echo $produto['preco']; ?></td>
+                                                <td>R$<?php echo $produto['preco']; ?></td>
                                                 <td><?php echo $produto['estoque']; ?></td>
                                                 <td>
+                                                
                                                     <button type="button" class="btn btn-primary btn-select-product"
                                                         data-id="<?php echo $produto['id']; ?>"
                                                         data-name="<?php echo $produto['nome_produto']; ?>"

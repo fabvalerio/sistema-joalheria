@@ -483,6 +483,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
                 <div class="col-lg-4">
                   <label class="form-label">Em Reais</label>
+                  <?php
+                            //conta de valor dinamica com cotação
+                            $produto['em_reais'] =  cotacao($produto['preco_ql'], $produto['peso_gr'], $produto['cotacao_valor'], $produto['margem']);
+                            ?>
                   <input
                     type="number"
                     step="0.01"
