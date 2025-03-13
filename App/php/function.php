@@ -1,4 +1,5 @@
 <?php
+$data_atual = date('Y-m-d');
 
 function moeda($valor)
 {
@@ -375,4 +376,19 @@ function sexo($var)
 
 function cotacao($preco_ql, $peso_gr, $cotacao_valor, $margem){
   return ($preco_ql * $peso_gr * $cotacao_valor) * (1 + $margem/100);
+}
+
+function adicionarDiasUteis($data, $dias)
+{
+    $data = new DateTime($data);
+    $adicionados = 0;
+
+    while ($adicionados < $dias) {
+        $data->modify('+1 day');
+        if (!in_array($data->format('N'), [6, 7])) { // 6 = Sábado, 7 = Domingo
+            $adicionados++;
+        }
+    }
+
+    return $data->format('Y-m-d');
 }
