@@ -613,7 +613,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       subgrupoText, 
       // ` - ${grupoText} `,
       modeloText ? `- ${modeloText}` : '',
-      ` - ${grupoText} `,
+      `- ${grupoText}`,
       macica_ou_ocaText ? `- ${macica_ou_ocaText}` : '',
       pesoValue ? `- ${pesoValue}` : '',
       valoaros ? `- Aro ${valoaros}` : '',
@@ -652,6 +652,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
           option.textContent = subgrupo.nome_subgrupo;
           subgrupoSelect.appendChild(option);
         });
+        //mostra json
+        console.log(subgrupos);
       })
       .catch(error => console.error('Erro ao buscar subgrupos:', error));
   });

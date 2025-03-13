@@ -400,11 +400,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div id="campos-cotacao" style="display: none;">
               <div class="row g-3">
                 <div class="col-lg-2">
-                  <label class="form-label">Preço QL</label>
+                  <label class="form-label">Índice / QL</label>
                   <input type="number" step="0.01" class="form-control text-center" name="preco_ql" id="preco_ql">
                 </div>
                 <div class="col-lg-2">
-                  <label class="form-label">Peso Gr</label>
+                  <label class="form-label">Unidade / Gr</label>
                   <input type="number" step="0.001" class="form-control text-center" name="peso_gr" id="peso_gr">
                 </div>
                 <div class="col-lg-2">

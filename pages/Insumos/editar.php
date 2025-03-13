@@ -487,6 +487,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             //conta de valor dinamica com cotação
                             $produto['em_reais'] =  cotacao($produto['preco_ql'], $produto['peso_gr'], $produto['cotacao_valor'], $produto['margem']);
                             ?>
+                            <?php isset($produto['em_reais']) && $produto['em_reais'] !== null
+                                    ? number_format($produto['em_reais'], 2, ',', '.')
+                                    : '0,00'; ?>
                   <input
                     type="number"
                     step="0.01"
@@ -494,7 +497,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     name="em_reais"
                     id="em_reais"
                     readonly
-                    value="<?= $produto['em_reais'] ?? '' ?>">
+                    value="<?= number_format($produto['em_reais'], 2) ?? '' ?>">
                 </div>
               </div>
             </div>
