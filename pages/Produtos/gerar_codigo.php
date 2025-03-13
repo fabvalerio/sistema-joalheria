@@ -1,19 +1,20 @@
-<?php
-require '../../vendor/autoload.php';
+<html>
+    <head>
+        <script src="https://cdn.jsdelivr.net/jsbarcode/3.6.0/JsBarcode.all.min.js"></script>
+        <script>
+            window.onload = function() {
+                // Captura o parâmetro da URL
+                var urlParams = new URLSearchParams(window.location.search);
+                var codigo = urlParams.get('codigo'); // Substitua 'codigo' pelo nome do parâmetro desejado
 
-use Picqer\Barcode\BarcodeGeneratorPNG;
-
-if (isset($_GET['id'])) {
-    $idProduto = $_GET['id'];
-
-    // Criar o gerador de código de barras
-    $generator = new BarcodeGeneratorPNG();
-    $codigoBarras = $generator->getBarcode($idProduto, $generator::TYPE_CODE_128);
-
-    // Definir cabeçalhos para exibir a imagem
-    header('Content-Type: image/png');
-    echo $codigoBarras;
-} else {
-    echo "ID do produto não informado.";
-}
-?>
+                // Se o parâmetro "codigo" existir, gera o código de barras automaticamente
+                if(codigo) {
+                    JsBarcode('#codBarras', codigo);
+                }
+            };
+        </script>
+    </head>
+    <body>
+        <svg id="codBarras"></svg>
+    </body>    
+</html>

@@ -3,7 +3,7 @@
         'name' => 'fabva/sistema-joalheria',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '3e6c5565f15d6db65d7eda303c48d929efcd0781',
+        'reference' => '0f625bf57f002cd0bbedcbabbd62e027a4acb94f',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         'fabva/sistema-joalheria' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '3e6c5565f15d6db65d7eda303c48d929efcd0781',
+            'reference' => '0f625bf57f002cd0bbedcbabbd62e027a4acb94f',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

@@ -14,8 +14,6 @@ $modelos = $controller->listarModelos();
 $pedras = $controller->listarPedras();
 $formatos = $controller->listarFormatos();
 
-
-
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   $dados = [
     'descricao_etiqueta' => $_POST['descricao_etiqueta'],
