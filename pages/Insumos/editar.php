@@ -592,6 +592,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     const emReais = custo * (1 + margem / 100);
     emReaisInput.value = emReais.toFixed(2);
   }
+  //funcao onload de carregar valores
+  $(document).ready(function() {
+
+    calcularValores();
+  });
 
   function limparCamposCotacao() {
     precoQlInput.value = '';

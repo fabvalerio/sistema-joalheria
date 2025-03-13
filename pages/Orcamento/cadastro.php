@@ -93,7 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
                 <div class="col-lg-2">
                     <label for="data_pedido" class="form-label">Data do Pedido</label>
-                    <input type="date" class="form-control" id="data_pedido" name="data_pedido" required>
+                    <input type="date" class="form-control" id="data_pedido" name="data_pedido" value="<?php echo date('Y-m-d'); ?>" required>
                 </div>
                 <div class="col-lg-2">
                     <label for="data_entrega" class="form-label">Data de Entrega</label>
