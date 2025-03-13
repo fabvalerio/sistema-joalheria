@@ -375,6 +375,7 @@ class Controller
             p.em_reais AS preco, 
             e.quantidade AS estoque,
             c.valor AS cotacao_valor,
+            p.capa as capa,
                 p.peso_gr AS peso_gr,
                 p.custo AS custo,
                 p.margem AS margem,

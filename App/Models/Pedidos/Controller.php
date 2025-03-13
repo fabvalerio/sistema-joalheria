@@ -366,6 +366,7 @@ class Controller
             p.descricao_etiqueta AS nome_produto, 
             p.em_reais AS preco, 
             e.quantidade AS estoque, 
+            p.capa as capa,
             c.valor AS cotacao_valor,
                 p.peso_gr AS peso_gr,
                 p.custo AS custo,
