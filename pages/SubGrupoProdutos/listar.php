@@ -54,7 +54,6 @@ $subgrupos = $controller->listar();
         <table id="example1" class="table table-striped">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Nome do Subgrupo</th>
                     <th>Grupo</th>
                     <th width="220">Ações</th>
@@ -63,7 +62,6 @@ $subgrupos = $controller->listar();
             <tbody>
                 <?php foreach ($subgrupos as $subgrupo): ?>
                     <tr>
-                        <td><?= $subgrupo['id'] ?></td>
                         <td><?= htmlspecialchars($subgrupo['nome_subgrupo']) ?></td>
                         <td><?= htmlspecialchars($subgrupo['nome_grupo']) ?></td>
                         <td>

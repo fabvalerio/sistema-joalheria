@@ -92,7 +92,6 @@ $r = $controller->somaVendas($inicio, $fim);
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Forma de Pagamento</th>
                     <th>Cliente</th>
                     <th>Tipo</th>
@@ -105,7 +104,6 @@ $r = $controller->somaVendas($inicio, $fim);
                 <?php if (!empty($contas['registros'])): ?>
                     <?php foreach ($contas['registros'] as $conta): ?>
                         <tr>
-                            <td><?php echo ($conta['id'] ?? 'N/A'); ?></td>
                             <td><?php echo ($conta['forma_pagamento'] ?? 'N/A'); ?></td>
                             <td><?php echo ($conta['nome_pf'] ?? $conta['nome_fantasia_pj']); ?></td>
                             <td>

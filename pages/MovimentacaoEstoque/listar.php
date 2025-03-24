@@ -16,7 +16,6 @@ $movimentacoes = $controller->listar();
         <table id="example1" class="table table-striped">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Produto</th>
                     <th>Tipo</th>
                     <th>Quantidade</th>
@@ -30,7 +29,6 @@ $movimentacoes = $controller->listar();
             <tbody>
                 <?php foreach ($movimentacoes as $movimentacao): ?>
                     <tr>
-                        <td><?= $movimentacao['id'] ?></td>
                         <td><?= htmlspecialchars($movimentacao['descricao_produto']) ?></td>
                         <td><span class="badge bg-<?= $movimentacao['tipo_movimentacao'] == 'Entrada' ? 'success' : 'danger' ?>"><?= htmlspecialchars($movimentacao['tipo_movimentacao']) ?></span></td>
                         <td><?= number_format($movimentacao['quantidade'], 2, ',', '.') ?></td>

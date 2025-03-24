@@ -53,7 +53,6 @@ $fornecedores = $controller->listar();
         <table id="example1" class="table table-striped">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Razão Social</th>
                     <th>Nome Fantasia</th>
                     <th>CNPJ</th>
@@ -63,7 +62,6 @@ $fornecedores = $controller->listar();
             <tbody>
                 <?php foreach ($fornecedores as $fornecedor): ?>
                     <tr>
-                        <td><?= $fornecedor['id'] ?></td>
                         <td><?= htmlspecialchars($fornecedor['razao_social']) ?></td>
                         <td><?= htmlspecialchars($fornecedor['nome_fantasia']) ?></td>
                         <td><?= htmlspecialchars($fornecedor['cnpj']) ?></td>

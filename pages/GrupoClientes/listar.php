@@ -56,7 +56,6 @@ $grupoClientes = $controller->listar();
         <table id="example1" class="table table-striped">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Nome do Grupo</th>
                     <th>Comissão dos Vendedores (%)</th>
                     <th width="220">Ações</th>
@@ -65,7 +64,6 @@ $grupoClientes = $controller->listar();
             <tbody>
                 <?php foreach ($grupoClientes as $grupo): ?>
                     <tr>
-                        <td><?= $grupo['id'] ?></td>
                         <td><?= htmlspecialchars($grupo['nome_grupo']) ?></td>
                         <td><?= htmlspecialchars(number_format($grupo['comissao_vendedores'], 2, ',', '.')) ?></td>
                         <td>

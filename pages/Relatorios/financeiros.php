@@ -97,7 +97,6 @@ $r = $controller->soma($inicio, $fim);
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Tipo</th>
                     <th>Data Vencimento</th>
                     <th>Valor</th>
@@ -108,7 +107,6 @@ $r = $controller->soma($inicio, $fim);
                 <?php if (!empty($contas['registros'])): ?>
                     <?php foreach ($contas['registros'] as $conta): ?>
                         <tr>
-                            <td><?php echo htmlspecialchars($conta['id'] ?? 'N/A'); ?></td>
                             <td>
                                 <?php
                                 echo ($conta['tipo'] ?? '') === 'P'
