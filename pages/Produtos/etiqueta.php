@@ -48,6 +48,7 @@ $idProduto = isset($id) ? $id : '000000';
 
 
 <h2>Código de Barras para o Produto: <?php echo htmlspecialchars($idProduto); ?></h2>
+<h4 class="lead"><?php echo htmlspecialchars($produto['descricao_etiqueta']); ?></h4>
 
 <div class="codigo-container">
     
@@ -78,7 +79,7 @@ $idProduto = isset($id) ? $id : '000000';
         <div id="etiqueta" class="align-self-center">
             <div class="row d-flex justify-content-center align-items-center h-100">
                 <div class="col-6 text-center"><svg id="codBarras"></svg></div>
-                <div class="col-6" style="font-size: 12px;">Código <br> <h2><?php echo $produto['id']; ?></h2></div>
+                <div class="col-6 text-center" style="font-size: 12px;">Código <br> <h2><?php echo $produto['id']; ?></h2></div>
             </div>
         </div>
 </div>
