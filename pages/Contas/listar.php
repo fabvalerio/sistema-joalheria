@@ -27,7 +27,6 @@ $contas = $controller->listar($tipo);
         <table id="example1" class="table table-striped">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Tipo</th>
                     <th>Data Vencimento</th>
                     <th>Valor</th>
@@ -38,7 +37,6 @@ $contas = $controller->listar($tipo);
             <tbody>
                 <?php foreach ($contas as $conta): ?>
                     <tr>
-                        <td><?= $conta['id'] ?></td>
                         <td><?= htmlspecialchars($conta['tipo'] == 'P' ? 'Contas a Pagar' : 'Contas a Receber') ?></td>
                         <td><?= htmlspecialchars($conta['data_vencimento']) ?></td>
                         <td>R$ <?= number_format($conta['valor'], 2, ',', '.') ?></td>

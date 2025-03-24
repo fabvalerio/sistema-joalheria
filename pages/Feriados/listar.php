@@ -55,7 +55,6 @@ $feriados = $controller->listar();
         <table id="example1" class="table table-striped">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Data</th>
                     <th>Descrição</th>
                     <th>Tipo</th>
@@ -66,7 +65,6 @@ $feriados = $controller->listar();
             <tbody>
                 <?php foreach ($feriados as $feriado): ?>
                     <tr>
-                        <td><?= $feriado['id'] ?></td>
                         <td><?= date('d/m/Y', strtotime($feriado['data_feriado'])) ?></td>
                         <td><?= htmlspecialchars($feriado['descricao']) ?></td>
                         <td><?= htmlspecialchars($feriado['tipo']) ?></td>

@@ -75,7 +75,6 @@ if (!empty($tipoFiltro)) {
         <table id="example1" class="table table-striped">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Nome</th>
                     <th>Tipo</th>
                     <th width="220">Ações</th>
@@ -84,7 +83,6 @@ if (!empty($tipoFiltro)) {
             <tbody>
                 <?php foreach ($produtosDefinicoes as $definicao): ?>
                     <tr>
-                        <td><?= $definicao['id'] ?></td>
                         <td><?= htmlspecialchars($definicao['nome']) ?></td>
                         <td><?= htmlspecialchars($definicao['tipo']) ?></td>
                         <td>

@@ -56,7 +56,6 @@ $cargos = $controller->listar();
         <table id="example1" class="table table-striped">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Cargo</th>
                     <th width="220">Ações</th>
                 </tr>
@@ -64,7 +63,6 @@ $cargos = $controller->listar();
             <tbody>
                 <?php foreach ($cargos as $cargo): ?>
                     <tr>
-                        <td><?= $cargo['id'] ?></td>
                         <td><?= htmlspecialchars($cargo['cargo']) ?></td>
                         <td>
                             <div class="dropdown">

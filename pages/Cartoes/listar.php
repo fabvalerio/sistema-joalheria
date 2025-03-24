@@ -54,7 +54,6 @@ $cartoes = $controller->listar();
         <table id="example1" class="table table-striped">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Nome do Cartão</th>
                     <th>Bandeira</th>
                     <th>Tipo</th>
@@ -66,7 +65,6 @@ $cartoes = $controller->listar();
             <tbody>
                 <?php foreach ($cartoes as $cartao): ?>
                     <tr>
-                        <td><?= htmlspecialchars($cartao['id']) ?></td>
                         <td><?= htmlspecialchars($cartao['nome_cartao']) ?></td>
                         <td><?= htmlspecialchars($cartao['bandeira']) ?></td>
                         <td><?= htmlspecialchars($cartao['tipo']) ?></td>

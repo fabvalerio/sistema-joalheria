@@ -20,7 +20,6 @@ $return = $controller->listar();
         <table id="example1" class="table table-striped">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Nome</th>
                     <th>Status</th>
                     <th width="220">Ações</th>
@@ -31,7 +30,6 @@ $return = $controller->listar();
                 // Loop para exibir os registros
                 foreach ($return as $r) {
                     echo "<tr>";                    
-                    echo "<td>" . $r['id'] . "</td>";
                     echo "<td>" . $r['nome']  . "</td>";
                     echo "<td>" . $r['status']  . "</td>";
                     echo "<td> 

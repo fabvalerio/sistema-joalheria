@@ -1,5 +1,4 @@
-<html>
-    <head>
+
         <script src="https://cdn.jsdelivr.net/jsbarcode/3.6.0/JsBarcode.all.min.js"></script>
         <script>
             window.onload = function() {
@@ -13,8 +12,4 @@
                 }
             };
         </script>
-    </head>
-    <body>
         <svg id="codBarras"></svg>
-    </body>    
-</html>

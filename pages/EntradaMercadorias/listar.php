@@ -17,7 +17,6 @@ $entradas = $controller->listar();
         <table id="example1" class="table table-striped table-hover">
             <thead class="bg-light">
                 <tr>
-                    <th>ID</th>
                     <th>Nota Fiscal</th>
                     <th>Fornecedor</th>
                     <th>Data do Pedido</th>
@@ -29,7 +28,6 @@ $entradas = $controller->listar();
             <tbody>
                 <?php foreach ($entradas as $entrada): ?>
                     <tr>
-                        <td><?= htmlspecialchars($entrada['id']) ?></td>
                         <td><?= htmlspecialchars($entrada['nf_fiscal']) ?></td>
                         <td><?= htmlspecialchars($entrada['fornecedor_nome'] ?? 'Não informado') ?></td>
                         <td><?= htmlspecialchars(date('d/m/Y', strtotime($entrada['data_pedido']))) ?></td>

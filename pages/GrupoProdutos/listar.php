@@ -54,7 +54,6 @@ $grupos = $controller->listar();
         <table id="example1" class="table table-striped">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Nome do Grupo</th>
                     <th width="220">Ações</th>
                 </tr>
@@ -62,7 +61,6 @@ $grupos = $controller->listar();
             <tbody>
                 <?php foreach ($grupos as $grupo): ?>
                     <tr>
-                        <td><?= $grupo['id'] ?></td>
                         <td><?= htmlspecialchars($grupo['nome_grupo']) ?></td>
                         <td>
                             <div class="dropdown">

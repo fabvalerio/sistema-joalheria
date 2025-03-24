@@ -20,7 +20,6 @@ $comissoes = $controller->listar();
         <table id="example1" class="table table-striped">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Vendedor</th>
                     <th>Grupo de Produtos</th>
                     <th>Comissão A</th>
@@ -30,7 +29,6 @@ $comissoes = $controller->listar();
             <tbody>
                 <?php foreach ($comissoes as $comissao): ?>
                     <tr>
-                        <td><?= $comissao['id'] ?></td>
                         <td><?= htmlspecialchars($comissao['vendedor']) ?></td>
                         <td><?= htmlspecialchars($comissao['grupo_produto']) ?></td>
                         <td><?= htmlspecialchars(number_format($comissao['comissao_v'], 2, ',', '.')) ?>%</td>

@@ -54,7 +54,6 @@ $cotacoes = $controller->listar();
         <table id="example1" class="table table-striped">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Nome</th>
                     <th>Valor</th>
                     <th>Ações</th>
@@ -63,7 +62,6 @@ $cotacoes = $controller->listar();
             <tbody>
                 <?php foreach ($cotacoes as $cotacao): ?>
                     <tr>
-                        <td><?= $cotacao['id'] ?></td>
                         <td><?= htmlspecialchars($cotacao['nome']) ?></td>
                         <td><?= number_format($cotacao['valor'], 2, ',', '.') ?></td>
                         <td>
