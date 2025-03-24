@@ -76,10 +76,6 @@ $itens = $dados['itens'];
                     ? number_format($pedido['desconto'], 2, ',', '.') . '%' 
                     : '0,00%'; ?>
             </div>
-            <div class="col-12">
-                <strong>Observações:</strong>
-                <p><?= htmlspecialchars($pedido['observacoes'] ?? 'Não informado') ?></p>
-            </div>
         </div>
 
         <hr>
@@ -118,5 +114,9 @@ $itens = $dados['itens'];
                 <?php endforeach; ?>
             </tbody>
         </table>
+        <div class="col-12">
+                <strong>Observações:</strong>
+                <p><?= htmlspecialchars($pedido['observacoes'] ?? 'Não informado') ?></p>
+            </div>
     </div>
 </div>

@@ -93,7 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
                 <div class="col-lg-2">
                     <label for="data_pedido" class="form-label">Data do Pedido</label>
-                    <input type="date" class="form-control" id="data_pedido" name="data_pedido" required>
+                    <input type="date" class="form-control" id="data_pedido" name="data_pedido" value="<?php echo date('Y-m-d'); ?>" required>
                 </div>
                 <div class="col-lg-2">
                     <label for="data_entrega" class="form-label">Data de Entrega</label>
@@ -123,7 +123,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <div id="product-list">
                         <!-- Campo inicial para produtos -->
                         <div class="row g-3 align-items-end product-item mb-2">
-                            <div class="col-lg-4">
+                        <div class="col-lg-1">
+                                <img name="produtos[0][capa]" src="<?= $url . '/assets/img_padrao.webp'; ?>" alt="Capa do Produto"
+                                    width="100" style="height: 100px; object-fit: cover; border: 1px solid #ddd; border-radius: 5px;" class="capa">
+                            </div>
+                            <div class="col-lg-3">
                                 <label class="form-label">Item</label>
                                 <input type="text" class="form-control product-input" name="produtos[0][descricao_produto]" placeholder="Clique para selecionar um produto" readonly data-index="0">
                                 <input type="hidden" name="produtos[0][id]" class="product-id">
@@ -369,6 +373,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                     <thead>
                                         <tr>
                                             <th>ID</th>
+                                            <th>Capa</th>
                                             <th>Nome</th>
                                             <th>Preço</th>
                                             <th>Estoque Atual</th>
@@ -383,6 +388,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             ?>
                                             <tr>
                                                 <td><?php echo $produto['id']; ?></td>
+                                                <td>
+                                                    <img src="<?= isset($produto['capa']) && !empty($produto['capa']) ? htmlspecialchars($produto['capa']) : $url . '/assets/img_padrao.webp'; ?>" alt="Capa do Produto" width="65" style="height: 65px; object-fit: cover; border: 1px solid #ddd; border-radius: 5px;">
+                                                </td>
                                                 <td><?php echo $produto['nome_produto']; ?></td>
                                                 <td>R$<?php echo $produto['preco']; ?></td>
                                                 <td><?php echo $produto['estoque']; ?></td>
@@ -391,7 +399,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                                         data-id="<?php echo $produto['id']; ?>"
                                                         data-name="<?php echo $produto['nome_produto']; ?>"
                                                         data-price="<?php echo $produto['preco']; ?>"
-                                                        data-estoque="<?php echo $produto['estoque']; ?>">
+                                                        data-estoque="<?php echo $produto['estoque']; ?>"
+                                                        data-capa="<?= isset($produto['capa']) && !empty($produto['capa']) ? htmlspecialchars($produto['capa']) : $url . '/assets/img_padrao.webp'; ?>">
                                                         Selecionar
                                                     </button>
                                                 </td>
@@ -457,6 +466,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         const productPrice = e.target.getAttribute('data-price');
                         const activeInput = document.querySelector(`.product-input[data-index="${activeIndex}"]`);
                         const estoque_atual = e.target.getAttribute('data-estoque');
+                        const capa = e.target.getAttribute('data-capa');
 
                         if (activeInput) {
                             activeInput.value = productName;
@@ -465,6 +475,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             parentItem.querySelector('.product-price').value = productPrice;
                             parentItem.querySelector('.estoque_atual').value = estoque_atual;
                             parentItem.querySelector('.product-price-display').value = productPrice;
+                            //troca o src da capa
+                            parentItem.querySelector('.capa').src = capa;
                         }
 
                         modal.hide(); // Fecha o modal
@@ -506,7 +518,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         const productItem = document.createElement('div');
                         productItem.classList.add('row', 'g-3', 'align-items-end', 'product-item', 'mb-2');
                         productItem.innerHTML = `
-                <div class="col-lg-4">
+                <div class="col-lg-1">
+                                <img name="produtos[${productIndex}][capa]" src="<?= $url . '/assets/img_padrao.webp'; ?>" alt="Capa do Produto"
+                                    width="100" style="height: 100px; object-fit: cover; border: 1px solid #ddd; border-radius: 5px;">
+                            </div>
+                            <div class="col-lg-3">
                     <input type="text" class="form-control product-input" placeholder="Clique para selecionar um produto" name="produtos[${productIndex}][descricao_produto]" readonly data-index="${productIndex}">
                     <input type="hidden" name="produtos[${productIndex}][id]" class="product-id">
                     <input type="hidden" name="produtos[${productIndex}][valor_unitario]" class="product-price">
