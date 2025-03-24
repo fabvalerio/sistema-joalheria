@@ -37,6 +37,7 @@ class Controller
             LEFT JOIN subgrupo_produtos sg ON p.subgrupo_id = sg.id
             LEFT JOIN cotacoes c ON p.cotacao = c.id
             LEFT JOIN estoque e ON p.id = e.produtos_id
+             Where p.insumo is null
             ORDER BY p.descricao_etiqueta
         ");
         return $db->resultSet();
@@ -68,6 +69,8 @@ class Controller
             p.margem,
             p.em_reais,
             p.capa,
+            p.formato,
+            p.observacoes,
 
             -- ESSENCIAIS PARA O SELECT FUNCIONAR
             p.fornecedor_id,
@@ -106,11 +109,11 @@ class Controller
         INSERT INTO produtos (
             descricao_etiqueta, fornecedor_id, modelo, macica_ou_oca, numeros, pedra, 
             nat_ou_sint, peso, aros, cm, pontos, mm, grupo_id, subgrupo_id, unidade, 
-            estoque_princ, cotacao, preco_ql, peso_gr, custo, margem, em_reais, capa
+            estoque_princ, cotacao, preco_ql, peso_gr, custo, margem, em_reais, capa, formato, observacoes
         ) VALUES (
             :descricao_etiqueta, :fornecedor_id, :modelo, :macica_ou_oca, :numeros, :pedra, 
             :nat_ou_sint, :peso, :aros, :cm, :pontos, :mm, :grupo_id, :subgrupo_id, :unidade, 
-            :estoque_princ, :cotacao, :preco_ql, :peso_gr, :custo, :margem, :em_reais, :capa
+            :estoque_princ, :cotacao, :preco_ql, :peso_gr, :custo, :margem, :em_reais, :capa, :formato, :observacoes
         )
     ");
 
@@ -138,7 +141,9 @@ class Controller
             'custo',
             'margem',
             'em_reais',
-            'capa'
+            'capa',
+            'formato',
+            'observacoes'
         ];
 
         // Garantindo que campos ausentes sejam tratados como NULL
@@ -231,7 +236,10 @@ class Controller
                 custo = :custo,
                 margem = :margem,
                 em_reais = :em_reais,
-                capa = :capa
+                capa = :capa, 
+                formato = :formato,
+                observacoes = :observacoes
+                
             WHERE id = :id
         ");
 
@@ -259,7 +267,9 @@ class Controller
             'custo',
             'margem',
             'em_reais',
-            'capa'
+            'capa',
+            'formato',
+            'observacoes'
         ];
 
         // Garantindo que valores vazios sejam tratados como NULL

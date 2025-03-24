@@ -69,6 +69,8 @@ class Controller
             p.margem,
             p.em_reais,
             p.capa,
+            p.formato,
+            p.observacoes,
 
             -- ESSENCIAIS PARA O SELECT FUNCIONAR
             p.fornecedor_id,
@@ -106,11 +108,11 @@ class Controller
         INSERT INTO produtos (
             descricao_etiqueta, fornecedor_id, modelo, macica_ou_oca, numeros, pedra, 
             nat_ou_sint, peso, aros, cm, pontos, mm, grupo_id, subgrupo_id, unidade, 
-            estoque_princ, cotacao, preco_ql, peso_gr, custo, margem, em_reais, capa, insumo
+            estoque_princ, cotacao, preco_ql, peso_gr, custo, margem, em_reais, capa, insumo, formato, observacoes
         ) VALUES (
             :descricao_etiqueta, :fornecedor_id, :modelo, :macica_ou_oca, :numeros, :pedra, 
             :nat_ou_sint, :peso, :aros, :cm, :pontos, :mm, :grupo_id, :subgrupo_id, :unidade, 
-            :estoque_princ, :cotacao, :preco_ql, :peso_gr, :custo, :margem, :em_reais, :capa, 1
+            :estoque_princ, :cotacao, :preco_ql, :peso_gr, :custo, :margem, :em_reais, :capa, 1, :formato, :observacoes
         )
     ");
 
@@ -138,7 +140,9 @@ class Controller
             'custo',
             'margem',
             'em_reais',
-            'capa'
+            'capa',
+            'formato',
+            'observacoes'
         ];
 
         // Garantindo que campos ausentes sejam tratados como NULL
@@ -231,7 +235,10 @@ class Controller
                 custo = :custo,
                 margem = :margem,
                 em_reais = :em_reais,
-                capa = :capa
+                capa = :capa,
+                formato = :formato,
+                observacoes = :observacoes
+                
             WHERE id = :id
         ");
 
@@ -259,7 +266,9 @@ class Controller
             'custo',
             'margem',
             'em_reais',
-            'capa'
+            'capa',
+            'formato',
+            'observacoes'
         ];
 
         // Garantindo que valores vazios sejam tratados como NULL
@@ -376,26 +385,26 @@ class Controller
         return $db->resultSet();
     }
     // Listar todas as pedras cadastradas
-public function listarPedras()
-{
-    $db = new db();
-    $db->query("SELECT id, nome FROM produto_definicoes WHERE tipo = 'pedra' ORDER BY nome");
-    return $db->resultSet();
-}
+    public function listarPedras()
+    {
+        $db = new db();
+        $db->query("SELECT id, nome FROM produto_definicoes WHERE tipo = 'pedra' ORDER BY nome");
+        return $db->resultSet();
+    }
 
-// Listar todos os modelos cadastrados
-public function listarModelos()
-{
-    $db = new db();
-    $db->query("SELECT id, nome FROM produto_definicoes WHERE tipo = 'modelo' ORDER BY nome");
-    return $db->resultSet();
-}
+    // Listar todos os modelos cadastrados
+    public function listarModelos()
+    {
+        $db = new db();
+        $db->query("SELECT id, nome FROM produto_definicoes WHERE tipo = 'modelo' ORDER BY nome");
+        return $db->resultSet();
+    }
 
-// Listar todos os formatos cadastrados
-public function listarFormatos()
-{
-    $db = new db();
-    $db->query("SELECT id, nome FROM produto_definicoes WHERE tipo = 'formato' ORDER BY nome");
-    return $db->resultSet();
-}
+    // Listar todos os formatos cadastrados
+    public function listarFormatos()
+    {
+        $db = new db();
+        $db->query("SELECT id, nome FROM produto_definicoes WHERE tipo = 'formato' ORDER BY nome");
+        return $db->resultSet();
+    }
 }
