@@ -152,7 +152,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             name="descricao_etiqueta"
             id="descricao_etiqueta"
             value="<?= htmlspecialchars($produto['descricao_etiqueta'] ?? '') ?>"
-            readonly>
+            >
         </div>
             <!-- Descrição Adicional Etiqueta (Manual) -->
             <div class="col-lg-12">
