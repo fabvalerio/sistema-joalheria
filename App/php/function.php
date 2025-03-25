@@ -392,3 +392,30 @@ function adicionarDiasUteis($data, $dias)
 
     return $data->format('Y-m-d');
 }
+
+
+function subtrairDiasUteis($data, $dias) {
+  // Converte a string de data para um objeto DateTime
+  $date = new DateTime($data);
+  
+  // Loop para subtrair os dias
+  for ($i = 0; $i < $dias; $i++) {
+      // Subtrai um dia
+      $date->modify('-1 day');
+      
+      // Verifica se é sábado (6) ou domingo (7)
+      while (in_array($date->format('N'), [6, 7])) {
+          // Se for sábado, volta para sexta
+          if ($date->format('N') == 6) {
+              $date->modify('-1 day');
+          }
+          // Se for domingo, avança para segunda
+          elseif ($date->format('N') == 7) {
+              $date->modify('+1 day');
+          }
+      }
+  }
+  
+  // Retorna a data formatada (pode ajustar o formato conforme necessidade)
+  return $date->format('y-m-d');
+}

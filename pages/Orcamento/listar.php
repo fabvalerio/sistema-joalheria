@@ -64,7 +64,7 @@ $pedidos = $controller->listar();
                   </li>
                   <li>
                     <?php if (!empty($pedido['status_fabrica'])) { ?>
-                      <a href="<?= "{$url}!/Fabrica/pedido/{$pedido['id']}" ?>"
+                      <a href="<?= "{$url}!/Fabrica/aberto/{$pedido['id']}" ?>"
                         class="dropdown-item">
                         Acompanhar Produção
                       </a>

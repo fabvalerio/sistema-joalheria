@@ -149,6 +149,7 @@
         <div id="fabrica" class="collapse <?php echo $link[1] == 'Fabrica' ? 'show' : ''; ?>" aria-labelledby="headingFabrica" data-bs-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
                 <a class="collapse-item" href="<?php echo "{$url}!/Fabrica/aberto" ?>">Aberto</a>
+                <a class="collapse-item" href="<?php echo "{$url}!/Fabrica/andamento" ?>">Andamento</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Fabrica/finalizado" ?>">Finalizado</a>
             </div>
         </div>

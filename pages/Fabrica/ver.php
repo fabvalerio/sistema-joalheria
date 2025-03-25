@@ -21,8 +21,7 @@ $itens = $dados['itens'];
     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
         <h3 class="card-title">Detalhes do Pedido</h3>
         <div>
-        <a href="<?php echo "{$url}!/{$link[1]}/listar"; ?>" class="btn btn-warning text-primary">Voltar</a>
-        <a href="<?php echo "{$url}!/Fabrica/aberto/{$id}"; ?>" class="btn btn-info text-primary">Fábrica</a>
+        <a href="<?php echo "{$url}!/{$link[1]}/aberto"; ?>" class="btn btn-warning text-primary">Voltar</a>
         </div>
     </div>
 
@@ -47,38 +46,38 @@ $itens = $dados['itens'];
                     ? htmlspecialchars(date('d/m/Y', strtotime($pedido['data_entrega']))) 
                     : 'Não informado'; ?>
             </div>
-            <div class="col-lg-6">
+            <!-- <div class="col-lg-6">
                 <strong>Forma de Pagamento:</strong> 
                 <?= htmlspecialchars($pedido['forma_pagamento'] ?? 'Não informado') ?>
-            </div>
-            <div class="col-lg-6">
+            </div> -->
+            <!-- <div class="col-lg-6">
                 <strong>Status:</strong> 
                 <span class="badge bg-<?= $pedido['status_pedido'] == 'Pendente' ? 'warning' : 'success' ?>"><?= htmlspecialchars($pedido['status_pedido'] ?? 'Pendente') ?> </span>
-            </div>
-            <div class="col-lg-6">
+            </div> -->
+            <!-- <div class="col-lg-6">
                 <strong>Valor Total:</strong> 
                 R$<?= isset($pedido['total']) 
                     ? number_format($pedido['total'], 2, ',', '.') 
                     : '0,00'; ?>
-            </div>
-            <div class="col-lg-6">
+            </div> -->
+            <!-- <div class="col-lg-6">
                 <strong>Valor Pago:</strong> 
                 R$<?= isset($pedido['valor_pago']) 
                     ? number_format($pedido['valor_pago'], 2, ',', '.') 
                     : '0,00'; ?>
-            </div>
-            <div class="col-lg-6">
+            </div> -->
+            <!-- <div class="col-lg-6">
                 <strong>Acréscimo:</strong> 
                 <?= isset($pedido['acrescimo']) 
                     ? number_format($pedido['acrescimo'], 2, ',', '.') . '%' 
                     : '0,00%'; ?>
-            </div>
-            <div class="col-lg-6">
+            </div> -->
+            <!-- <div class="col-lg-6">
                 <strong>Desconto:</strong> 
                 <?= isset($pedido['desconto']) 
                     ? number_format($pedido['desconto'], 2, ',', '.') . '%' 
                     : '0,00%'; ?>
-            </div>
+            </div> -->
         </div>
 
         <hr>
@@ -88,40 +87,44 @@ $itens = $dados['itens'];
                 <tr>
                     <th>Produto</th>
                     <th>Quantidade</th>
-                    <th>Valor Unitário (R$)</th>
-                    <th>Desconto (%)</th>
-                    <th>Subtotal (R$)</th>
+                    <!-- <th>Valor Unitário (R$)</th> -->
+                    <!-- <th>Desconto (%)</th> -->
+                    <!-- <th>Subtotal (R$)</th> -->
                     <th>Fábrica</th>
                 </tr>
             </thead>
             <tbody>
                 <?php foreach ($itens as $item): ?>
+                <?php if ($item['fabrica'] == 1): ?>
                     <tr>
                         <td><?= htmlspecialchars($item['nome_produto'] ?? $item['descricao_produto']) ?></td>
                         <td><?= htmlspecialchars($item['quantidade']) ?></td>
-                        <td>
+                        <!-- <td>
                             R$<?= isset($item['valor_unitario']) 
                                 ? number_format($item['valor_unitario'], 2, ',', '.') 
                                 : '0,00'; ?>
-                        </td>
-                        <td>
+                        </td> -->
+                        <!-- <td>
                             <?= isset($item['desconto_percentual']) 
                                 ? number_format($item['desconto_percentual'], 2, ',', '.') . '%' 
                                 : '0,00%'; ?>
-                        </td>
-                        <td>
+                        </td> -->
+                        <!-- <td>
                             R$<?= number_format(
                                 ($item['quantidade'] * $item['valor_unitario']) * (1 - ($item['desconto_percentual'] / 100)), 
                                 2, ',', '.'); ?>
-                        </td>
+                        </td> -->
                         <td><?= $item['fabrica'] == 1 ? '<span class="badge bg-success">Sim</span>' : '<span class="badge bg-danger">Não</span>' ?></td>
                     </tr>
+                <?php endif; ?>
                 <?php endforeach; ?>
             </tbody>
         </table>
         <div class="col-12">
+            <div class="p-3 alert alert-light">
                 <strong>Observações:</strong>
                 <p><?= htmlspecialchars($pedido['observacoes'] ?? 'Não informado') ?></p>
             </div>
+        </div>
     </div>
 </div>

@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         'cod_vendedor' => $_POST['cod_vendedor'] ?? null,
         'status_pedido' => $_POST['status_pedido'] ?? 'Pendente',
         'data_entrega' => $_POST['data_entrega'] ?? null,
-        'fabrica' => $_POST['fabrica'] ?? false,
+        // 'fabrica' => $_POST['fabrica'] ?? 0,
         'itens' => [] // Inicializa o array de itens do pedido
     ];
 
@@ -40,7 +40,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     'data_movimentacao' => date('Y-m-d'),
                     'motivo' => 'Pedido',
                     //estoque atualizado estoque_antes - quantidade
-                    'estoque_atualizado' => (int)$produto['estoque_atual'] - (int)$produto['quantidade']
+                    'estoque_atualizado' => (int)$produto['estoque_atual'] - (int)$produto['quantidade'],
+                    'fabrica' => (bool)($produto['fabrica'] ?? '0')
                 ];
             }
         }
@@ -146,8 +147,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 <label class="form-label">Desconto (%)</label>
                                 <input type="number" step="0.01" class="form-control" name="produtos[0][desconto_percentual]" placeholder="Desconto (%)">
                             </div>
-                            <div class="col-lg-2">
-                                <button type="button" class="btn btn-success btn-add">Adicionar +</button>
+                            <div class="col-lg-1 text-start">
+                                <label class="form-label">Produção</label>
+                                <div style="padding: 8px 0px;">
+                                <input type="checkbox" name="produtos[0][fabrica]" id="" value="1"> Sim
+                                </div>
+                            </div>
+                            <div class="col-lg-1">
+                                <button type="button" class="btn btn-success btn-add">+</button>
                             </div>
                         </div>
                     </div>
@@ -171,13 +178,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <input type="number" step="0.01" class="form-control" id="desconto" name="desconto" placeholder="Desconto (%)">
                     <input type="hidden" name="juros_aplicado" id="juros_aplicado" value="0">
                 </div>
-                <div class="col-lg-4">
+                <!-- <div class="col-lg-4">
                     <label>Enviar para Fábrica</label>
                     <div class="form-check mt-3">
                         <input class="form-check-input" type="checkbox" name="fabrica" id="inlineRadio1" value="true">
                         <label class="form-check-label" for="inlineRadio1">Sim</label>
                     </div>
-                </div>
+                </div> -->
                 <div class="col-12">
                     <hr>
                     <h4 class="card-title">Pagamento</h4>
@@ -537,7 +544,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <div class="col-lg-2">
                     <input type="number" step="0.01" class="form-control" name="produtos[${productIndex}][desconto_percentual]" placeholder="Desconto (%)">
                 </div>
-                <div class="col-lg-2">
+                <div class="col-lg-1 text-start">
+                    <label class="form-label">Produção</label>
+                    <div style="padding: 8px 0px;">
+                    <input type="checkbox" name="produtos[${productIndex}][fabrica]" id="" value="1"> Sim
+                    </div>
+                </div>
+                <div class="col-lg-1">
                     <button type="button" class="btn btn-danger btn-remove">-</button>
                 </div>`;
                         productList.appendChild(productItem);
