@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <div class="card">
   <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-    <h3 class="card-title">Editar Produto</h3>
+    <h3 class="card-title">Editar Produto - #<?= $produto['id'] ?></h3>
     <a href="<?php echo "{$url}!/{$link[1]}/listar" ?>" class="btn btn-warning text-primary">Voltar</a>
   </div>
 

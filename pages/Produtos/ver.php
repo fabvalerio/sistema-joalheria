@@ -176,7 +176,7 @@ if (!$produto) {
 
       <!-- Em Reais -->
       <div class="col-lg-4">
-        <label class="form-label fw-bold">Em Reais</label><br>
+        <label class="form-label fw-bold">Valor</label><br>
         <?php
                             //conta de valor dinamica com cotação
                             $produto['em_reais'] =  cotacao($produto['preco_ql'], $produto['peso_gr'], $produto['cotacao_valor'], $produto['margem']);
