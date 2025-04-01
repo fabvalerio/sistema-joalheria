@@ -1,5 +1,5 @@
 {
-  "atualizacao": "2025-03-31 15:00:00",
+  "atualizacao": "2025-04-01 12:00:00",
   "tpAmb": 2,
   "razaosocial": "J. G. SOROCABA JOIAS LTDA",
   "cnpj": "04397763000179",
@@ -8,8 +8,8 @@
   "uf": "SP",
   "codigoMunicipio": "3552205",
   "tokenIBPT": "",
-  "CSC": "db079d13-8306-4642-88bb-14bdcbe7e43c",
-"CSCid": "2",
+  "CSC": "1bff7a7a-61bd-49b2-9569-c59d8d7e8da7",
+  "CSCid": "000001",
   "schemes": "PL_009_V4",
   "soapDebug": false,
   "soapVersion": 2,
