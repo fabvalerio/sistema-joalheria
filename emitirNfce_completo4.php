@@ -25,11 +25,13 @@ $cert = Certificate::readPfx(file_get_contents($certPath), $senhaCert);
 $tools = new Tools($configJson, $cert);
 $tools->model('65');
 
+$numeroIdVenda = rand(10000000, 99999999);
+
 $nfe = new Make();
 $nfe->taginfNFe((object)['versao' => '4.00']);
 $nfe->tagide((object)[
   'cUF' => 35,
-  'cNF' => rand(10000000, 99999999),
+  'cNF' => $numeroIdVenda,
   'natOp' => 'Venda ao Consumidor',
   'mod' => 65,
   'serie' => 1,
@@ -106,7 +108,7 @@ $nfe->tagdetPag((object)['indPag' => 0, 'tPag' => '01', 'vPag' => 100.00]);
 $nfe->montaNFe();
 $xml = $nfe->getXML();
 $xmlAssinado = $tools->signNFe($xml);
-file_put_contents(__DIR__ . '/nfc-e-assinada.xml', $xmlAssinado);
+file_put_contents(__DIR__ . '/xml/nfc-e-assinada['.$numeroIdVenda.'].xml', $xmlAssinado);
 //echo "📄 XML gerado e assinado com sucesso.\n";
 
 $statusRaw = $tools->sefazStatus();
@@ -141,9 +143,10 @@ $domProt->loadXML($prot->asXML());
 $nodeProt = $xmlProc->importNode($domProt->documentElement, true);
 $proc->appendChild($nodeProt);
 $xmlProc->appendChild($proc);
-file_put_contents(__DIR__ . '/nfc-e-autorizada.xml', $xmlProc->saveXML());
+file_put_contents(__DIR__ . '/xml/nfc-e-autorizada['.$numeroIdVenda.'].xml', $xmlProc->saveXML());
 
 $xmlObj = simplexml_load_string($xmlProc->saveXML());
+
 $emitente = $xmlObj->NFe->infNFe->emit;
 $enderEmit = $emitente->enderEmit;
 $totais = $xmlObj->NFe->infNFe->total->ICMSTot;
