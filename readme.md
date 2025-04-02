@@ -1,5 +1,7 @@
 # Instalaçoes
 
+![PHP Supported Version][ico-php]
+
 npx webpack --config webpack.config.js
 
 # Cpanel

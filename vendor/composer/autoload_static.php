@@ -29,6 +29,7 @@ class ComposerStaticInite875ae8441d070d7dda5f4b47a2117aa
         array (
             'NFePHP\\NFe\\' => 11,
             'NFePHP\\Gtin\\' => 12,
+            'NFePHP\\DA\\' => 10,
             'NFePHP\\Common\\' => 14,
         ),
         'J' => 
@@ -47,6 +48,11 @@ class ComposerStaticInite875ae8441d070d7dda5f4b47a2117aa
         array (
             'Dotenv\\' => 7,
             'DASPRiD\\Enum\\' => 13,
+        ),
+        'C' => 
+        array (
+            'Com\\Tecnick\\Color\\' => 18,
+            'Com\\Tecnick\\Barcode\\' => 20,
         ),
         'B' => 
         array (
@@ -91,6 +97,10 @@ class ComposerStaticInite875ae8441d070d7dda5f4b47a2117aa
         array (
             0 => __DIR__ . '/..' . '/nfephp-org/sped-gtin/src',
         ),
+        'NFePHP\\DA\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/nfephp-org/sped-da/src',
+        ),
         'NFePHP\\Common\\' => 
         array (
             0 => __DIR__ . '/..' . '/nfephp-org/sped-common/src',
@@ -114,6 +124,14 @@ class ComposerStaticInite875ae8441d070d7dda5f4b47a2117aa
         'DASPRiD\\Enum\\' => 
         array (
             0 => __DIR__ . '/..' . '/dasprid/enum/src',
+        ),
+        'Com\\Tecnick\\Color\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/tecnickcom/tc-lib-color/src',
+        ),
+        'Com\\Tecnick\\Barcode\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/tecnickcom/tc-lib-barcode/src',
         ),
         'BaconQrCode\\' => 
         array (

@@ -1,27 +1,31 @@
 <?php
-require_once __DIR__ . '/vendor/autoload.php';
+require_once 'vendor/autoload.php'; // Ajuste o caminho conforme necessário
 
 use NFePHP\Common\Certificate;
 use NFePHP\NFe\Tools;
 use NFePHP\NFe\Make;
-use NFePHP\DA\NFe\Danfe;
 
 $configPath = __DIR__ . '/config.json';
 $certPath = __DIR__ . '/certificado.pfx';
 $senhaCert = '123456'; // Substitua pela senha real do seu .pfx
 
-echo "✅ Iniciando emissão da NFC-e...\n";
+
+date_default_timezone_set('America/Sao_Paulo'); // Adicionado
+
+
+
+//echo "✅ Iniciando emissão da NFC-e...<br>";
 
 // Validar arquivos necessários
-if (!file_exists($configPath)) die("❌ Arquivo config.json não encontrado.\n");
-if (!file_exists($certPath)) die("❌ Certificado digital (.pfx) não encontrado.\n");
+if (!file_exists($configPath)) die("❌ Arquivo config.json não encontrado.<br>");
+if (!file_exists($certPath)) die("❌ Certificado digital (.pfx) não encontrado.<br>");
 
 $configJson = file_get_contents($configPath);
 $configData = json_decode($configJson);
 
-echo "🔍 Diagnóstico:\n";
-echo "CSC: " . (!empty($configData->CSC) ? '✔️' : '❌ Faltando') . "\n";
-echo "CSCid: " . (!empty($configData->CSCid) ? '✔️' : '❌ Faltando') . "\n";
+// echo "🔍 Diagnóstico:<br>";
+// echo "CSC: " . (!empty($configData->CSC) ? '✔️' : '❌ Faltando') . "<br>";
+// echo "CSCid: " . (!empty($configData->CSCid) ? '✔️' : '❌ Faltando') . "<br>";
 
 $certificado = Certificate::readPfx(file_get_contents($certPath), $senhaCert);
 
@@ -139,36 +143,120 @@ $nfe->tagdetPag((object)[
 // 8. Monta o XML
 $nfe->montaNFe();
 $xml = $nfe->getXML();
-echo "📄 XML gerado com sucesso.\n";
+// echo "📄 XML gerado com sucesso.<br>";
 
 // 9. Assina o XML
 $xmlAssinado = $tools->signNFe($xml);
-echo "🖊️  XML assinado com sucesso.\n";
+// echo "🖊️ XML assinado com sucesso.<br>";
 
 // 10. Transmite para a SEFAZ
-$resp = $tools->sefazEnviaLote([$xmlAssinado], 123, 1); // 1 = síncrono
+$respRaw = $tools->sefazEnviaLote([$xmlAssinado], 123, 1); // 1 = síncrono
 
+// echo '<br><br> >>> respRaw: ';
+// echo "<pre>";
+// print_r($respRaw);
+// echo "</pre>";
 
+// Suponha que $respRaw seja o retorno da SEFAZ (em XML string)
+$xml = simplexml_load_string($respRaw);
 
-if (!isset($resp->success) || !$resp->success) {
-    echo "❌ Erro na transmissão da NFC-e:\n";
-    echo "Código: " . ($resp->cStat ?? '---') . "\n";
-    echo "Mensagem: " . ($resp->xMotivo ?? 'Erro desconhecido') . "\n";
-    echo "\n📤 XML Enviado:\n" . $xmlAssinado . "\n";
-    echo "\n📥 Resposta Completa:\n";
-    print_r($resp);
+// Registra os namespaces existentes
+$namespaces = $xml->getNamespaces(true);
+
+// Acessa o conteúdo do corpo SOAP
+$body = $xml->children($namespaces['soap'])->Body;
+
+// Acessa o conteúdo do nfeResultMsg
+$nfeResult = $body->children($namespaces[''])->nfeResultMsg;
+
+// Acessa o conteúdo da NFe (namespace da NF-e)
+$retEnviNFe = $nfeResult->children('http://www.portalfiscal.inf.br/nfe')->retEnviNFe;
+
+// Extrai os dados principais
+$tpAmb      = (string) $retEnviNFe->tpAmb;
+$verAplic   = (string) $retEnviNFe->verAplic;
+$cStat      = (string) $retEnviNFe->cStat;
+$xMotivo    = (string) $retEnviNFe->xMotivo;
+$dhRecbto   = (string) $retEnviNFe->dhRecbto;
+
+// Dados da NF-e autorizada
+$protNFe    = $retEnviNFe->protNFe;
+$infProt    = $protNFe->infProt;
+
+$chNFe      = (string) $infProt->chNFe;
+$nProt      = (string) $infProt->nProt;
+$digVal     = (string) $infProt->digVal;
+$cStatNFe   = (string) $infProt->cStat;
+$xMotivoNFe = (string) $infProt->xMotivo;
+
+// Exibe os dados
+// echo "Ambiente: $tpAmb<br>";
+// echo "Aplicação: $verAplic<br>";
+// echo "Status do Lote: $cStat - $xMotivo<br>";
+// echo "Data de Recebimento: $dhRecbto<br><br>";
+
+// echo "Chave da NF-e: $chNFe<br>";
+// echo "Protocolo: $nProt<br>";
+// echo "Hash: $digVal<br>";
+// echo "Status NF-e: $cStatNFe - $xMotivoNFe<br>";
+
+if ($xMotivoNFe != 'Autorizado o uso da NF-e') {
+    echo "<br>❌ Erro na transmissão da NFC-e:<br>";
+    echo "<br>Código: " . ($cStatNFe ?? '---') . "<br>";
+    echo "<br>Mensagem: " . ($xMotivoNFe ?? 'Erro desconhecido') . "<br>";
+    echo "<br>📤 XML Enviado:<br>" . $xmlAssinado . "<br>";
+    echo "<br>📥 Resposta Completa:<br>";
     exit;
 }
 
+// echo "<br>🚀 NFC-e enviada com sucesso!<br>";
 
-echo "🚀 NFC-e enviada com sucesso!\n";
-echo "📌 Protocolo: {$resp->protocol}\n";
+// 11. Salvar XML e fornecer link
+$xmlFileName = 'nfce_' . $chNFe . '.xml';
+$xmlDirPath = __DIR__ . '/xml/';
+$xmlFilePath = $xmlDirPath . $xmlFileName;
 
-// 11. Geração do DANFE
-$danfe = new Danfe($xmlAssinado);
-$pdf = $danfe->render();
+// Certifique-se de que o diretório existe
+if (!is_dir($xmlDirPath)) {
+    mkdir($xmlDirPath, 0777, true);
+}
 
-header('Content-Type: application/pdf');
-header('Content-Disposition: inline; filename=\"danfe_nfce.pdf\"');
-echo $pdf;
+// Salvar o XML
+file_put_contents($xmlFilePath, $xmlAssinado);
+
+// Gerar HTML para exibição de informações e links
+echo "<div style='margin-top: 20px; padding: 20px; border: 1px solid #ddd; border-radius: 5px;'>";
+echo "<h2 style='color: #2c7be5;'>📋 NFC-e Emitida com Sucesso</h2>";
+echo "<p><strong>Status:</strong> " . $xMotivoNFe . "</p>";
+echo "<p><strong>Chave de acesso:</strong> " . $chNFe . "</p>";
+echo "<p><strong>Protocolo de autorização:</strong> " . $nProt . "</p>";
+echo "<p><strong>Data/Hora:</strong> " . $dhRecbto . "</p>";
+
+// Link para download do XML
+echo "<div style='margin-top: 15px;'>";
+echo "<a href='xml/" . $xmlFileName . "' download style='padding: 10px 15px; background-color: #2c7be5; color: white; text-decoration: none; border-radius: 4px;'>
+      <span style='font-size: 1.2em;'>⬇️</span> Baixar XML da NFC-e</a>";
+echo "</div>";
+
+// Link para consulta no portal da SEFAZ
+$urlConsulta = "https://www.homologacao.nfce.fazenda.sp.gov.br/NFCeConsultaPublica/Paginas/ConsultaQRCode.aspx?chNFe=" . $chNFe;
+echo "<div style='margin-top: 15px;'>";
+echo "<a href='" . $urlConsulta . "' target='_blank' style='padding: 10px 15px; background-color: #28a745; color: white; text-decoration: none; border-radius: 4px;'>
+      <span style='font-size: 1.2em;'>🔍</span> Consultar NFC-e no Portal da SEFAZ</a>";
+echo "</div>";
+
+// Informações sobre o DANFE
+echo "<div style='margin-top: 20px; padding: 15px; background-color: #fff3cd; border-radius: 4px;'>";
+echo "<p><strong>⚠️ Nota:</strong> O DANFE PDF não pôde ser gerado automaticamente devido à falta da extensão GD no servidor.</p>";
+echo "<p>Para visualizar o DANFE, você pode:</p>";
+echo "<ol>";
+echo "<li>Consultar a NFC-e no portal da SEFAZ usando o link acima</li>";
+echo "<li>Instalar a extensão PHP-GD no servidor (requer acesso ao servidor):<br>";
+echo "<code>sudo apt-get install php-gd</code> (Ubuntu/Debian)<br>";
+echo "<code>sudo yum install php-gd</code> (CentOS/RHEL)</li>";
+echo "</ol>";
+echo "</div>";
+
+echo "</div>";
+
 exit;
