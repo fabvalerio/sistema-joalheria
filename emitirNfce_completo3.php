@@ -183,5 +183,8 @@ QRcode::png($text, $file, QR_ECLEVEL_H, 10);
 $html .= "<h2>QR Code</h2><img src='{$file}' style='width:200px;'>";
 $html .= $qrCodeUrl;
 $html .= "</body></html>";
-file_put_contents(__DIR__ . '/detalhes_nfce.html', $html);
+//file_put_contents(__DIR__ . '/detalhes_nfce.html', $html);
 echo "🖥️ Detalhes salvos em detalhes_nfce.html\n";
+
+//exibe html
+echo $html;
