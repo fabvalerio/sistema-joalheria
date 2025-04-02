@@ -174,7 +174,13 @@ foreach ($pagamentos as $pg) {
   $html .= "<p>Tipo: {$pg->tPag} - R$ {$pg->vPag}</p>";
 }
 $html .= "<h2>Chave de Acesso</h2><p>{$chave}</p><p>Protocolo: {$protocolo}</p><p>Emitido em: " . date('d/m/Y H:i:s') . "</p>";
-$html .= "<h2>QR Code</h2><img src='{$qrCodeParaImagem}' alt='QR Code NFC-e'>";
+//gerar qrcode
+include "phpqrcode/qrlib.php";
+$text = $qrCodeParaImagem;
+$file = "qrcode.png";
+QRcode::png($text, $file, QR_ECLEVEL_H, 10);
+//fim gerar qr code
+$html .= "<h2>QR Code</h2><img src='{$file}' style='width:200px;'>";
 $html .= $qrCodeUrl;
 $html .= "</body></html>";
 file_put_contents(__DIR__ . '/detalhes_nfce.html', $html);
