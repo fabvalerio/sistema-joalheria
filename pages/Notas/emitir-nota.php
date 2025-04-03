@@ -28,7 +28,11 @@ $cert = Certificate::readPfx(file_get_contents($certPath), $senhaCert);
 $tools = new Tools($configJson, $cert);
 $tools->model('65');
 
-$numeroIdVenda = rand(10000000, 99999999);
+$numeroIdVenda = $link[3] ?? 0;
+
+if (empty($numeroIdVenda)) {
+  die("Número de venda não foi informado.");
+}
 
 $nfe = new Make();
 $nfe->taginfNFe((object)['versao' => '4.00']);
@@ -182,11 +186,14 @@ foreach ($pagamentos as $pg) {
 $html .= "<h2>Chave de Acesso</h2><p>{$chave}</p><p>Protocolo: {$protocolo}</p><p>Emitido em: " . date('d/m/Y H:i:s') . "</p>";
 
 //gerar qrcode
-include "phpqrcode/qrlib.php";
+include_once "phpqrcode/qrlib.php"; // garante que só inclua uma vez
 $text = $qrCodeParaImagem;
 $file = __DIR__ . "/qrcode/qrcode[{$numeroIdVenda}].png";
 
-QRcode::png($text, $file, QR_ECLEVEL_H, 10);
+// só gera se ainda não existir
+if (!file_exists($file)) {
+    QRcode::png($text, $file, QR_ECLEVEL_H, 10);
+}
 
 //fim gerar qr code
 $html .= "<h2>QR Code</h2><img src='{$file}' style='width:200px;'>";
