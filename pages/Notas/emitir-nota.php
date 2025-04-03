@@ -292,7 +292,8 @@ $html .= "</body></html>";
   <div class="center"><?= $protocolo ?></div>
   <div class="center" style="font-size: 11px;"><?= $chave ?></div>
   <div class="center">
-    <img src="<?php echo $url?>/pages/Notas/<?= $fileQr ?>" style="width:150px;" alt="QR Code">
+    <!-- <img src="<?php echo $url?>/pages/Notas/<?= $fileQr ?>" style="width:150px;" alt="QR Code"> -->
+    <img src="data:image/png;base64,<?= $base64Qr ?>" style="width:150px;" alt="QR Code">
   </div>
   <div class="center">Consulte a validade em:</div>
   <div class="center"><a href="<?= $qrCodeUrl ?>" target="_blank">nfce.fazenda.sp.gov.br</a></div>
