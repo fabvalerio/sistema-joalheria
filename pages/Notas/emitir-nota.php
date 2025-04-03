@@ -28,7 +28,8 @@ $cert = Certificate::readPfx(file_get_contents($certPath), $senhaCert);
 $tools = new Tools($configJson, $cert);
 $tools->model('65');
 
-$numeroIdVenda = $link[3] ?? 0;
+// $numeroIdVenda = $link[3] ?? 0;
+$numeroIdVenda = rand(10000000, 99999999);
 
 if (empty($numeroIdVenda)) {
   die("Número de venda não foi informado.");
@@ -187,17 +188,19 @@ $html .= "<h2>Chave de Acesso</h2><p>{$chave}</p><p>Protocolo: {$protocolo}</p><
 
 //gerar qrcode
 include_once "phpqrcode/qrlib.php"; // garante que só inclua uma vez
+ob_start(); // inicia o buffer de saída
+
 $text = $qrCodeParaImagem;
 $file = __DIR__ . "/qrcode/qrcode[{$numeroIdVenda}].png";
 $fileQr = "/qrcode/qrcode[{$numeroIdVenda}].png";
 
-// só gera se ainda não existir
-if (!file_exists($file)) {
-    QRcode::png($text, $file, QR_ECLEVEL_H, 10);
-}
+
+QRcode::png($qrCodeParaImagem, null, QR_ECLEVEL_H, 3); // gera a imagem no buffer
+$imageData = ob_get_clean(); // captura e limpa o buffer
+$base64Qr = base64_encode($imageData); // codifica em base64
 
 //fim gerar qr code
-$html .= "<h2>QR Code</h2><img src='{$file}' style='width:200px;'>";
+$html .= "<h2>QR Code</h2><img src=\"data:image/png;base64,{$base64Qr}\" style=\"width:150px;\" alt=\"QR Code\">";
 $html .= $qrCodeUrl;
 $html .= "</body></html>";
 //file_put_contents(__DIR__ . '/detalhes_nfce.html', $html);
