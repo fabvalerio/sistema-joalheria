@@ -28,7 +28,12 @@ $cert = Certificate::readPfx(file_get_contents($certPath), $senhaCert);
 $tools = new Tools($configJson, $cert);
 $tools->model('65');
 
+// $numeroIdVenda = $link[3] ?? 0;
 $numeroIdVenda = rand(10000000, 99999999);
+
+if (empty($numeroIdVenda)) {
+  die("Número de venda não foi informado.");
+}
 
 $nfe = new Make();
 $nfe->taginfNFe((object)['versao' => '4.00']);
@@ -165,17 +170,44 @@ $baseUrl = $configData->tpAmb == 1
 $qrCodeUrl = "$baseUrl?p={$paramStr}|{$hash}";
 $qrCodeParaImagem = str_replace('|', '%7C', $qrCodeUrl);
 
+$html = "<!DOCTYPE html><html><head><meta charset='utf-8'><title>NFC-e</title></head><body style='font-family:sans-serif;'>";
+$html .= "<h2>Emitente</h2><p>{$emitente->xNome} - CNPJ: {$emitente->CNPJ}</p>";
+$html .= "<p>Endereço: {$enderEmit->xLgr}, {$enderEmit->nro} - {$enderEmit->xBairro}, {$enderEmit->xMun}/{$enderEmit->UF}</p>";
+$html .= "<p>IE: {$emitente->IE}</p><hr>";
+$html .= "<h2>Produtos</h2>";
+foreach ($produtos as $item) {
+  $prod = $item->prod;
+  $html .= "<p>{$prod->xProd} | Qtde: {$prod->qCom} | Unit: R$ {$prod->vUnCom} | Total: R$ {$prod->vProd}</p>";
+}
+$html .= "<hr><h2>Totais</h2><p>Total: R$ {$totais->vNF}</p><p>Desconto: R$ {$totais->vDesc}</p>";
+$html .= "<h2>Pagamentos</h2>";
+foreach ($pagamentos as $pg) {
+  $html .= "<p>Tipo: {$pg->tPag} - R$ {$pg->vPag}</p>";
+}
+$html .= "<h2>Chave de Acesso</h2><p>{$chave}</p><p>Protocolo: {$protocolo}</p><p>Emitido em: " . date('d/m/Y H:i:s') . "</p>";
 
 //gerar qrcode
-include "phpqrcode/qrlib.php";
+include_once "phpqrcode/qrlib.php"; // garante que só inclua uma vez
+ob_start(); // inicia o buffer de saída
+
 $text = $qrCodeParaImagem;
-// $file = "{$url}pages/Notas/qrcode/qrcode[{$numeroIdVenda}].png";
 $file = __DIR__ . "/qrcode/qrcode[{$numeroIdVenda}].png";
-QRcode::png($text, $file, QR_ECLEVEL_H, 10);
-$file = "{$url}pages/Notas/qrcode/qrcode[{$numeroIdVenda}].png";
+$fileQr = "/qrcode/qrcode[{$numeroIdVenda}].png";
+
+
+QRcode::png($qrCodeParaImagem, null, QR_ECLEVEL_H, 3); // gera a imagem no buffer
+$imageData = ob_get_clean(); // captura e limpa o buffer
+$base64Qr = base64_encode($imageData); // codifica em base64
 
 //fim gerar qr code
+$html .= "<h2>QR Code</h2><img src=\"data:image/png;base64,{$base64Qr}\" style=\"width:150px;\" alt=\"QR Code\">";
+$html .= $qrCodeUrl;
+$html .= "</body></html>";
+//file_put_contents(__DIR__ . '/detalhes_nfce.html', $html);
+//echo "🖥️ Detalhes salvos em detalhes_nfce.html\n";
 
+//exibe html
+//echo $html;
 ?>
 
 <style>
@@ -258,12 +290,12 @@ $file = "{$url}pages/Notas/qrcode/qrcode[{$numeroIdVenda}].png";
   <div class="line"></div>
   <div class="center">Protocolo de Autorização:</div>
   <div class="center"><?= $protocolo ?></div>
-  <div class="center"><?= $chave ?></div>
+  <div class="center" style="font-size: 11px;"><?= $chave ?></div>
   <div class="center">
-    <img src="<?= $file ?>" style="width:150px;" alt="QR Code">
+    <!-- <img src="<?php echo $url?>/pages/Notas/<?= $fileQr ?>" style="width:150px;" alt="QR Code"> -->
+    <img src="data:image/png;base64,<?= $base64Qr ?>" style="width:150px;" alt="QR Code">
   </div>
   <div class="center">Consulte a validade em:</div>
   <div class="center"><a href="<?= $qrCodeUrl ?>" target="_blank">nfce.fazenda.sp.gov.br</a></div>
 
 </div>
-<?php die(); ?>
