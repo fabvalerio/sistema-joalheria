@@ -58,7 +58,7 @@ $nfe->tagemit((object)[
 ]);
 $nfe->tagenderEmit((object)[
   'xLgr' => 'Rua Dr. Braguinha',
-  'nro' => '333',
+  'nro' => '338',
   'xCpl' => 'Sala 12',
   'xBairro' => 'Centro',
   'cMun' => 3552205,
