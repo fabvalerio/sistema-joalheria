@@ -189,6 +189,7 @@ $html .= "<h2>Chave de Acesso</h2><p>{$chave}</p><p>Protocolo: {$protocolo}</p><
 include_once "phpqrcode/qrlib.php"; // garante que só inclua uma vez
 $text = $qrCodeParaImagem;
 $file = __DIR__ . "/qrcode/qrcode[{$numeroIdVenda}].png";
+$fileQr = "/qrcode/qrcode[{$numeroIdVenda}].png";
 
 // só gera se ainda não existir
 if (!file_exists($file)) {
@@ -286,9 +287,9 @@ $html .= "</body></html>";
   <div class="line"></div>
   <div class="center">Protocolo de Autorização:</div>
   <div class="center"><?= $protocolo ?></div>
-  <div class="center"><?= $chave ?></div>
+  <div class="center" style="font-size: 11px;"><?= $chave ?></div>
   <div class="center">
-    <img src="qrcode/<?= $file ?>" style="width:150px;" alt="QR Code">
+    <img src="<?php echo $url?>/pages/Notas/<?= $fileQr ?>" style="width:150px;" alt="QR Code">
   </div>
   <div class="center">Consulte a validade em:</div>
   <div class="center"><a href="<?= $qrCodeUrl ?>" target="_blank">nfce.fazenda.sp.gov.br</a></div>

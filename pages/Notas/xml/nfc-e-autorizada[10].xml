@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" xmlns:default="http://www.w3.org/2000/09/xmldsig#" versao="4.00">
   <NFe xmlns:default="http://www.w3.org/2000/09/xmldsig#">
-    <infNFe Id="NFe35250404397763000179650010000018691000000109" versao="4.00">
+    <infNFe Id="NFe35250404397763000179650010000074391000000105" versao="4.00">
       <ide>
         <cUF>35</cUF>
         <cNF>00000010</cNF>
         <natOp>Venda ao Consumidor</natOp>
         <mod>65</mod>
         <serie>1</serie>
-        <nNF>1869</nNF>
-        <dhEmi>2025-04-03T13:52:45-03:00</dhEmi>
+        <nNF>7439</nNF>
+        <dhEmi>2025-04-03T13:57:43-03:00</dhEmi>
         <tpNF>1</tpNF>
         <idDest>1</idDest>
         <cMunFG>3552205</cMunFG>
         <tpImp>4</tpImp>
         <tpEmis>1</tpEmis>
-        <cDV>9</cDV>
+        <cDV>5</cDV>
         <tpAmb>2</tpAmb>
         <finNFe>1</finNFe>
         <indFinal>1</indFinal>
@@ -106,23 +106,23 @@
       </pag>
     </infNFe>
     <infNFeSupl>
-      <qrCode>https://www.homologacao.nfce.fazenda.sp.gov.br/qrcode?p=35250404397763000179650010000018691000000109|2|2|1|4B2D5786376B555B467CE0A959F4DF2F991CFCAB</qrCode>
+      <qrCode>https://www.homologacao.nfce.fazenda.sp.gov.br/qrcode?p=35250404397763000179650010000074391000000105|2|2|1|8A621E13511B81D35AEAEA8BF05AFDF9B7D74B52</qrCode>
       <urlChave>https://www.homologacao.nfce.fazenda.sp.gov.br/NFCeConsultaPublica</urlChave>
     </infNFeSupl>
     <default:Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
       <default:SignedInfo>
         <default:CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
         <default:SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/>
-        <default:Reference URI="#NFe35250404397763000179650010000018691000000109">
+        <default:Reference URI="#NFe35250404397763000179650010000074391000000105">
           <default:Transforms>
             <default:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
             <default:Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
           </default:Transforms>
           <default:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
-          <default:DigestValue>dCFPMHw8YEtbNSdMZnV+syXkoTE=</default:DigestValue>
+          <default:DigestValue>gW9b0O0iVKMFQnSqqtKvTI24cOI=</default:DigestValue>
         </default:Reference>
       </default:SignedInfo>
-      <default:SignatureValue>TOWxKfFO+VVVqbyKAxnm4nkNnOvlOYvBwfYZDP+nE0jc4ynP9J9dqYyZV72LnxaGwYFnl2CeCcx5dNWZLdnQk6hKSASs/9+/UeSkOierKL/EOUKty4Xrz8QkEOpU3IUvqAxHOzH5eT1hrG+DCWJtZancq1iXVn7feMljdqunaTW0BxKH+kjOGTv+4GOolIRHMgYG8Go05ru3aTNqLzRw8IWKvORmx1iH/p9UAMoqyeI/HnpEDDkIo1nr0ItYJ5LU1RevWPVh4GzyybhmhFWR4Sk6SoQjZjvFzj2vrcxTtmLCljXEojhacOwwVmDPP1fB4hy+3madAlHU/nE1S/+5mQ==</default:SignatureValue>
+      <default:SignatureValue>ROY1Q58hsLyFWKfQybCJxh5OEqklqHZ8O2U34NHvl7pKd5xMl9Z80uu3oWTBO8dEvHztRj2i9Cden05YF58zJxM6qrWGvaZQy90l2DqcznxzZ+ZKoPq+uQWPLRyTddH2DZxgc+8hA4SMBhRUJj2gAzVrHfOJW2CanK/XXmAExE+xIlk0uGRYE/FUSKIOi27zjzZ517VIoDCW6518ePTI6xfZpLPkmuyUBYzXsn8u7kM2fHbeorj5B1r7IQ7kO7FrCsmLMcTmTW1oYpf6HtXw231j8Dj3aCbSsFbIp04L6oAFsska/zdm47LUKzyeJPjvhGaDjkIs1bkH7TYSna7JMQ==</default:SignatureValue>
       <default:KeyInfo>
         <default:X509Data>
           <default:X509Certificate>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</default:X509Certificate>
@@ -133,10 +133,10 @@
   <infProt>
     <tpAmb>2</tpAmb>
     <verAplic>SP_NFCE_PL_009_V400</verAplic>
-    <chNFe>35250404397763000179650010000018691000000109</chNFe>
-    <dhRecbto>2025-04-03T13:52:48-03:00</dhRecbto>
-    <nProt>135250000645612</nProt>
-    <digVal>dCFPMHw8YEtbNSdMZnV+syXkoTE=</digVal>
+    <chNFe>35250404397763000179650010000074391000000105</chNFe>
+    <dhRecbto>2025-04-03T13:57:46-03:00</dhRecbto>
+    <nProt>135250000645641</nProt>
+    <digVal>gW9b0O0iVKMFQnSqqtKvTI24cOI=</digVal>
     <cStat>100</cStat>
     <xMotivo>Autorizado o uso da NF-e</xMotivo>
   </infProt>
