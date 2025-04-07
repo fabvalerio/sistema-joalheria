@@ -190,6 +190,10 @@ $file = "{$url}pages/Notas/qrcode/qrcode[{$numeroIdVenda}].png";
 
   .center {
     text-align: center;
+    word-break: break-word;
+    /* quebra palavra longa */
+    overflow-wrap: break-word;
+    /* suporte adicional */
   }
 
   .line {
