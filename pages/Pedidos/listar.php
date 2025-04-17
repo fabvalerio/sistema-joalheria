@@ -67,9 +67,9 @@ $pedidos = $controller->listar();
                       </a>
                     <?php } ?>
                   </li>
-                  <?php if ($pedido['status_pedido'] <> 'Pendente') { ?>
+                  <?php if ($pedido['status_pedido'] == 'Pendente') { ?>
                   <li>
-                    <a href="<?= "{$url}!/{$link[1]}/mudarStatus/{$pedido['id']}/Pendente" ?>" class="dropdown-item">Emitir Nota</a>
+                    <a href="<?= "{$url}!/Notas/emitir-nota/{$pedido['id']}" ?>" class="dropdown-item">Emitir Nota</a>
                   </li>
                   <?php } ?>
                   <li>

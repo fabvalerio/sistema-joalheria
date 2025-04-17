@@ -11,7 +11,16 @@ $configPath = __DIR__ . '/config.json';
 $certPath = __DIR__ . '/certificado.pfx';
 $senhaCert = '123456';
 
+//dados do pedido
+use App\Models\Pedidos\Controller;
 
+$controller = new Controller();
+$id = $link[3] ?? null;
+
+$dados = $controller->ver($id);
+$pedido = $dados['pedido'];
+$itens = $dados['itens'];
+// fim dados do pedido
 
 //echo "\u2705 Iniciando emissão da NFC-e...\n";
 if (!file_exists($configPath)) die("\u274c config.json não encontrado.\n");
@@ -72,31 +81,40 @@ $nfe->tagenderEmit((object)[
   'xPais' => 'Brasil',
   'fone' => '1533333333'
 ]);
+$val_anterior = 0;
+foreach ($itens as $item): 
+  $val_total = ($item['valor_unitario'] * $item['quantidade']) + $val_anterior;
+  $val_anterior = $val_total;
 $nfe->tagprod((object)[
   'item' => 1,
-  'cProd' => '001',
+  'cProd' => $item['produto_id'],
+ 
   'cEAN' => 'SEM GTIN',
-  'xProd' => 'Pulseira de Prata',
+  'xProd' => $item['nome_produto'],
+
   'NCM' => '71131100',
   'CFOP' => '5101',
   'uCom' => 'UN',
   'qCom' => '1.0000',
-  'vUnCom' => '100.00',
-  'vProd' => '100.00',
+  'vUnCom' => $item['valor_unitario'] * $item['quantidade'],
+  'vProd' => $item['valor_unitario'] * $item['quantidade'],
+  
   'cEANTrib' => 'SEM GTIN',
   'uTrib' => 'UN',
   'qTrib' => '1.0000',
-  'vUnTrib' => '100.00',
+  'vUnTrib' => $item['valor_unitario'] * $item['quantidade'],
   'indTot' => 1
+
 ]);
+endforeach; 
 $nfe->tagimposto((object)['item' => 1]);
 $nfe->tagICMSSN((object)['item' => 1, 'orig' => 0, 'CSOSN' => '102']);
 $nfe->tagimposto((object)['item' => 1, 'vTotTrib' => 0.00]);
 $nfe->tagICMSTot((object)[
   'vBC' => 0.00,
   'vICMS' => 0.00,
-  'vProd' => 100.00,
-  'vNF' => 100.00,
+  'vProd' => $val_total,
+  'vNF' => $val_total,
   'vPIS' => 0.00,
   'vCOFINS' => 0.00,
   'vST' => 0.00,
@@ -106,7 +124,7 @@ $nfe->tagICMSTot((object)[
 ]);
 $nfe->tagtransp((object)['modFrete' => 9]);
 $nfe->tagpag((object)['vTroco' => 0.00]);
-$nfe->tagdetPag((object)['indPag' => 0, 'tPag' => '01', 'vPag' => 100.00]);
+$nfe->tagdetPag((object)['indPag' => 0, 'tPag' => '01', 'vPag' => $val_total]);
 
 $nfe->montaNFe();
 $xml = $nfe->getXML();
@@ -227,14 +245,18 @@ $file = "{$url}pages/Notas/qrcode/qrcode[{$numeroIdVenda}].png";
   <div class="center">Série <?= $xmlObj->NFe->infNFe->ide->serie ?> - Nº <?= $xmlObj->NFe->infNFe->ide->nNF ?></div>
   <div class="center">Data: <?= date('d/m/Y H:i:s', strtotime($xmlObj->NFe->infNFe->ide->dhEmi)) ?></div>
   <div class="center line"></div>
-  <div>CPF/CNPJ do Consumidor: NÃO IDENTIFICADO</div>
+  <div>CPF/CNPJ do Consumidor: <?= htmlspecialchars(
+                                  !empty($pedido['cpf'])
+                                    ? $pedido['cpf']
+                                    : ($pedido['cpf'] ?? 'Não informado')
+                                ) ?></div>
   <div class="line"></div>
 
   <table class="item-table">
     <tr>
       <th>COD</th>
       <th>DESC</th>
-      <th class="right">VL ITEM R$</th>
+      <th class="right">VL ITEM R$ </th>
     </tr>
     <?php foreach ($produtos as $item): ?>
       <?php $prod = $item->prod; ?>
@@ -250,7 +272,7 @@ $file = "{$url}pages/Notas/qrcode/qrcode[{$numeroIdVenda}].png";
   <div class="right bold">TOTAL R$: <?= number_format((float)$totais->vNF, 2, ',', '.') ?></div>
 
   <?php foreach ($pagamentos as $pg): ?>
-    <div class="right"><?= $pg->tPag == '01' ? 'Cartão de Débito' : 'Pagamento' ?>: <?= number_format((float)$pg->vPag, 2, ',', '.') ?></div>
+    <!-- <div class="right"><?= $pg->tPag == '01' ? 'Cartão de Débito' : 'Pagamento' ?>: <?= number_format((float)$pg->vPag, 2, ',', '.') ?></div> -->
   <?php endforeach; ?>
 
   <div class="line"></div>
