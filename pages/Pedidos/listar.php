@@ -33,7 +33,7 @@ $pedidos = $controller->listar();
           <tr>
             <td><?= htmlspecialchars($pedido['id']) ?></td>
             <td>
-              <?= !empty($pedido['nome_pf']) ? $pedido['nome_pf'] : $pedido['nome_fantasia_pj']?>
+              <?= !empty($pedido['nome_pf']) ? $pedido['nome_pf'] : $pedido['nome_fantasia_pj'] ?>
             </td>
             <td><?= htmlspecialchars($pedido['forma_pagamento'] ?? 'Não informado') ?></td>
             <td><?= htmlspecialchars(date('d/m/Y', strtotime($pedido['data_pedido']))) ?></td>
@@ -67,6 +67,11 @@ $pedidos = $controller->listar();
                       </a>
                     <?php } ?>
                   </li>
+                  <?php if ($pedido['status_pedido'] <> 'Pendente') { ?>
+                  <li>
+                    <a href="<?= "{$url}!/{$link[1]}/mudarStatus/{$pedido['id']}/Pendente" ?>" class="dropdown-item">Emitir Nota</a>
+                  </li>
+                  <?php } ?>
                   <li>
                     <?php if (!empty($pedido['status_fabrica'])) { ?>
                       <a href="<?= "{$url}!/Fabrica/pedido/{$pedido['id']}" ?>"
