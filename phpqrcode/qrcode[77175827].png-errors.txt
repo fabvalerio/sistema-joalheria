@@ -1,4 +1,4 @@
-2025-04-03 16:05:23: <br />
+2025-04-17 17:26:15: <br />
 <b>Deprecated</b>:  Implicit conversion from float 0.0625 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>140</b><br />
 <br />
 <b>Deprecated</b>:  Implicit conversion from float 0.125 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>140</b><br />
@@ -334,38 +334,6 @@
 <b>Deprecated</b>:  Implicit conversion from float 11.125 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>140</b><br />
 <br />
 <b>Deprecated</b>:  Implicit conversion from float 11.1875 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>140</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 11.25 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>140</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 11.3125 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>140</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 11.375 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>140</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 11.4375 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>140</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 11.5 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>140</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 11.5625 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>140</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 11.625 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>140</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 11.6875 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>140</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 11.75 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>140</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 11.8125 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>140</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 11.875 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>140</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 11.9375 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>140</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 12.0625 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>140</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 12.125 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>140</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 12.1875 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>140</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 12.25 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>140</b><br />
 <br />
 <b>Deprecated</b>:  Implicit conversion from float 0.0625 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>144</b><br />
 <br />
@@ -1026,63 +994,3 @@
 <b>Deprecated</b>:  Implicit conversion from float 21.875 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>144</b><br />
 <br />
 <b>Deprecated</b>:  Implicit conversion from float 21.9375 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>144</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 22.0625 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>144</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 22.125 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>144</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 22.1875 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>144</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 22.25 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>144</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 22.3125 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>144</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 22.375 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>144</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 22.4375 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>144</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 22.5 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>144</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 22.5625 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>144</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 22.625 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>144</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 22.6875 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>144</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 22.75 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>144</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 22.8125 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>144</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 22.875 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>144</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 22.9375 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>144</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 23.0625 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>144</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 23.125 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>144</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 23.1875 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>144</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 23.25 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>144</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 23.3125 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>144</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 23.375 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>144</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 23.4375 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>144</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 23.5 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>144</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 23.5625 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>144</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 23.625 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>144</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 23.6875 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>144</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 23.75 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>144</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 23.8125 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>144</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 23.875 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>144</b><br />
-<br />
-<b>Deprecated</b>:  Implicit conversion from float 23.9375 to int loses precision in <b>/var/www/html/phpqrcode/qrencode.php</b> on line <b>144</b><br />
