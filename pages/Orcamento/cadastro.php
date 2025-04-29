@@ -369,6 +369,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
+                                <form action="#">
+                                    <div class="input-group mb-3">
+                                        <input type="text" class="form-control" placeholder="Pesquisar Produto" id="productSearch">
+                                    </div>
+                                </form>
+                                
                             <button type="button" class="btn btn-primary btn-select-product-branco"
                             data-id=""
                                                         data-name=""
@@ -376,7 +382,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                                         data-estoque="1000">
                                                         Campo em Branco
                                                     </button>
-                                <table class="table table-bordered table-hover">
+                                <table id="produtoTable" class="table table-bordered table-hover">
                                     <thead>
                                         <tr>
                                             <th>ID</th>
@@ -415,6 +421,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                         <?php endforeach; ?>
                                     </tbody>
                                 </table>
+
+                                
+                                <script>
+                                    document.addEventListener('DOMContentLoaded', function () {
+                                    const productSearch = document.getElementById('productSearch');
+                                    const produtoTable = document.getElementById('produtoTable');
+                                    const tableRows = produtoTable.querySelectorAll('tbody tr');
+
+                                    productSearch.addEventListener('input', function () {
+                                        const searchValue = productSearch.value.toLowerCase();
+
+                                        tableRows.forEach(row => {
+                                            const rowText = row.textContent.toLowerCase();
+                                            if (rowText.includes(searchValue)) {
+                                                row.style.display = ''; // Mostra a linha
+                                            } else {
+                                                row.style.display = 'none'; // Oculta a linha
+                                            }
+                                        });
+                                    });
+                                });
+                                </script>
                                 <!-- botao para adicionar um novo -->
                                 
                             </div>

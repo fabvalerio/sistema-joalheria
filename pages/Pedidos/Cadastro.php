@@ -363,7 +363,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                <table class="table table-bordered table-hover">
+                                <form action="#">
+                                    <div class="input-group mb-3">
+                                        <input type="text" class="form-control" placeholder="Pesquisar Produto" id="productSearch">
+                                    </div>
+                                </form>
+                                <table id="produtoTable" class="table table-bordered table-hover">
                                     <thead>
                                         <tr>
                                             <th>ID</th>
@@ -403,6 +408,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                         <?php endforeach; ?>
                                     </tbody>
                                 </table>
+                                <script>
+                                    document.addEventListener('DOMContentLoaded', function () {
+                                    const productSearch = document.getElementById('productSearch');
+                                    const produtoTable = document.getElementById('produtoTable');
+                                    const tableRows = produtoTable.querySelectorAll('tbody tr');
+
+                                    productSearch.addEventListener('input', function () {
+                                        const searchValue = productSearch.value.toLowerCase();
+
+                                        tableRows.forEach(row => {
+                                            const rowText = row.textContent.toLowerCase();
+                                            if (rowText.includes(searchValue)) {
+                                                row.style.display = ''; // Mostra a linha
+                                            } else {
+                                                row.style.display = 'none'; // Oculta a linha
+                                            }
+                                        });
+                                    });
+                                });
+                                </script>
+
                             </div>
                         </div>
                     </div>
