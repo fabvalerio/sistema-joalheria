@@ -183,11 +183,11 @@ if ($_COOKIE['nivel_acesso'] != "Administrador") {
     <script src="<?php $url; ?>assets/js/sb-admin-2.min.js?v=1"></script>
 
     <!-- Page level plugins -->
-    <script src="<?php $url; ?>vendor/chart.js/Chart.min.js?v=1"></script>
+    <script src="vendor/chart.js/Chart.min.js"></script>
 
     <!-- Page level custom scripts -->
-    <script src="<?php $url; ?>assets/js/demo/chart-area-demo.js?v=1"></script>
-    <script src="<?php $url; ?>assets/js/demo/chart-pie-demo.js?v=1"></script>
+    <!-- <script src="<?php $url; ?>assets/js/demo/chart-area-demo.js?v=1"></script> -->
+    <!-- <script src="<?php $url; ?>assets/js/demo/chart-pie-demo.js?v=1"></script> -->
 
     <!-- VIACEPN API  -->
     <script src="<?php echo $url; ?>assets/js/viacep.js"></script>

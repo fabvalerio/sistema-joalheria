@@ -11,7 +11,7 @@ $pagina = $_GET['pagina'] ?? 1;
 $controller = new Controller();
 
 // Listar contas com paginação
-$contas = $controller->listaPages($tipo, $inicio, $fim, $pagina, 10, $url_completa);
+$contas = $controller->listaPages($tipo, $inicio, $fim, $pagina, 10, $url."/!/Relatorios/financeiros/&tipo=".$tipo."&data_inicio=".$inicio."&data_final=".$fim);
 $r = $controller->soma($inicio, $fim);
 
 ?>

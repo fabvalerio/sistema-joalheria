@@ -8,7 +8,7 @@ $fim = $_GET['data_final'] ?? null;
 $pagina = $_GET['pagina'] ?? 1;
 
 $controller = new Controller();
-$movimentacoes = $controller->movimentos($tipo, $inicio, $fim, $pagina, 10, $url_completa);
+$movimentacoes = $controller->movimentos($tipo, $inicio, $fim, $pagina, 10, $url."/!/Relatorios/estoque/&tipo=".$tipo."&data_inicio=".$inicio."&data_final=".$fim);
 
 
 ?>

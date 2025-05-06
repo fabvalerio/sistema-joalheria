@@ -2,6 +2,8 @@
 
 use App\Models\FinanceiroContas\Controller;
 
+$link[3] = empty($link[3]) ? null : $link[3];
+
 // Obter listas de clientes, fornecedores e categorias
 $controller = new Controller();
 $clientes = $controller->listarClientes();
