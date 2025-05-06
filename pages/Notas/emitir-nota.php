@@ -190,9 +190,27 @@ $text = $qrCodeParaImagem;
 // $file = "{$url}pages/Notas/qrcode/qrcode[{$numeroIdVenda}].png";
 $file = __DIR__ . "/qrcode/qrcode[{$numeroIdVenda}].png";
 QRcode::png($text, $file, QR_ECLEVEL_H, 10);
-$file = "{$url}pages/Notas/qrcode/qrcode[{$numeroIdVenda}].png";
+$file = ensureHttps("{$url}pages/Notas/qrcode/qrcode[{$numeroIdVenda}].png");
 
 //fim gerar qr code
+
+function ensureHttps($url) {
+    if (strpos($url, 'http://') === 0) {
+        return str_replace('http://', 'https://', $url);
+    }
+    return $url;
+}
+
+// Função para garantir que a URL base seja HTTPS
+function getBaseUrl() {
+    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
+    $host = $_SERVER['HTTP_HOST'];
+    return $protocol . $host;
+}
+
+// Substituir todas as referências de URL
+$baseUrl = getBaseUrl();
+$url = ensureHttps($url ?? $baseUrl);
 
 ?>
 
