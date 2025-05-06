@@ -126,7 +126,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <div class="row g-3 align-items-end product-item mb-2">
                         <div class="col-lg-1">
                                 <img name="produtos[0][capa]" src="<?= $url . '/assets/img_padrao.webp'; ?>" alt="Capa do Produto"
-                                    width="100" style="height: 100px; object-fit: cover; border: 1px solid #ddd; border-radius: 5px;" class="capa">
+                                    style="height: 100px; object-fit: cover; border: 1px solid #ddd; border-radius: 5px; transition: transform 0.3s; z-index: 999;" 
+                                    class="capa img-fluid"
+                                    onmouseover="this.style.transform='scale(2)'; this.style.zIndex='999'; this.style.position='relative';"
+                                    onmouseout="this.style.transform='scale(1)'; this.style.zIndex='auto'; this.style.position='static';">
                             </div>
                             <div class="col-lg-3">
                                 <label class="form-label">Item</label>

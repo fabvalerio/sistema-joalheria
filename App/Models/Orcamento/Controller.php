@@ -492,7 +492,7 @@ class Controller
             cpf, 
             cnpj_pj
         FROM clientes 
-        ORDER BY id ASC
+        ORDER BY nome_pf ASC
     ");
 
         return $db->resultSet(); // Retorna todos os resultados
