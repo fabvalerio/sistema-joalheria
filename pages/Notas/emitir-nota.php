@@ -204,6 +204,8 @@ $file = "{$url}pages/Notas/qrcode/qrcode[{$numeroIdVenda}].png";
     width: 320px;
     margin: auto;
     border: 1px solid #000;
+    font-size: 11px;
+
   }
 
   .center {
@@ -292,4 +294,51 @@ $file = "{$url}pages/Notas/qrcode/qrcode[{$numeroIdVenda}].png";
   <div class="center"><a href="<?= $qrCodeUrl ?>" target="_blank">nfce.fazenda.sp.gov.br</a></div>
 
 </div>
+
+<div class="d-flex justify-content-center mt-3 mb-3">
+    <button onclick="imprimirNota()" class="btn btn-primary">
+        <i class="fas fa-print"></i> Imprimir Nota
+    </button>
+</div>
+
+<script>
+function imprimirNota() {
+    // Cria um clone da div.nota
+    const conteudo = document.querySelector('.nota').cloneNode(true);
+    
+    // Cria uma nova janela
+    const janela = window.open('', '', 'width=800,height=600');
+    
+    // Adiciona o estilo necessário
+    janela.document.write('<html><head>');
+    janela.document.write('<style>');
+    janela.document.write(`
+        body { font-family: monospace; }
+        .nota { width: 300px; margin: 0 auto; padding: 10px; font-size: 11px; }
+        .center { text-align: center; }
+        .right { text-align: right; }
+        .line { border-bottom: 1px dashed #000; margin: 5px 0; }
+        .bold { font-weight: bold; }
+        .item-table { width: 100%; }
+        .item-table th, .item-table td { text-align: left; padding: 2px; }
+        .item-table th:last-child, .item-table td:last-child { text-align: right; }
+    `);
+    janela.document.write('</style></head><body>');
+    
+    // Adiciona o conteúdo
+    janela.document.write(conteudo.outerHTML);
+    janela.document.write('</body></html>');
+    
+    // Fecha o documento
+    janela.document.close();
+    
+    // Imprime após carregar todo o conteúdo
+    janela.onload = function() {
+        janela.focus();
+        janela.print();
+        janela.close();
+    }
+}
+</script>
+
 <?php die(); ?>
