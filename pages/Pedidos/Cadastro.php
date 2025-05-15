@@ -71,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
 
     <div class="card-body">
-        <form method="POST" action="<?php echo "{$url}!/{$link[1]}/{$link[2]}" ?>" class="needs-validation" novalidate>
+        <form method="POST" action="<?php echo "{$url}!/{$link[1]}/{$link[2]}" ?>" class="needs-validation" novalidate id="formPedido">
             <div class="row g-3">
                 <div class="col-12">
                     <hr>
@@ -366,11 +366,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                <form action="#">
                                     <div class="input-group mb-3">
                                         <input type="text" class="form-control" placeholder="Pesquisar Produto" id="productSearch">
                                     </div>
-                                </form>
                                 <table id="produtoTable" class="table table-bordered table-hover">
                                     <thead>
                                         <tr>
@@ -440,6 +438,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <!-- Botão de Cadastro -->
             <div class="col-lg-12 mt-4">
                 <button type="submit" class="btn btn-primary float-end">Cadastrar Pedido</button>
+                <button type="button" class="btn btn-secondary" id="altera_cartao">Alterar Cartão</button>
             </div>
         </form>
 
@@ -686,7 +685,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             // Botão para alterar cartão
             document.addEventListener('DOMContentLoaded', () => {
-                const alterarCartaoButton = document.getElementById('altera cartão'); // Botão para alterar o cartão
+                const alterarCartaoButton = document.getElementById('altera_cartao'); // Botão para alterar o cartão
                 const formaPagamentoSelect = document.getElementById('forma_pagamento'); // Select de forma de pagamento
 
                 // Evento de clique no botão
@@ -716,5 +715,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 // Adiciona os eventos de mudança nos selects
                 cartaoTipo.addEventListener('change', removeJurosFromTotal);
                 formaPagamento.addEventListener('change', removeJurosFromTotal);
+            });
+
+            document.addEventListener('DOMContentLoaded', () => {
+                const formPedido = document.getElementById('formPedido');
+                
+                formPedido.addEventListener('submit', function(e) {
+                    e.preventDefault(); // Previne o envio padrão para debug
+                    
+                    // Validação dos campos obrigatórios
+                    const clienteId = document.getElementById('cliente_id').value;
+                    const dataPedido = document.getElementById('data_pedido').value;
+                    const formaPagamento = document.getElementById('forma_pagamento').value;
+                    const total = document.getElementById('total').value;
+                    
+                    if (!clienteId || !dataPedido || !formaPagamento || !total) {
+                        alert('Por favor, preencha todos os campos obrigatórios.');
+                        return;
+                    }
+                    
+                    // Se tudo estiver ok, envia o formulário
+                    this.submit();
+                });
             });
         </script>

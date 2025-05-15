@@ -10,7 +10,7 @@ if (session_status() === PHP_SESSION_NONE) {
 // Verifica se o usuário está autenticado
 if (!isset($_COOKIE['id']) || empty($_COOKIE['id'])) {
     // Redireciona para a página de login se não estiver autenticado
-    $url = "http://" . $_SERVER['HTTP_HOST'] . "/";
+    $url = "https://" . $_SERVER['HTTP_HOST'] . "/sistema-joias/";
     header("Location: " . $url . "login.php");
     exit();
 }
@@ -124,13 +124,12 @@ if ($_COOKIE['nivel_acesso'] != "Administrador") {
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 
     <link href="<?php echo $url; ?>dist/styles.css" rel="stylesheet">
-    <script src="<?php echo $url; ?>dist/bundle.js"></script>
+    <!-- <script src="<?php echo $url; ?>dist/bundle.js"></script> -->
 
 
     <link rel="apple-touch-icon" sizes="180x180" href="<?php echo $url; ?>assets/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="<?php echo $url; ?>assets/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="<?php echo $url; ?>assets/favicon-16x16.png">
-    <link rel="manifest" href="<?php echo $url; ?>assets/site.webmanifest">
 
 
 </head>
@@ -174,20 +173,22 @@ if ($_COOKIE['nivel_acesso'] != "Administrador") {
 
     <!-- Bootstrap core JavaScript-->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- <script src="<?php $url; ?>vendor/bootstrap/js/bootstrap.bundle.min.js"></script> -->
+    <!-- <script src="<?php echo $url; ?>vendor/bootstrap/js/bootstrap.bundle.min.js"></script> -->
 
     <!-- Core plugin JavaScript-->
-    <script src="<?php $url; ?>vendor/jquery-easing/jquery.easing.min.js"></script>
+    <!-- <script src="<?php echo $url; ?>vendor/jquery-easing/jquery.easing.min.js"></script> -->
 
     <!-- Custom scripts for all pages-->
-    <script src="<?php $url; ?>assets/js/sb-admin-2.min.js?v=1"></script>
+    <script src="<?php echo $url; ?>assets/js/sb-admin-2.min.js?v=1"></script>
 
     <!-- Page level plugins -->
-    <script src="vendor/chart.js/Chart.min.js"></script>
+    <?PHP if( empty($link[1]) ){ ?>
+    <script src="<?php echo $url; ?>vendor/chart.js/Chart.min.js"></script>
+    <?PHP } ?>
 
     <!-- Page level custom scripts -->
-    <!-- <script src="<?php $url; ?>assets/js/demo/chart-area-demo.js?v=1"></script> -->
-    <!-- <script src="<?php $url; ?>assets/js/demo/chart-pie-demo.js?v=1"></script> -->
+    <!-- <script src="<?php echo $url; ?>assets/js/demo/chart-area-demo.js?v=1"></script> -->
+    <!-- <script src="<?php echo $url; ?>assets/js/demo/chart-pie-demo.js?v=1"></script> -->
 
     <!-- VIACEPN API  -->
     <script src="<?php echo $url; ?>assets/js/viacep.js"></script>
