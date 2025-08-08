@@ -122,6 +122,15 @@
     </li>
     <hr class="sidebar-divider" />
 
+    <!-- Seção: Loja -->
+    <li class="nav-item">
+        <a class="nav-link" href="<?php echo "{$url}!/Loja/listar" ?>">
+            <i class="fas fa-fw fa-store"></i>
+            <span>Lojas</span>  
+        </a>
+    </li>
+    <hr class="sidebar-divider" />
+
     <!-- Seção: Relatórios e Fábrica -->
     <div class="sidebar-heading">
         Relatórios & Fábrica

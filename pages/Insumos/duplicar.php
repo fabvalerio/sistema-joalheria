@@ -2,10 +2,14 @@
 
 use App\Models\Insumos\Controller;
 
+// ID do produto a ser editado
+$id = $link[3];
+
 // Instanciar o Controller
 $controller = new Controller();
 
-// Obter listas de fornecedores, grupos, subgrupos e cotações
+// Buscar os dados do produto
+$produto = $controller->ver($id);
 $fornecedores = $controller->listarFornecedores();
 $grupos = $controller->listarGrupos();
 $subgrupos = $controller->listarSubgrupos();
@@ -14,79 +18,80 @@ $modelos = $controller->listarModelos();
 $pedras = $controller->listarPedras();
 $formatos = $controller->listarFormatos();
 
+// Verificar se o produto foi encontrado
+if (!$produto) {
+  echo notify('danger', "Produto não encontrado.");
+  exit;
+}
 
-
+// Se o formulário foi enviado, atualizar o produto
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   $dados = [
-    'descricao_etiqueta' => $_POST['descricao_etiqueta'],
-    'fornecedor_id' => $_POST['fornecedor_id'],
-    'grupo_id' => $_POST['grupo_id'],
-    'subgrupo_id' => $_POST['subgrupo_id'],
-    'modelo' => $_POST['modelo'] ?? null,
-    'macica_ou_oca' => $_POST['macica_ou_oca'] ?? null,
-    'numeros' => $_POST['numeros'] ?? null,
-    'pedra' => $_POST['pedra'] ?? null,
-    'nat_ou_sint' => $_POST['nat_ou_sint'] ?? null,
-    'peso' => $_POST['peso'] ?? null,
-    'aros' => $_POST['aros'] ?? null,
-    'cm' => $_POST['cm'] ?? null,
-    'pontos' => $_POST['pontos'] ?? null,
-    'mm' => $_POST['mm'] ?? null,
-    'unidade' => $_POST['unidade'] ?? null,
-    'estoque_princ' => $_POST['estoque_princ'] ?? null,
-    'cotacao' => $_POST['cotacao'] ?? null,
-    'preco_ql' => $_POST['preco_ql'] ?? null,
-    'peso_gr' => $_POST['peso_gr'] ?? null,
-    'custo' => $_POST['custo'] ?? null,
-    'margem' => $_POST['margem'] ?? null,
-    'em_reais' => $_POST['em_reais'] ?? null,
-    'capa' => $_POST['capa_base64'] ?? null,
-    'formato' => $_POST['formato'] ?? null,
-    'observacoes' => $_POST['observacoes'] ?? null
+    'descricao_etiqueta'        => $_POST['descricao_etiqueta'],
+    'fornecedor_id'             => $_POST['fornecedor_id'],
+    'grupo_id'                  => $_POST['grupo_id'],
+    'subgrupo_id'               => $_POST['subgrupo_id'],
+    'modelo'                    => $_POST['modelo'] ?? null,
+    'macica_ou_oca'             => $_POST['macica_ou_oca'] ?? null,
+    'numeros'                   => $_POST['numeros'] ?? null,  // Se usar
+    'pedra'                     => $_POST['pedra'] ?? null,    // Se usar
+    'nat_ou_sint'               => $_POST['nat_ou_sint'] ?? null,
+    'peso'                      => $_POST['peso'] ?? null,
+    'aros'                      => $_POST['aros'] ?? null,
+    'cm'                        => $_POST['cm'] ?? null,
+    'pontos'                    => $_POST['pontos'] ?? null,
+    'mm'                        => $_POST['mm'] ?? null,
+    'unidade'                   => $_POST['unidade'] ?? null,
+    'estoque_princ'             => $_POST['estoque_princ'] ?? null,
+    'cotacao'                   => $_POST['cotacao'] ?? null,
+    'preco_ql'                  => $_POST['preco_ql'] ?? null,
+    'peso_gr'                   => $_POST['peso_gr'] ?? null,
+    'custo'                     => $_POST['custo'] ?? null,
+    'margem'                    => $_POST['margem'] ?? null,
+    'em_reais'                  => $_POST['em_reais'] ?? null,
+    'capa'               => $_POST['capa_base64'] ?? null, 
+    'formato' => $_POST['formato'],
+    'observacoes' => $_POST['observacoes']
+
   ];
 
-  $return = $controller->cadastro($dados);
-
-  
-  //registrar session o ultimo cadastro do input fornecedor_id
-   setcookie("fornecedor_id", $_POST['fornecedor_id'], (3600 * 24 * 7), "/", "", false, true);
-   $_SESSION['fornecedor_id'] = $_POST['fornecedor_id'];
-
+  $return = $controller->cadastroDuplicado($dados );
 
   if ($return) {
     echo notify('success', "Produto cadastrado com sucesso!");
     echo '<meta http-equiv="refresh" content="2; url=' . $url . '!/' . $link[1] . '/listar">';
     exit;
   } else {
-    echo notify('danger', "Erro ao cadastrar o produto.");
+    echo notify('danger', "Erro ao atualizar o produto.");
   }
-
-
 }
-
 ?>
 
 <div class="card">
   <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-    <h3 class="card-title">Cadastro de Insumos</h3>
+    <h3 class="card-title">Clonar Insumo - #<?= $produto['id'] ?></h3>
     <a href="<?php echo "{$url}!/{$link[1]}/listar" ?>" class="btn btn-warning text-primary">Voltar</a>
   </div>
 
   <div class="card-body">
     <form method="POST" action="" class="needs-validation" novalidate>
       <div class="row g-3">
-        <!-- Descrição Etiqueta (gerada automaticamente) -->
-       
+
         <div class="col-12">
           <hr>
         </div>
+
         <!-- Fornecedor -->
         <div class="col-lg-4">
           <label class="form-label">Fornecedor</label>
           <select class="form-select" name="fornecedor_id" id="fornecedor" required>
             <option value="">Selecione o Fornecedor</option>
             <?php foreach ($fornecedores as $fornecedor): ?>
-              <option value="<?= $fornecedor['id'] ?>"><?= htmlspecialchars($fornecedor['nome_fantasia']) ?></option>
+              <option
+                value="<?= $fornecedor['id'] ?>"
+                <?= ($produto['fornecedor_id'] ?? '') == $fornecedor['id'] ? 'selected' : '' ?>>
+                <?= htmlspecialchars($fornecedor['nome_fantasia']) ?>
+              </option>
             <?php endforeach; ?>
           </select>
         </div>
@@ -96,8 +101,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
           <label class="form-label">Grupo</label>
           <select class="form-select" name="grupo_id" id="grupo" required>
             <option value="">Selecione o Grupo</option>
-            <?php foreach ($grupos as $grupo): ?>
-              <option value="<?= $grupo['id'] ?>"><?= htmlspecialchars($grupo['nome_grupo']) ?></option>
+            <?php foreach ($grupos as $grupoItem): ?>
+              <option
+                value="<?= $grupoItem['id'] ?>"
+                <?= ($produto['grupo_id'] ?? '') == $grupoItem['id'] ? 'selected' : '' ?>>
+                <?= htmlspecialchars($grupoItem['nome_grupo']) ?>
+              </option>
             <?php endforeach; ?>
           </select>
         </div>
@@ -107,45 +116,68 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
           <label class="form-label">Subgrupo</label>
           <select class="form-select" name="subgrupo_id" id="subgrupo" required>
             <option value="">Selecione o Subgrupo</option>
+            <?php foreach ($subgrupos as $subItem): ?>
+              <option
+                value="<?= $subItem['id'] ?>"
+                <?= ($produto['subgrupo_id'] ?? '') == $subItem['id'] ? 'selected' : '' ?>>
+                <?= htmlspecialchars($subItem['nome_subgrupo']) ?>
+              </option>
+            <?php endforeach; ?>
           </select>
         </div>
 
         <div class="col-12">
           <hr>
         </div>
-        <!-- Campos adicionais aparecem após seleção -->
-        <div id="campos-adicionais" style="display: none;">
 
+        <!-- Campos adicionais (já visíveis) -->
+        <div id="campos-adicionais"><!-- Removido style="display:none" -->
           <div class="row g-3">
             <div class="col-lg-12">
               <div id="preview-container" style="text-align: center;">
-                <img id="preview-thumb" src="" alt="Preview da Imagem" style="max-width: 100%; max-height: 108px; display: none; border: 1px solid #ddd; padding: 5px; border-radius: 5px;">
+                <img id="preview-thumb" src="<?= isset($produto['capa']) && !empty($produto['capa']) ? $produto['capa'] : $url . '/assets/img_padrao.webp'; ?>" alt="Preview da Imagem" style="max-width: 100%; max-height: 108px; display: block; border: 1px solid #ddd; padding: 5px; border-radius: 5px;">
               </div>
             </div>
             <div class="col-lg-12">
               <label class="form-label">Foto de Capa do Produto (Opcional) </label>
               <input type="file" class="form-control" name="capa" id="capa" accept="image/*">
-              <input type="hidden" name="capa_base64" id="capa_base64">
+              <input type="hidden" name="capa_base64" id="capa_base64" value="<?= $produto['capa'] ?? '' ?>">
             </div>
             <!-- Descrição Etiqueta (gerada automaticamente) -->
-            <div class="col-lg-12">
-              <label class="form-label">Descrição Etiqueta</label>
-              <input type="text" class="form-control bg-secondary text-white" name="descricao_etiqueta" id="descricao_etiqueta" readonly>
-            </div>
+        <div class="col-lg-12">
+          <label class="form-label">Descrição Etiqueta</label>
+          <input
+            type="text"
+            class="form-control bg-secondary text-white"
+            name="descricao_etiqueta"
+            id="descricao_etiqueta"
+            value="<?= htmlspecialchars($produto['descricao_etiqueta'] ?? '') ?>"
+            >
+        </div>
             <!-- Descrição Adicional Etiqueta (Manual) -->
             <div class="col-lg-12">
               <label class="form-label">Descrição Adicional Etiqueta (opcional)</label>
-              <input type="text" class="form-control" name="descricao_etiqueta_manual" id="descricao_etiqueta_manual">
+              <input
+                type="text"
+                class="form-control"
+                name="descricao_etiqueta_manual"
+                id="descricao_etiqueta_manual"
+                value="<?= htmlspecialchars($produto['descricao_etiqueta_manual'] ?? '') ?>">
             </div>
-            <!-- Modelo -->
-            <div class="col-lg-2">
+
+           <!-- Modelo -->
+           <div class="col-lg-2">
               <label class="form-label">Modelo</label>
               <div class="input-group">
                 <select class="form-select" name="modelo" id="modelo">
-                  <option value="">Selecione</option>
+                <option value="">Nenhuma Pedra</option>
                   <?php
-                  foreach ($modelos as $modelo) {
-                    echo '<option value="' . htmlspecialchars($modelo['nome']) . '">' . htmlspecialchars($modelo['nome']) . '</option>';
+                  // Suponha que $pedraSelecionada contenha o valor já selecionado, ex:
+                  $pedraSelecionada = $produto['pedra'];
+                  foreach ($pedras as $pedra) {
+                    $selected = ($pedra['nome'] == $pedraSelecionada) ? ' selected' : '';
+                    echo '<option value="' . htmlspecialchars($pedra['nome']) . '"' . $selected . '>'
+                      . htmlspecialchars($pedra['nome']) . '</option>';
                   }
                   ?>
                 </select>
@@ -198,43 +230,55 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="col-lg-2">
               <label class="form-label">Material (Maciça/Oca)</label>
               <select class="form-select" name="macica_ou_oca" id="macica_ou_oca">
-                <option value="">Selecione</option>
-                <option value="Maciça">Maciça</option>
-                <option value="Oca">Oca</option>
+              <option value="">Selecione</option>
+                <option
+                  value="Maciça"
+                  <?= ($produto['macica_ou_oca'] ?? '') === 'Maciça' ? 'selected' : '' ?>>
+                  Maciça
+                </option>
+                <option
+                  value="Oca"
+                  <?= ($produto['macica_ou_oca'] ?? '') === 'Oca' ? 'selected' : '' ?>>
+                  Oca
+                </option>
               </select>
             </div>
 
             <!-- Peso -->
             <div class="col-lg-2">
               <label class="form-label">Peso (Gr)</label>
-              <input type="number" step="0.001" class="form-control" name="peso" id="peso">
+              <input type="number" step="0.001" class="form-control" name="peso" id="peso" value="<?= $produto['peso'] ?? '' ?>">
             </div>
 
             <!-- Aros -->
             <div class="col-lg-2">
               <label class="form-label">Aros</label>
-              <input type="number" step="0.001" class="form-control" name="aros" id="aros">
+              <input type="number" step="0.001" class="form-control" name="aros" id="aros" value="<?= $produto['aros'] ?? '' ?>">
             </div>
 
             <div class="col-lg-2">
               <label class="form-label">Centímetros (cm)</label>
-              <input type="number" class="form-control" name="cm" id="cm" placeholder="Digite o valor em centímetros">
+              <input type="number" class="form-control" name="cm" id="cm" placeholder="Digite o valor em centímetros" value="<?= $produto['cm'] ?? '' ?>">
             </div>
 
             <!-- Numero (Anel) -->
             <div class="col-lg-2">
               <label class="form-label">Número (Anel)</label>
-              <input type="number" step="1.0" class="form-control" name="numeros" id="numeros">
+              <input type="number" step="1.0" class="form-control" name="numeros" id="numeros" value="<?= $produto['numeros'] ?? '' ?>">
             </div>
 
             <div class="col-lg-2">
               <label class="form-label">Pedra</label>
               <div class="input-group">
                 <select class="form-select" name="pedra" id="pedra">
-                  <option value="">Selecione</option>
+                <option value="">Nenhuma Pedra</option>
                   <?php
+                  // Suponha que $pedraSelecionada contenha o valor já selecionado, ex:
+                  $pedraSelecionada = $produto['pedra'];
                   foreach ($pedras as $pedra) {
-                    echo '<option value="' . htmlspecialchars($pedra['nome']) . '">' . htmlspecialchars($pedra['nome']) . '</option>';
+                    $selected = ($pedra['nome'] == $pedraSelecionada) ? ' selected' : '';
+                    echo '<option value="' . htmlspecialchars($pedra['nome']) . '"' . $selected . '>'
+                      . htmlspecialchars($pedra['nome']) . '</option>';
                   }
                   ?>
                 </select>
@@ -352,16 +396,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="col-lg-2">
               <label class="form-label">Natural ou Sintético</label>
               <select class="form-select" name="nat_ou_sint" id="nat_ou_sint">
-                <option value="">Selecione</option>
-                <option value="Natural">Natural</option>
-                <option value="Sintético">Sintético</option>
+              <option value="" selected>Selecione</option> 
+              <option value="Natural">
+                  Natural
+                </option>
+                <option value="Sintético">
+                  Sintético
+                </option>
               </select>
             </div>
 
             <!-- Pontos -->
             <div class="col-lg-2">
               <label class="form-label">Pontos</label>
-              <input type="number" step="0.001" class="form-control" name="pontos" id="pontos">
+              <input type="number" step="0.001" class="form-control" name="pontos" id="pontos" value="<?= $produto['pontos'] ?? '' ?>">
             </div>
 
 
@@ -369,7 +417,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <!-- Milímetros (mm) -->
             <div class="col-lg-2">
               <label class="form-label">Milímetros (mm)</label>
-              <input type="number" class="form-control" name="mm" id="mm" placeholder="Digite o valor em milímetros">
+              <input type="number" class="form-control" name="mm" id="mm" placeholder="Digite o valor em milímetros" value="<?= $produto['mm'] ?? '' ?>">
             </div>
 
 
@@ -377,8 +425,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="col-lg-2">
               <label class="form-label">Unidade</label>
               <select class="form-select" name="unidade" id="unidade">
-                <option value="unidade">Unidade</option>
-                <option value="par">Par</option>
+                
+              <option value="" selected>Selecione</option> 
+              <option value="unidade"> Unidade </option>
+              <option value="par">Par</option>
               </select>
             </div>
 
@@ -386,57 +436,100 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             <div class="col-lg-2">
               <label class="form-label">Quantidade</label>
-              <input type="number" step="0.001" class="form-control" name="estoque_princ" id="estoque_princ" value="1">
+              <input type="number" step="0.001" class="form-control" name="estoque_princ" id="estoque_princ" value="<?= $produto['estoque_princ'] ?? '' ?>">
             </div>
+
             <div class="col-12">
               <hr>
             </div>
+
             <!-- Cotação -->
             <div class="col-lg-4">
               <label class="form-label">Cotação</label>
-              <select class="form-select" name="cotacao" id="cotacao" required>
+              <select class="form-select" name="cotacao" id="cotacao">
                 <option value="">Selecione a Cotação</option>
                 <?php foreach ($cotacoes as $cotacao): ?>
-                  <option value="<?= $cotacao['id'] ?>" data-valor="<?= $cotacao['valor'] ?>">
+                  <option
+                    value="<?= $cotacao['id'] ?>"
+                    data-valor="<?= $cotacao['valor'] ?>"
+                    <?= ($produto['cotacao'] ?? '') == $cotacao['id'] ? 'selected' : '' ?>>
                     <?= htmlspecialchars($cotacao['nome']) ?> (<?= htmlspecialchars($cotacao['valor']) ?>)
                   </option>
                 <?php endforeach; ?>
               </select>
             </div>
 
-            <!-- Campos adicionais ao selecionar a cotação -->
-            <div id="campos-cotacao" style="display: none;">
-              <div class="row g-3">
+            <!-- Campos de cálculo -->
+            <div id="campos-cotacao"><!-- Removido style="display:none" -->
+              <div class="row g-3 mt-1">
                 <div class="col-lg-2">
-                  <label class="form-label">Índice / QL</label>
-                  <input type="number" step="0.01" class="form-control text-center" name="preco_ql" id="preco_ql">
+                  <label class="form-label">Preço QL</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    class="form-control text-center"
+                    name="preco_ql"
+                    id="preco_ql"
+                    value="<?= $produto['preco_ql'] ?? '' ?>">
                 </div>
                 <div class="col-lg-2">
-                  <label class="form-label">Unidade / Gr</label>
-                  <input type="number" step="0.001" class="form-control text-center" name="peso_gr" id="peso_gr">
+                  <label class="form-label">Peso Gr</label>
+                  <input
+                    type="number"
+                    step="0.001"
+                    class="form-control text-center"
+                    name="peso_gr"
+                    id="peso_gr"
+                    value="<?= $produto['peso_gr'] ?? '' ?>">
                 </div>
                 <div class="col-lg-2">
                   <label class="form-label">Margem (%)</label>
-                  <input type="number" step="0.01" class="form-control text-center" name="margem" id="margem">
+                  <input
+                    type="number"
+                    step="0.01"
+                    class="form-control text-center"
+                    name="margem"
+                    id="margem"
+                    value="<?= $produto['margem'] ?? '' ?>">
                 </div>
+
                 <div class="col-lg-2">
                   <label class="form-label">Custo</label>
-                  <input type="number" step="0.01" class="form-control bg-secondary text-white text-center" name="custo" id="custo" readonly>
+                  <input
+                    type="number"
+                    step="0.01"
+                    class="form-control bg-secondary text-white text-center"
+                    name="custo"
+                    id="custo"
+                    readonly
+                    value="<?= $produto['custo'] ?? '' ?>">
                 </div>
                 <div class="col-lg-4">
                   <label class="form-label">Em Reais</label>
-                  <input type="number" step="0.01" class="form-control bg-secondary text-white text-center" name="em_reais" id="em_reais" readonly>
+                  <?php
+                            //conta de valor dinamica com cotação
+                            $produto['em_reais'] =  cotacao($produto['preco_ql'], $produto['peso_gr'], $produto['cotacao_valor'], $produto['margem']);
+                            ?>
+                            <?php isset($produto['em_reais']) && $produto['em_reais'] !== null
+                                    ? number_format($produto['em_reais'], 2, ',', '.')
+                                    : '0,00'; ?>
+                  <input
+                    type="number"
+                    step="0.01"
+                    class="form-control bg-secondary text-white text-center"
+                    name="em_reais"
+                    id="em_reais"
+                    readonly
+                    value="<?= number_format($produto['em_reais'], 2) ?? '' ?>">
+                </div>
+                <div class="col-lg-12">
+                    <label for="observacoes" class="form-label">Observações</label>
+                    <textarea class="form-control" id="observacoes" name="observacoes" rows="3"><?= $produto['observacoes'] ?? '' ?></textarea>
                 </div>
               </div>
             </div>
-            <div class="col-lg-12">
-                    <label for="observacoes" class="form-label">Observações</label>
-                    <textarea class="form-control" id="observacoes" name="observacoes" rows="3"></textarea>
-                </div>
           </div>
-        </div>
-
-
+        </div> <!-- /#campos-adicionais -->
       </div>
 
       <div class="mt-3">
@@ -464,6 +557,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
       </div>
     </div>
+    <!-- Modal para adicionar nova formato -->
+    <div class="modal fade" id="modalNovaformato" tabindex="-1" aria-labelledby="modalNovaformatoLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalNovaformatoLabel">Adicionar Novao Formato</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="formNovaformato">
+              <div class="mb-3">
+                <label for="novaformato" class="form-label">Nome do Formato</label>
+                <input type="text" class="form-control" id="novaformato" name="novaformato" required>
+                <input type="hidden" class="form-control" id="tipoformato" name="tipoformato" value="formato" required>
+              </div>
+              <button type="button" class="btn btn-success" onclick="salvarformato()">Salvar</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- Modal para adicionar nova pedra -->
     <div class="modal fade" id="modalNovaPedra" tabindex="-1" aria-labelledby="modalNovaPedraLabel" aria-hidden="true">
       <div class="modal-dialog">
@@ -485,30 +599,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
       </div>
     </div>
-    <!-- Modal para adicionar nova formato -->
-    <div class="modal fade" id="modalNovaformato" tabindex="-1" aria-labelledby="modalNovaformatoLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="modalNovaformatoLabel">Adicionar Novo Formato</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <form id="formNovaformato">
-              <div class="mb-3">
-                <label for="novaformato" class="form-label">Nome do Formato</label>
-                <input type="text" class="form-control" id="novaformato" name="novaformato" required>
-                <input type="hidden" class="form-control" id="tipoformato" name="tipoformato" value="formato" required>
-              </div>
-              <button type="button" class="btn btn-success" onclick="salvarformato()">Salvar</button>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-
   </div>
 </div>
+
 <script>
   const cotacaoSelect = document.getElementById('cotacao');
   const precoQlInput = document.getElementById('preco_ql');
@@ -547,6 +640,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     const emReais = custo * (1 + margem / 100);
     emReaisInput.value = emReais.toFixed(2);
   }
+  //funcao onload de carregar valores
+  $(document).ready(function() {
+
+    calcularValores();
+  });
 
   function limparCamposCotacao() {
     precoQlInput.value = '';
@@ -577,10 +675,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   const pontos = document.getElementById('pontos');
   const formato = document.getElementById('formato');
 
-
   // Adicionar listeners para atualização da descrição
 
-  [fornecedor, grupo, subgrupo, modelo, macica_ou_oca, nat_ou_sint, unidade, peso, pedra, numeros, aros, cm, mm, pontos , formato].forEach(select => {
+  [fornecedor, /*grupo,*/ subgrupo, modelo, macica_ou_oca, nat_ou_sint, unidade, peso, pedra, numeros, aros, cm, mm, pontos, formato].forEach(select => {
     select.addEventListener('change', () => {
       if (fornecedor.value && grupo.value && subgrupo.value) {
         camposAdicionais.style.display = 'block';
@@ -621,7 +718,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       subgrupoText, 
       // ` - ${grupoText} `,
       modeloText ? `- ${modeloText}` : '',
-     // ` - ${grupoText} `,
+      `- ${grupoText}`,
       macica_ou_ocaText ? `- ${macica_ou_ocaText}` : '',
       pesoValue ? `- ${pesoValue}` : '',
       valoaros ? `- Aro ${valoaros}` : '',
@@ -663,6 +760,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       })
       .catch(error => console.error('Erro ao buscar subgrupos:', error));
   });
+
   document.getElementById('capa').addEventListener('change', function(event) {
     const file = event.target.files[0]; // Obtém o arquivo selecionado
 

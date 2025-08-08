@@ -16,31 +16,47 @@ $produtos = $controller->listar();
 <script src="<?php echo $url?>vendor/datatables/dataTables.bootstrap4.min.js"></script>
 
 <script>
+    // Salva e restaura a página atual da tabela usando localStorage
     $(document).ready(function() {
-    $('#example1').DataTable({
-        "language": {
-            "sEmptyTable": "Nenhum dado disponível na tabela",
-            "sInfo": "Mostrando de _START_ até _END_ de _TOTAL_ entradas",
-            "sInfoEmpty": "Mostrando 0 até 0 de 0 entradas",
-            "sInfoFiltered": "(filtrado de _MAX_ entradas totais)",
-            "sInfoPostFix": "",
-            "sLengthMenu": "Mostrar _MENU_ entradas",
-            "sLoadingRecords": "Carregando...",
-            "sProcessing": "Processando...",
-            "sSearch": "Pesquisar:",
-            "sZeroRecords": "Nenhum registro encontrado",
-            "oPaginate": {
-                "sFirst": "Primeiro",
-                "sPrevious": "Anterior",
-                "sNext": "Próximo",
-                "sLast": "Último"
+        var tabela = $('#example1').DataTable({
+            "language": {
+                "sEmptyTable": "Nenhum dado disponível na tabela",
+                "sInfo": "Mostrando de _START_ até _END_ de _TOTAL_ entradas",
+                "sInfoEmpty": "Mostrando 0 até 0 de 0 entradas",
+                "sInfoFiltered": "(filtrado de _MAX_ entradas totais)",
+                "sInfoPostFix": "",
+                "sLengthMenu": "Mostrar _MENU_ entradas",
+                "sLoadingRecords": "Carregando...",
+                "sProcessing": "Processando...",
+                "sSearch": "Pesquisar:",
+                "sZeroRecords": "Nenhum registro encontrado",
+                "oPaginate": {
+                    "sFirst": "Primeiro",
+                    "sPrevious": "Anterior",
+                    "sNext": "Próximo",
+                    "sLast": "Último"
+                },
+                "oAria": {
+                    "sSortAscending": ": ativar para ordenar a coluna de forma ascendente",
+                    "sSortDescending": ": ativar para ordenar a coluna de forma descendente"
+                }
             },
-            "oAria": {
-                "sSortAscending": ": ativar para ordenar a coluna de forma ascendente",
-                "sSortDescending": ": ativar para ordenar a coluna de forma descendente"
+            "stateSave": true,
+            "stateSaveCallback": function(settings, data) {
+                // Salva o estado no localStorage
+                localStorage.setItem('DataTables_example1', JSON.stringify(data));
+            },
+            "stateLoadCallback": function(settings) {
+                // Recupera o estado do localStorage
+                var data = localStorage.getItem('DataTables_example1');
+                return data ? JSON.parse(data) : null;
             }
-        }
-    });
+        });
+
+        // Opcional: Limpa o estado salvo ao clicar em "Adicionar" (caso queira sempre voltar para a primeira página ao adicionar)
+        // $('.btn-adicionar').on('click', function() {
+        //     localStorage.removeItem('DataTables_example1');
+        // });
     });
 </script>
 
@@ -102,9 +118,8 @@ $produtos = $controller->listar();
                                 </button>
                                 <ul class="dropdown-menu">
                                     <li><a href="<?= "{$url}!/{$link[1]}/ver/{$produto['id']}" ?>" class="dropdown-item">Ver</a></li>
-                                    <li>
-                                        <a href="<?= "{$url}!/{$link[1]}/editar/{$produto['id']}" ?>" class="dropdown-item">Editar</a>
-                                    </li>
+                                    <li><a href="<?= "{$url}!/{$link[1]}/editar/{$produto['id']}" ?>" class="dropdown-item">Editar</a></li>
+                                    <li><a href="<?= "{$url}!/{$link[1]}/duplicar/{$produto['id']}" ?>" class="dropdown-item">Clonar</a></li>
                                     <li>
                                         <a href="<?= "{$url}!/{$link[1]}/deletar/{$produto['id']}" ?>" class="dropdown-item text-danger">Excluir</a>
                                     </li>
