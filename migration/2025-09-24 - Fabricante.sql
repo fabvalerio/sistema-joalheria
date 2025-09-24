@@ -1,0 +1,1 @@
+ALTER TABLE `produtos` ADD `codigo_fabricante` VARCHAR(200) NULL AFTER `observacoes`;

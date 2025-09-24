@@ -109,7 +109,7 @@
             <i class="fas fa-fw fa-users"></i>
             <span>Cadastros</span>
         </a>
-        <div id="cadastros" class="collapse <?php echo in_array($link[1], ['Clientes', 'GrupoClientes', 'Fornecedores', 'Usuarios', 'Cargos', 'Feriados']) ? 'show' : ''; ?>" aria-labelledby="headingCadastros" data-bs-parent="#accordionSidebar">
+        <div id="cadastros" class="collapse <?php echo in_array($link[1], ['Clientes', 'GrupoClientes', 'Fornecedores', 'Usuarios', 'Cargos', 'Feriados', 'Material']) ? 'show' : ''; ?>" aria-labelledby="headingCadastros" data-bs-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
                 <a class="collapse-item" href="<?php echo "{$url}!/Clientes/listar" ?>">Clientes</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/GrupoClientes/listar" ?>">Grupo de Clientes</a>
@@ -117,6 +117,7 @@
                 <a class="collapse-item" href="<?php echo "{$url}!/Usuarios/listar" ?>">Usuários</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Cargos/listar" ?>">Cargos</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Feriados/listar" ?>">Feriados</a>
+                <a class="collapse-item" href="<?php echo "{$url}!/Material/listar" ?>">Materiais</a>
             </div>
         </div>
     </li>

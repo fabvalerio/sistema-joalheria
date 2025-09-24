@@ -1,0 +1,1 @@
+ALTER TABLE `produtos` ADD `material_id` INT NOT NULL AFTER `codigo_fabricante`, ADD INDEX (`material_id`), ALGORITHM=INPLACE, LOCK=NONE;

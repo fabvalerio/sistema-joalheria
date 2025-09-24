@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Produtos\Controller;
+use App\Models\Material\Controller as MaterialController;
 
 // Instanciar o Controller
 $controller = new Controller();
@@ -40,7 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     'em_reais' => $_POST['em_reais'] ?? null,
     'capa' => $_POST['capa_base64'] ?? null,
     'formato' => $_POST['formato'],
-    'observacoes' => $_POST['observacoes']
+    'observacoes' => $_POST['observacoes'],
+    'codigo_fabricante' => $_POST['codigo_fabricante'] ?? null,
   ];
 
   $return = $controller->cadastro($dados);
@@ -125,6 +127,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
               <label class="form-label">Descrição Adicional Etiqueta (opcional)</label>
               <input type="text" class="form-control" name="descricao_etiqueta_manual" id="descricao_etiqueta_manual">
             </div>
+
+
+            <!-- Material -->
+            <?php
+            $materialController = new MaterialController();
+            $materiais = $materialController->listar();
+            ?>
+            <div class="col-lg-2">
+              <label class="form-label">Material</label>
+              <select class="form-select" name="material_id" id="material">
+                <option value="">Selecione</option>
+                <?php foreach ($materiais as $material): ?>
+                  <option value="<?= $material['id'] ?>"><?= htmlspecialchars($material['nome']) ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+
+
             <!-- Modelo -->
             <div class="col-lg-2">
               <label class="form-label">Modelo</label>
@@ -376,6 +396,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
               <label class="form-label">Quantidade</label>
               <input type="number" step="0.001" class="form-control" name="estoque_princ" id="estoque_princ" value="1">
             </div>
+
+
+            <div class="col-lg-2">
+              <label class="form-label">Código do Fabricante</label>
+              <input type="text" class="form-control" name="codigo_fabricante" id="codigo_fabricante" value="">
+            </div>
+
             <div class="col-12">
               <hr>
             </div>
@@ -564,12 +591,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   const mm = document.getElementById('mm');
   const pontos = document.getElementById('pontos');
   const formato = document.getElementById('formato');
+  const material = document.getElementById('material');
 
 
 
   // Adicionar listeners para atualização da descrição
 
-  [fornecedor, grupo, subgrupo, modelo, macica_ou_oca, nat_ou_sint, unidade, peso, pedra, numeros, aros, cm, mm, pontos, formato].forEach(select => {
+  [fornecedor, material, grupo, subgrupo, modelo, macica_ou_oca, nat_ou_sint, unidade, peso, pedra, numeros, aros, cm, mm, pontos, formato].forEach(select => {
     select.addEventListener('change', () => {
       if (fornecedor.value && grupo.value && subgrupo.value) {
         camposAdicionais.style.display = 'block';
@@ -588,6 +616,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   function atualizarDescricaoEtiqueta() {
     const grupoText = grupo.options[grupo.selectedIndex]?.text || '';
     const subgrupoText = subgrupo.options[subgrupo.selectedIndex]?.text || '';
+    const materialText = material.options[material.selectedIndex]?.text || '';
     const modeloText = modelo.options[modelo.selectedIndex]?.value || '';
     const macica_ou_ocaText = macica_ou_oca.options[macica_ou_oca.selectedIndex]?.value || '';
     const pesoValue = peso.value ? `${peso.value}Gr` : '';
@@ -608,21 +637,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Criar a string apenas com valores definidos
     descricaoEtiqueta.value = [
-      subgrupoText, 
+      // subgrupoText, 
+      materialText,
       // ` - ${grupoText} `,
-      modeloText ? `- ${modeloText}` : '',
-      `- ${grupoText}`,
-      macica_ou_ocaText ? `- ${macica_ou_ocaText}` : '',
-      pesoValue ? `- ${pesoValue}` : '',
-      valoaros ? `- Aro ${valoaros}` : '',
-      valocm ? `- ${valocm}` : '',
-      numerosvalor ? `- ${numerosvalor}` : '',
+      modeloText ? ` ${modeloText}` : '',
+      //` ${grupoText}`,
+      macica_ou_ocaText ? ` ${macica_ou_ocaText}` : '',
+      pesoValue ? ` ${pesoValue}` : '',
+      valoaros ? ` Aro ${valoaros}` : '',
+      valocm ? ` ${valocm}` : '',
+      numerosvalor ? ` ${numerosvalor}` : '',
       pedravalor,
-      formatoText ? `- ${formatoText}` : '',
-      nat_ou_sintText ? `- ${nat_ou_sintText}` : '',
-      pontosText ? `- ${pontosText} Pontos` : '',
-      valomm ? `- ${valomm}` : '',
-      descricao_etiqueta_manualValue ? `- [ ${descricao_etiqueta_manualValue} ]` : ''
+      formatoText ? ` ${formatoText}` : '',
+      nat_ou_sintText ? ` ${nat_ou_sintText}` : '',
+      pontosText ? ` ${pontosText} Pontos` : '',
+      valomm ? ` ${valomm}` : '',
+      descricao_etiqueta_manualValue ? ` [ ${descricao_etiqueta_manualValue} ]` : ''
     ].filter(text => text.trim() !== '').join(' ');
 
   }
