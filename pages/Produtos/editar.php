@@ -2,6 +2,7 @@
 
 use App\Models\Produtos\Controller;
 use App\Models\Material\Controller as MaterialController;
+use App\Models\Categoria\Controller as CategoriaController;
 
 // ID do produto a ser editado
 $id = $link[3];
@@ -55,6 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     'observacoes' => $_POST['observacoes'],
     'codigo_fabricante' => $_POST['codigo_fabricante'] ?? null,
     'material_id' => $_POST['material_id'] ?? null,
+    'categoria_id' => $_POST['categoria_id'] ?? null,
   ];
 
 
@@ -165,6 +167,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 name="descricao_etiqueta_manual"
                 id="descricao_etiqueta_manual"
                 value="<?= htmlspecialchars($produto['descricao_etiqueta_manual'] ?? '') ?>">
+            </div>
+
+            <!-- Categoria -->
+            <?php
+            $categoriaController = new CategoriaController();
+            $categorias = $categoriaController->listar();
+            ?>
+            <div class="col-lg-2">
+              <label class="form-label">Categoria</label>
+              <select class="form-select" name="categoria_id" id="categoria">
+                <option value="">Selecione</option>
+                <?php foreach ($categorias as $categoria): ?>
+                  <option value="<?= $categoria['id'] ?>" <?= ($produto['categoria_id'] ?? '') == $categoria['id'] ? 'selected' : '' ?>><?= htmlspecialchars($categoria['nome']) ?></option>
+                <?php endforeach; ?>
+              </select>
             </div>
 
             <!-- Material -->
@@ -706,9 +723,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   const pontos = document.getElementById('pontos');
   const formato = document.getElementById('formato');
   const material = document.getElementById('material');
+  const categoria = document.getElementById('categoria');
   // Adicionar listeners para atualização da descrição
 
-  [fornecedor, material, grupo, subgrupo, modelo, macica_ou_oca, nat_ou_sint, unidade, peso, pedra, numeros, aros, cm, mm, pontos, formato].forEach(select => {
+  [fornecedor, material, categoria, grupo, subgrupo, modelo, macica_ou_oca, nat_ou_sint, unidade, peso, pedra, numeros, aros, cm, mm, pontos, formato].forEach(select => {
     select.addEventListener('change', () => {
       if (fornecedor.value && grupo.value && subgrupo.value) {
         camposAdicionais.style.display = 'block';
@@ -726,6 +744,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   // Atualizar Descrição Etiqueta automaticamente
   function atualizarDescricaoEtiqueta() {
     const materialText = material.options[material.selectedIndex]?.text || '';
+    const categoriaText = categoria.options[categoria.selectedIndex]?.text || '';
     const grupoText = grupo.options[grupo.selectedIndex]?.text || '';
     const subgrupoText = subgrupo.options[subgrupo.selectedIndex]?.text || '';
     const modeloText = modelo.options[modelo.selectedIndex]?.value || '';
@@ -748,7 +767,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Criar a string apenas com valores definidos
     descricaoEtiqueta.value = [
       materialText,
-      subgrupoText,
+      categoriaText,
+      //subgrupoText,
       // ` - ${grupoText} `,
       modeloText ? ` ${modeloText}` : '',
       //` ${grupoText}`,

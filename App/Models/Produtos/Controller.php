@@ -31,7 +31,8 @@ class Controller
                 p.custo AS custo,
                 p.margem AS margem,
                 p.codigo_fabricante,
-                p.material_id
+                p.material_id,
+                p.categoria_id
             FROM 
                 produtos p
             LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
@@ -75,6 +76,7 @@ class Controller
             p.observacoes,
             p.codigo_fabricante,
             p.material_id,
+            p.categoria_id,
 
             -- ESSENCIAIS PARA O SELECT FUNCIONAR
             p.fornecedor_id,
@@ -113,12 +115,11 @@ class Controller
         INSERT INTO produtos (
             descricao_etiqueta, fornecedor_id, modelo, macica_ou_oca, numeros, pedra, 
             nat_ou_sint, peso, aros, cm, pontos, mm, grupo_id, subgrupo_id, unidade, 
-            estoque_princ, cotacao, preco_ql, peso_gr, custo, margem, em_reais, capa, formato, observacoes, codigo_fabricante
-                p.material_id
+                estoque_princ, cotacao, preco_ql, peso_gr, custo, margem, em_reais, capa, formato, observacoes, codigo_fabricante, material_id, categoria_id
         ) VALUES (
             :descricao_etiqueta, :fornecedor_id, :modelo, :macica_ou_oca, :numeros, :pedra, 
             :nat_ou_sint, :peso, :aros, :cm, :pontos, :mm, :grupo_id, :subgrupo_id, :unidade, 
-            :estoque_princ, :cotacao, :preco_ql, :peso_gr, :custo, :margem, :em_reais, :capa, :formato, :observacoes, :codigo_fabricante, :material_id
+            :estoque_princ, :cotacao, :preco_ql, :peso_gr, :custo, :margem, :em_reais, :capa, :formato, :observacoes, :codigo_fabricante, :material_id, :categoria_id
         )
     ");
 
@@ -150,13 +151,35 @@ class Controller
             'formato',
             'observacoes',
             'codigo_fabricante',
-            'material_id'
+            'material_id',
+            'categoria_id'
         ];
 
         // Garantindo que campos ausentes sejam tratados como NULL
         foreach ($campos as $campo) {
-            $valor = isset($dados[$campo]) && $dados[$campo] !== '' ? $dados[$campo] : null;
-            $db->bind(":$campo", $valor);
+            if ($campo === 'material_id') {
+                // Para material_id, se for vazio, criar um material padrão
+                if (isset($dados[$campo]) && $dados[$campo] !== '') {
+                    $db->bind(":$campo", $dados[$campo]);
+                } else {
+                    // Criar material padrão "Não especificado" se não existir
+                    $db->query("SELECT id FROM material WHERE nome = 'Não especificado' LIMIT 1");
+                    $material_padrao = $db->single();
+                    
+                    if (!$material_padrao) {
+                        // Criar material padrão
+                        $db->query("INSERT INTO material (nome) VALUES ('Não especificado')");
+                        $db->execute();
+                        $material_id = $db->lastInsertId();
+                    } else {
+                        $material_id = $material_padrao['id'];
+                    }
+                    $db->bind(":$campo", $material_id);
+                }
+            } else {
+                $valor = isset($dados[$campo]) && $dados[$campo] !== '' ? $dados[$campo] : null;
+                $db->bind(":$campo", $valor);
+            }
         }
 
         if ($db->execute()) {
@@ -247,8 +270,8 @@ class Controller
                 formato = :formato,
                 observacoes = :observacoes,
                 codigo_fabricante = :codigo_fabricante,
-                material_id = :material_id
-                
+                material_id = :material_id,
+                categoria_id = :categoria_id
             WHERE id = :id
         ");
 
@@ -280,7 +303,8 @@ class Controller
             'formato',
             'observacoes',
             'codigo_fabricante',
-            'material_id'
+            'material_id',
+            'categoria_id'
         ];
 
         // Garantindo que valores vazios sejam tratados como NULL
