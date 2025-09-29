@@ -29,7 +29,10 @@ class Controller
                 c.valor AS cotacao_valor,
                 p.peso_gr AS peso_gr,
                 p.custo AS custo,
-                p.margem AS margem
+                p.margem AS margem,
+                p.codigo_fabricante,
+                p.material_id,
+                p.categoria_id
             FROM 
                 produtos p
             LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
@@ -71,6 +74,9 @@ class Controller
             p.capa,
             p.formato,
             p.observacoes,
+            p.codigo_fabricante,
+            p.material_id,
+            p.categoria_id,
 
             -- ESSENCIAIS PARA O SELECT FUNCIONAR
             p.fornecedor_id,
@@ -109,11 +115,11 @@ class Controller
         INSERT INTO produtos (
             descricao_etiqueta, fornecedor_id, modelo, macica_ou_oca, numeros, pedra, 
             nat_ou_sint, peso, aros, cm, pontos, mm, grupo_id, subgrupo_id, unidade, 
-            estoque_princ, cotacao, preco_ql, peso_gr, custo, margem, em_reais, capa, formato, observacoes
+                estoque_princ, cotacao, preco_ql, peso_gr, custo, margem, em_reais, capa, formato, observacoes, codigo_fabricante, material_id, categoria_id
         ) VALUES (
             :descricao_etiqueta, :fornecedor_id, :modelo, :macica_ou_oca, :numeros, :pedra, 
             :nat_ou_sint, :peso, :aros, :cm, :pontos, :mm, :grupo_id, :subgrupo_id, :unidade, 
-            :estoque_princ, :cotacao, :preco_ql, :peso_gr, :custo, :margem, :em_reais, :capa, :formato, :observacoes
+            :estoque_princ, :cotacao, :preco_ql, :peso_gr, :custo, :margem, :em_reais, :capa, :formato, :observacoes, :codigo_fabricante, :material_id, :categoria_id
         )
     ");
 
@@ -143,13 +149,37 @@ class Controller
             'em_reais',
             'capa',
             'formato',
-            'observacoes'
+            'observacoes',
+            'codigo_fabricante',
+            'material_id',
+            'categoria_id'
         ];
 
         // Garantindo que campos ausentes sejam tratados como NULL
         foreach ($campos as $campo) {
-            $valor = isset($dados[$campo]) && $dados[$campo] !== '' ? $dados[$campo] : null;
-            $db->bind(":$campo", $valor);
+            if ($campo === 'material_id') {
+                // Para material_id, se for vazio, criar um material padrão
+                if (isset($dados[$campo]) && $dados[$campo] !== '') {
+                    $db->bind(":$campo", $dados[$campo]);
+                } else {
+                    // Criar material padrão "Não especificado" se não existir
+                    $db->query("SELECT id FROM material WHERE nome = 'Não especificado' LIMIT 1");
+                    $material_padrao = $db->single();
+                    
+                    if (!$material_padrao) {
+                        // Criar material padrão
+                        $db->query("INSERT INTO material (nome) VALUES ('Não especificado')");
+                        $db->execute();
+                        $material_id = $db->lastInsertId();
+                    } else {
+                        $material_id = $material_padrao['id'];
+                    }
+                    $db->bind(":$campo", $material_id);
+                }
+            } else {
+                $valor = isset($dados[$campo]) && $dados[$campo] !== '' ? $dados[$campo] : null;
+                $db->bind(":$campo", $valor);
+            }
         }
 
         if ($db->execute()) {
@@ -238,8 +268,10 @@ class Controller
                 em_reais = :em_reais,
                 capa = :capa, 
                 formato = :formato,
-                observacoes = :observacoes
-                
+                observacoes = :observacoes,
+                codigo_fabricante = :codigo_fabricante,
+                material_id = :material_id,
+                categoria_id = :categoria_id
             WHERE id = :id
         ");
 
@@ -269,7 +301,10 @@ class Controller
             'em_reais',
             'capa',
             'formato',
-            'observacoes'
+            'observacoes',
+            'codigo_fabricante',
+            'material_id',
+            'categoria_id'
         ];
 
         // Garantindo que valores vazios sejam tratados como NULL
@@ -340,9 +375,56 @@ class Controller
     public function deletar($id)
     {
         $db = new db();
-        $db->query("DELETE FROM produtos WHERE id = :id");
-        $db->bind(":id", $id);
-        return $db->execute();
+        
+        try {
+            // Iniciar transação para garantir consistência
+            $db->beginTransaction();
+            
+            // 1. Deletar registros da tabela estoque primeiro
+            $db->query("DELETE FROM estoque WHERE produtos_id = :id");
+            $db->bind(":id", $id);
+            $db->execute();
+            
+            // 2. Deletar registros da tabela movimentacao_estoque
+            $db->query("DELETE FROM movimentacao_estoque WHERE produto_id = :id");
+            $db->bind(":id", $id);
+            $db->execute();
+            
+            // 3. Deletar registros da tabela consignacao_itens
+            $db->query("DELETE FROM consignacao_itens WHERE produto_id = :id");
+            $db->bind(":id", $id);
+            $db->execute();
+            
+            // 4. Deletar registros da tabela cotacao_itens
+            $db->query("DELETE FROM cotacao_itens WHERE produto_id = :id");
+            $db->bind(":id", $id);
+            $db->execute();
+            
+            // 5. Deletar registros da tabela pedidos_itens
+            $db->query("DELETE FROM pedidos_itens WHERE produto_id = :id");
+            $db->bind(":id", $id);
+            $db->execute();
+            
+            // 6. Atualizar impressao_etiquetas para NULL (já que tem ON DELETE SET NULL)
+            $db->query("UPDATE impressao_etiquetas SET produto_id = NULL WHERE produto_id = :id");
+            $db->bind(":id", $id);
+            $db->execute();
+            
+            // 7. Finalmente, deletar o produto
+            $db->query("DELETE FROM produtos WHERE id = :id");
+            $db->bind(":id", $id);
+            $result = $db->execute();
+            
+            // Confirmar transação
+            $db->endTransaction();
+            
+            return $result;
+            
+        } catch (\Exception $e) {
+            // Em caso de erro, reverter transação
+            $db->cancelTransaction();
+            throw $e;
+        }
     }
 
     // Listar fornecedores

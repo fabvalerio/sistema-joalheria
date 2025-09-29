@@ -1,9 +1,12 @@
 <?php
 
 use App\Models\Produtos\Controller;
+use App\Models\Material\Controller as MaterialController;
 
 $controller = new Controller();
 $produtos = $controller->listar();
+
+$materialController = new MaterialController();
 
 ?>
 
@@ -60,6 +63,7 @@ $produtos = $controller->listar();
                     <th>Fornecedor</th>
                     <th>Grupo</th>
                     <th>Subgrupo</th>
+                    <th>Material</th>
                     <th>Modelo</th>
                     <th>Preço (R$)</th>
                     <th>Estoque</th>
@@ -81,6 +85,12 @@ $produtos = $controller->listar();
                         <td><?= htmlspecialchars($produto['fornecedor'] ?? 'Não informado') ?></td>
                         <td><?= htmlspecialchars($produto['grupo'] ?? 'Não informado') ?></td>
                         <td><?= htmlspecialchars($produto['subgrupo'] ?? 'Não informado') ?></td>
+                        <td>
+                            <?php
+                            $materiais = $materialController->ver($produto['material_id']);
+                            echo htmlspecialchars($materiais['nome'] ?? 'Não informado'); 
+                            ?>
+                        </td>
                         <td><?= htmlspecialchars($produto['modelo'] ?? 'Não informado') ?></td>
                         <td>
                             <?php

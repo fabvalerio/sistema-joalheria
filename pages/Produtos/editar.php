@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\Produtos\Controller;
+use App\Models\Material\Controller as MaterialController;
+use App\Models\Categoria\Controller as CategoriaController;
 
 // ID do produto a ser editado
 $id = $link[3];
@@ -51,9 +53,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     'em_reais'                  => $_POST['em_reais'] ?? null,
     'capa'               => $_POST['capa_base64'] ?? null,
     'formato' => $_POST['formato'],
-    'observacoes' => $_POST['observacoes']
-
+    'observacoes' => $_POST['observacoes'],
+    'codigo_fabricante' => $_POST['codigo_fabricante'] ?? null,
+    'material_id' => $_POST['material_id'] ?? null,
+    'categoria_id' => $_POST['categoria_id'] ?? null,
   ];
+
 
   $return = $controller->editar($id, $dados);
 
@@ -137,23 +142,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
               <div id="preview-container" style="text-align: center;">
                 <img id="preview-thumb" src="<?= isset($produto['capa']) && !empty($produto['capa']) ? $produto['capa'] : $url . '/assets/img_padrao.webp'; ?>" alt="Preview da Imagem" style="max-width: 100%; max-height: 108px; display: block; border: 1px solid #ddd; padding: 5px; border-radius: 5px;">
               </div>
-            </div>            
+            </div>
             <div class="col-lg-12">
               <label class="form-label">Foto de Capa do Produto (Opcional) </label>
               <input type="file" class="form-control" name="capa" id="capa" accept="image/*">
               <input type="hidden" name="capa_base64" id="capa_base64" value="<?= $produto['capa'] ?? '' ?>">
             </div>
             <!-- Descrição Etiqueta (gerada automaticamente) -->
-        <div class="col-lg-12">
-          <label class="form-label">Descrição Etiqueta</label>
-          <input
-            type="text"
-            class="form-control bg-secondary text-white"
-            name="descricao_etiqueta"
-            id="descricao_etiqueta"
-            value="<?= htmlspecialchars($produto['descricao_etiqueta'] ?? '') ?>"
-            >
-        </div>
+            <div class="col-lg-12">
+              <label class="form-label">Descrição Etiqueta</label>
+              <input
+                type="text"
+                class="form-control bg-secondary text-white"
+                name="descricao_etiqueta"
+                id="descricao_etiqueta"
+                value="<?= htmlspecialchars($produto['descricao_etiqueta'] ?? '') ?>">
+            </div>
             <!-- Descrição Adicional Etiqueta (Manual) -->
             <div class="col-lg-12">
               <label class="form-label">Descrição Adicional Etiqueta (opcional)</label>
@@ -165,12 +169,42 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 value="<?= htmlspecialchars($produto['descricao_etiqueta_manual'] ?? '') ?>">
             </div>
 
+            <!-- Categoria -->
+            <?php
+            $categoriaController = new CategoriaController();
+            $categorias = $categoriaController->listar();
+            ?>
+            <div class="col-lg-2">
+              <label class="form-label">Categoria</label>
+              <select class="form-select" name="categoria_id" id="categoria">
+                <option value="">Selecione</option>
+                <?php foreach ($categorias as $categoria): ?>
+                  <option value="<?= $categoria['id'] ?>" <?= ($produto['categoria_id'] ?? '') == $categoria['id'] ? 'selected' : '' ?>><?= htmlspecialchars($categoria['nome']) ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+
+            <!-- Material -->
+            <?php
+            $materialController = new MaterialController();
+            $materiais = $materialController->listar();
+            ?>
+            <div class="col-lg-2">
+              <label class="form-label">Material</label>
+              <select class="form-select" name="material_id" id="material">
+                <option value="">Selecione</option>
+                <?php foreach ($materiais as $material): ?>
+                  <option value="<?= $material['id'] ?>" <?= ($produto['material_id'] ?? '') == $material['id'] ? 'selected' : '' ?>><?= htmlspecialchars($material['nome']) ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+
             <!-- Modelo -->
             <div class="col-lg-2">
               <label class="form-label">Modelo</label>
               <div class="input-group">
                 <select class="form-select" name="modelo" id="modelo">
-                <option value="">Nenhuma Pedra</option>
+                  <option value="">Nenhuma Pedra</option>
                   <?php
                   // Suponha que $pedraSelecionada contenha o valor já selecionado, ex:
                   $pedraSelecionada = $produto['pedra'];
@@ -230,7 +264,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="col-lg-2">
               <label class="form-label">Material (Maciça/Oca)</label>
               <select class="form-select" name="macica_ou_oca" id="macica_ou_oca">
-              <option value="">Selecione</option>
+                <option value="">Selecione</option>
                 <option
                   value="Maciça"
                   <?= ($produto['macica_ou_oca'] ?? '') === 'Maciça' ? 'selected' : '' ?>>
@@ -271,7 +305,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
               <label class="form-label">Pedra</label>
               <div class="input-group">
                 <select class="form-select" name="pedra" id="pedra">
-                <option value="">Nenhuma Pedra</option>
+                  <option value="">Nenhuma Pedra</option>
                   <?php
                   // Suponha que $pedraSelecionada contenha o valor já selecionado, ex:
                   $pedraSelecionada = $produto['pedra'];
@@ -396,7 +430,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="col-lg-2">
               <label class="form-label">Natural ou Sintético</label>
               <select class="form-select" name="nat_ou_sint" id="nat_ou_sint">
-              <option
+                <option
                   value="Natural"
                   <?= ($produto['nat_ou_sint'] ?? '') === 'Natural' ? 'selected' : '' ?>>
                   Natural
@@ -428,7 +462,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="col-lg-2">
               <label class="form-label">Unidade</label>
               <select class="form-select" name="unidade" id="unidade">
-              <option
+                <option
                   value="unidade"
                   <?= ($produto['unidade'] ?? '') === 'unidade' ? 'selected' : '' ?>>
                   Unidade
@@ -446,6 +480,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="col-lg-2">
               <label class="form-label">Quantidade</label>
               <input type="number" step="0.001" class="form-control" name="estoque_princ" id="estoque_princ" value="<?= $produto['estoque_princ'] ?? '' ?>">
+            </div>
+
+
+            <div class="col-lg-2">
+              <label class="form-label">Código do Fabricante</label>
+              <input type="text" class="form-control" name="codigo_fabricante" id="codigo_fabricante" value="<?= $produto['codigo_fabricante'] ?? '' ?>">
             </div>
 
             <div class="col-12">
@@ -532,8 +572,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     value="<?= number_format($produto['em_reais'], 2) ?? '' ?>">
                 </div>
                 <div class="col-lg-12">
-                    <label for="observacoes" class="form-label">Observações</label>
-                    <textarea class="form-control" id="observacoes" name="observacoes" rows="3"><?= $produto['observacoes'] ?? '' ?></textarea>
+                  <label for="observacoes" class="form-label">Observações</label>
+                  <textarea class="form-control" id="observacoes" name="observacoes" rows="3"><?= $produto['observacoes'] ?? '' ?></textarea>
                 </div>
               </div>
             </div>
@@ -682,9 +722,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   const mm = document.getElementById('mm');
   const pontos = document.getElementById('pontos');
   const formato = document.getElementById('formato');
+  const material = document.getElementById('material');
+  const categoria = document.getElementById('categoria');
   // Adicionar listeners para atualização da descrição
 
-  [fornecedor, grupo, subgrupo, modelo, macica_ou_oca, nat_ou_sint, unidade, peso, pedra, numeros, aros, cm, mm, pontos, formato].forEach(select => {
+  [fornecedor, material, categoria, grupo, subgrupo, modelo, macica_ou_oca, nat_ou_sint, unidade, peso, pedra, numeros, aros, cm, mm, pontos, formato].forEach(select => {
     select.addEventListener('change', () => {
       if (fornecedor.value && grupo.value && subgrupo.value) {
         camposAdicionais.style.display = 'block';
@@ -701,42 +743,46 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
   // Atualizar Descrição Etiqueta automaticamente
   function atualizarDescricaoEtiqueta() {
+    const materialText = material.selectedIndex > 0 ? material.options[material.selectedIndex]?.text : '';
+    const categoriaText = categoria.selectedIndex > 0 ? categoria.options[categoria.selectedIndex]?.text : '';
     const grupoText = grupo.options[grupo.selectedIndex]?.text || '';
     const subgrupoText = subgrupo.options[subgrupo.selectedIndex]?.text || '';
-    const modeloText = modelo.options[modelo.selectedIndex]?.value || '';
-    const macica_ou_ocaText = macica_ou_oca.options[macica_ou_oca.selectedIndex]?.value || '';
-    const pesoValue = peso.value ? `${peso.value}Gr` : '';
+    const modeloText = modelo.selectedIndex > 0 ? modelo.options[modelo.selectedIndex]?.value : '';
+    const macica_ou_ocaText = macica_ou_oca.selectedIndex > 0 ? macica_ou_oca.options[macica_ou_oca.selectedIndex]?.value : '';
+    const pesoValue = peso.value ? `${peso.value} Gr` : '';
     //aros
-    const valoaros = aros.value ? `${aros.value}Mm` : '';
+    const valoaros = aros.value ? `${aros.value} Mm` : '';
     //cm
-    const valocm = cm.value ? `${cm.value}Cm` : '';
+    const valocm = cm.value ? `${cm.value} Cm` : '';
     //mm
-    const valomm = mm.value ? `${mm.value}Mm` : '';
+    const valomm = mm.value ? `${mm.value} Mm` : '';
     const numerosvalor = numeros.value ? `Nº${numeros.value}` : '';
-    const pedravalor = pedra.options[pedra.selectedIndex]?.value ? `- ${pedra.options[pedra.selectedIndex]?.value}` : '';
-    const nat_ou_sintText = nat_ou_sint.options[nat_ou_sint.selectedIndex]?.value || '';
-    const unidadeText = unidade.options[unidade.selectedIndex]?.text || '';    
+    const pedravalor = pedra.selectedIndex > 0 ? `- ${pedra.options[pedra.selectedIndex]?.value}` : '';
+    const nat_ou_sintText = nat_ou_sint.selectedIndex > 0 ? nat_ou_sint.options[nat_ou_sint.selectedIndex]?.value : '';
+    const unidadeText = unidade.selectedIndex > 0 ? unidade.options[unidade.selectedIndex]?.text : '';
     const descricao_etiqueta_manualValue = descricao_etiqueta_manual.value || '';
     const pontosText = pontos.value ? `${pontos.value}` : '';
-    const formatoText = formato.options[formato.selectedIndex]?.value || '';
+    const formatoText = formato.selectedIndex > 0 ? formato.options[formato.selectedIndex]?.value : '';
 
     // Criar a string apenas com valores definidos
     descricaoEtiqueta.value = [
-      subgrupoText, 
+      materialText ? `${materialText}` : '',
+      categoriaText ? `${categoriaText}` : '',
+      //subgrupoText,
       // ` - ${grupoText} `,
-      modeloText ? `- ${modeloText}` : '',
-      `- ${grupoText}`,
-      macica_ou_ocaText ? `- ${macica_ou_ocaText}` : '',
-      pesoValue ? `- ${pesoValue}` : '',
-      valoaros ? `- Aro ${valoaros}` : '',
-      valocm ? `- ${valocm}` : '',
-      numerosvalor ? `- ${numerosvalor}` : '',
+      modeloText ? `${modeloText}` : '',
+      //` ${grupoText}`,
+      macica_ou_ocaText ? `${macica_ou_ocaText}` : '',
+      pesoValue ? `${pesoValue}` : '',
+      valoaros ? `Aro ${valoaros}` : '',
+      valocm ? `${valocm}` : '',
+      numerosvalor ? `${numerosvalor}` : '',
       pedravalor,
-      formatoText ? `- ${formatoText}` : '',
-      nat_ou_sintText ? `- ${nat_ou_sintText}` : '',
-      pontosText ? `- ${pontosText} Pontos` : '',
-      valomm ? `- ${valomm}` : '',
-      descricao_etiqueta_manualValue ? `- [ ${descricao_etiqueta_manualValue} ]` : ''
+      formatoText ? `${formatoText}` : '',
+      nat_ou_sintText ? `${nat_ou_sintText}` : '',
+      pontosText ? `${pontosText} Pontos` : '',
+      valomm ? `${valomm}` : '',
+      descricao_etiqueta_manualValue ? `[ ${descricao_etiqueta_manualValue} ]` : ''
     ].filter(text => text.trim() !== '').join(' ');
 
   }

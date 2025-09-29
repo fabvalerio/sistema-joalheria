@@ -1,5 +1,10 @@
 <?php
 
+//erro de php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+
 use App\Models\Produtos\Controller;
 
 // Capturar o ID do produto a ser deletado
@@ -19,13 +24,17 @@ if (!$produto) {
 
 // Deletar o registro se o comando for confirmado
 if (isset($link[4]) && $link[4] == 'deletar') {
-    $retorno = $controller->deletar($id);
+    try {
+        $retorno = $controller->deletar($id);
 
-    if ($retorno) {
-        echo notify('success', "Produto deletado com sucesso!");
-        echo '<meta http-equiv="refresh" content="2; url=' . $url . '!/' . $link[1] . '/listar">';
-    } else {
-        echo notify('danger', "Erro ao deletar o produto.");
+        if ($retorno) {
+            echo notify('success', "Produto deletado com sucesso!");
+            echo '<meta http-equiv="refresh" content="2; url=' . $url . '!/' . $link[1] . '/listar">';
+        } else {
+            echo notify('danger', "Erro ao deletar o produto.");
+        }
+    } catch (Exception $e) {
+        echo notify('danger', "Erro ao deletar o produto: " . $e->getMessage());
     }
     exit;
 }

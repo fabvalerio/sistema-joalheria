@@ -1,6 +1,14 @@
 <?php
 
+//erro de php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+//fim erro de php
+
 use App\Models\Produtos\Controller;
+use App\Models\Material\Controller as MaterialController;
+use App\Models\Categoria\Controller as CategoriaController;
 
 // Instanciar o Controller
 $controller = new Controller();
@@ -40,7 +48,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     'em_reais' => $_POST['em_reais'] ?? null,
     'capa' => $_POST['capa_base64'] ?? null,
     'formato' => $_POST['formato'],
-    'observacoes' => $_POST['observacoes']
+    'observacoes' => $_POST['observacoes'],
+    'codigo_fabricante' => $_POST['codigo_fabricante'] ?? null,
+    'material_id' => $_POST['material_id'] ?? null,
+    'categoria_id' => $_POST['categoria_id'] ?? null,
   ];
 
   $return = $controller->cadastro($dados);
@@ -125,6 +136,39 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
               <label class="form-label">Descrição Adicional Etiqueta (opcional)</label>
               <input type="text" class="form-control" name="descricao_etiqueta_manual" id="descricao_etiqueta_manual">
             </div>
+
+            <!-- Categoria -->
+            <?php
+            $categoriaController = new CategoriaController();
+            $categorias = $categoriaController->listar();
+            ?>
+            <div class="col-lg-2">
+              <label class="form-label">Categoria <span class="text-danger">*</span></label>
+              <select class="form-select" name="categoria_id" id="categoria" required>
+                <option value="">Selecione</option>
+                <?php foreach ($categorias as $categoria): ?>
+                  <option value="<?= $categoria['id'] ?>"><?= htmlspecialchars($categoria['nome']) ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+
+
+            <!-- Material -->
+            <?php
+            $materialController = new MaterialController();
+            $materiais = $materialController->listar();
+            ?>
+            <div class="col-lg-2">
+              <label class="form-label">Material <span class="text-danger">*</span></label>
+              <select class="form-select" name="material_id" id="material" required>
+                <option value="">Selecione</option>
+                <?php foreach ($materiais as $material): ?>
+                  <option value="<?= $material['id'] ?>"><?= htmlspecialchars($material['nome']) ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+
+
             <!-- Modelo -->
             <div class="col-lg-2">
               <label class="form-label">Modelo</label>
@@ -376,6 +420,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
               <label class="form-label">Quantidade</label>
               <input type="number" step="0.001" class="form-control" name="estoque_princ" id="estoque_princ" value="1">
             </div>
+
+
+            <div class="col-lg-2">
+              <label class="form-label">Código do Fabricante</label>
+              <input type="text" class="form-control" name="codigo_fabricante" id="codigo_fabricante" value="">
+            </div>
+
             <div class="col-12">
               <hr>
             </div>
@@ -564,12 +615,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   const mm = document.getElementById('mm');
   const pontos = document.getElementById('pontos');
   const formato = document.getElementById('formato');
+  const material = document.getElementById('material');
+  const categoria = document.getElementById('categoria');
 
 
 
   // Adicionar listeners para atualização da descrição
 
-  [fornecedor, grupo, subgrupo, modelo, macica_ou_oca, nat_ou_sint, unidade, peso, pedra, numeros, aros, cm, mm, pontos, formato].forEach(select => {
+  [fornecedor, material, categoria, grupo, subgrupo, modelo, macica_ou_oca, nat_ou_sint, unidade, peso, pedra, numeros, aros, cm, mm, pontos, formato].forEach(select => {
     select.addEventListener('change', () => {
       if (fornecedor.value && grupo.value && subgrupo.value) {
         camposAdicionais.style.display = 'block';
@@ -584,45 +637,82 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   // Listener para o evento 'input' do campo manual
   descricao_etiqueta_manual.addEventListener('input', atualizarDescricaoEtiqueta);
 
+  // Função para remover espaços duplos
+  function removerEspacosDuplos(texto) {
+    return texto.replace(/\s{2,}/g, ' ');
+  }
+
+  // Bloquear espaços duplos no campo descricao_etiqueta_manual
+  descricao_etiqueta_manual.addEventListener('input', function(e) {
+    const valorAtual = e.target.value;
+    const valorLimpo = removerEspacosDuplos(valorAtual);
+    
+    if (valorAtual !== valorLimpo) {
+      e.target.value = valorLimpo;
+    }
+  });
+
+  // Limpar espaços duplos ao colar texto
+  descricao_etiqueta_manual.addEventListener('paste', function(e) {
+    setTimeout(() => {
+      const valorAtual = e.target.value;
+      const valorLimpo = removerEspacosDuplos(valorAtual);
+      e.target.value = valorLimpo;
+    }, 0);
+  });
+
+  // Limpar espaços duplos ao carregar a página
+  document.addEventListener('DOMContentLoaded', function() {
+    const valorAtual = descricao_etiqueta_manual.value;
+    if (valorAtual) {
+      const valorLimpo = removerEspacosDuplos(valorAtual);
+      descricao_etiqueta_manual.value = valorLimpo;
+    }
+  });
+
   // Atualizar Descrição Etiqueta automaticamente
   function atualizarDescricaoEtiqueta() {
     const grupoText = grupo.options[grupo.selectedIndex]?.text || '';
     const subgrupoText = subgrupo.options[subgrupo.selectedIndex]?.text || '';
-    const modeloText = modelo.options[modelo.selectedIndex]?.value || '';
-    const macica_ou_ocaText = macica_ou_oca.options[macica_ou_oca.selectedIndex]?.value || '';
-    const pesoValue = peso.value ? `${peso.value}Gr` : '';
+    const materialText = material.selectedIndex > 0 ? material.options[material.selectedIndex]?.text : '';
+    const categoriaText = categoria.selectedIndex > 0 ? categoria.options[categoria.selectedIndex]?.text : '';
+    const modeloText = modelo.selectedIndex > 0 ? modelo.options[modelo.selectedIndex]?.value : '';
+    const macica_ou_ocaText = macica_ou_oca.selectedIndex > 0 ? macica_ou_oca.options[macica_ou_oca.selectedIndex]?.value : '';
+    const pesoValue = peso.value ? `${peso.value} Gr` : '';
     //aros
-    const valoaros = aros.value ? `${aros.value}Mm` : '';
+    const valoaros = aros.value ? `${aros.value} Mm` : '';
     //cm
-    const valocm = cm.value ? `${cm.value}Cm` : '';
+    const valocm = cm.value ? `${cm.value} Cm` : '';
     //mm
-    const valomm = mm.value ? `${mm.value}Mm` : '';
-    const numerosvalor = numeros.value ? `Nº${numeros.value}` : '';
-    const pedravalor = pedra.options[pedra.selectedIndex]?.value ? `- ${pedra.options[pedra.selectedIndex]?.value}` : '';
-    const nat_ou_sintText = nat_ou_sint.options[nat_ou_sint.selectedIndex]?.value || '';
-    const unidadeText = unidade.options[unidade.selectedIndex]?.text || '';    
+    const valomm = mm.value ? `${mm.value} Mm` : '';
+    const numerosvalor = numeros.value ? `Nº ${numeros.value}` : '';
+    const pedravalor = pedra.selectedIndex > 0 ? ` ${pedra.options[pedra.selectedIndex]?.value}` : '';
+    const nat_ou_sintText = nat_ou_sint.selectedIndex > 0 ? nat_ou_sint.options[nat_ou_sint.selectedIndex]?.value : '';
+    const unidadeText = unidade.selectedIndex > 0 ? unidade.options[unidade.selectedIndex]?.text : '';    
     const descricao_etiqueta_manualValue = descricao_etiqueta_manual.value || '';
     const pontosText = pontos.value ? `${pontos.value}` : '';
-    const formatoText = formato.options[formato.selectedIndex]?.value || '';
+    const formatoText = formato.selectedIndex > 0 ? formato.options[formato.selectedIndex]?.value : '';
     
 
     // Criar a string apenas com valores definidos
     descricaoEtiqueta.value = [
-      subgrupoText, 
+      // subgrupoText, 
+      categoriaText ? `${categoriaText}` : '',
+      materialText ? `${materialText}` : '',
       // ` - ${grupoText} `,
-      modeloText ? `- ${modeloText}` : '',
-      `- ${grupoText}`,
-      macica_ou_ocaText ? `- ${macica_ou_ocaText}` : '',
-      pesoValue ? `- ${pesoValue}` : '',
-      valoaros ? `- Aro ${valoaros}` : '',
-      valocm ? `- ${valocm}` : '',
-      numerosvalor ? `- ${numerosvalor}` : '',
+      modeloText ? `${modeloText}` : '',
+      //` ${grupoText}`,
+      macica_ou_ocaText ? `${macica_ou_ocaText}` : '',
+      pesoValue ? `${pesoValue}` : '',
+      valoaros ? `Aro ${valoaros}` : '',
+      valocm ? `${valocm}` : '',
+      numerosvalor ? `${numerosvalor}` : '',
       pedravalor,
-      formatoText ? `- ${formatoText}` : '',
-      nat_ou_sintText ? `- ${nat_ou_sintText}` : '',
-      pontosText ? `- ${pontosText} Pontos` : '',
-      valomm ? `- ${valomm}` : '',
-      descricao_etiqueta_manualValue ? `- [ ${descricao_etiqueta_manualValue} ]` : ''
+      formatoText ? `${formatoText}` : '',
+      nat_ou_sintText ? `${nat_ou_sintText}` : '',
+      pontosText ? `${pontosText} Pontos` : '',
+      valomm ? `${valomm}` : '',
+      descricao_etiqueta_manualValue ? `[ ${descricao_etiqueta_manualValue} ]` : ''
     ].filter(text => text.trim() !== '').join(' ');
 
   }
