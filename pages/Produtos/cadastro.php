@@ -637,49 +637,82 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   // Listener para o evento 'input' do campo manual
   descricao_etiqueta_manual.addEventListener('input', atualizarDescricaoEtiqueta);
 
+  // Função para remover espaços duplos
+  function removerEspacosDuplos(texto) {
+    return texto.replace(/\s{2,}/g, ' ');
+  }
+
+  // Bloquear espaços duplos no campo descricao_etiqueta_manual
+  descricao_etiqueta_manual.addEventListener('input', function(e) {
+    const valorAtual = e.target.value;
+    const valorLimpo = removerEspacosDuplos(valorAtual);
+    
+    if (valorAtual !== valorLimpo) {
+      e.target.value = valorLimpo;
+    }
+  });
+
+  // Limpar espaços duplos ao colar texto
+  descricao_etiqueta_manual.addEventListener('paste', function(e) {
+    setTimeout(() => {
+      const valorAtual = e.target.value;
+      const valorLimpo = removerEspacosDuplos(valorAtual);
+      e.target.value = valorLimpo;
+    }, 0);
+  });
+
+  // Limpar espaços duplos ao carregar a página
+  document.addEventListener('DOMContentLoaded', function() {
+    const valorAtual = descricao_etiqueta_manual.value;
+    if (valorAtual) {
+      const valorLimpo = removerEspacosDuplos(valorAtual);
+      descricao_etiqueta_manual.value = valorLimpo;
+    }
+  });
+
   // Atualizar Descrição Etiqueta automaticamente
   function atualizarDescricaoEtiqueta() {
     const grupoText = grupo.options[grupo.selectedIndex]?.text || '';
     const subgrupoText = subgrupo.options[subgrupo.selectedIndex]?.text || '';
-    const materialText = material.options[material.selectedIndex]?.text || '';
-    const categoriaText = categoria.options[categoria.selectedIndex]?.text || '';
-    const modeloText = modelo.options[modelo.selectedIndex]?.value || '';
-    const macica_ou_ocaText = macica_ou_oca.options[macica_ou_oca.selectedIndex]?.value || '';
-    const pesoValue = peso.value ? `${peso.value}Gr` : '';
+    const materialText = material.selectedIndex > 0 ? material.options[material.selectedIndex]?.text : '';
+    const categoriaText = categoria.selectedIndex > 0 ? categoria.options[categoria.selectedIndex]?.text : '';
+    const modeloText = modelo.selectedIndex > 0 ? modelo.options[modelo.selectedIndex]?.value : '';
+    const macica_ou_ocaText = macica_ou_oca.selectedIndex > 0 ? macica_ou_oca.options[macica_ou_oca.selectedIndex]?.value : '';
+    const pesoValue = peso.value ? `${peso.value} Gr` : '';
     //aros
-    const valoaros = aros.value ? `${aros.value}Mm` : '';
+    const valoaros = aros.value ? `${aros.value} Mm` : '';
     //cm
-    const valocm = cm.value ? `${cm.value}Cm` : '';
+    const valocm = cm.value ? `${cm.value} Cm` : '';
     //mm
-    const valomm = mm.value ? `${mm.value}Mm` : '';
-    const numerosvalor = numeros.value ? `Nº${numeros.value}` : '';
-    const pedravalor = pedra.options[pedra.selectedIndex]?.value ? `- ${pedra.options[pedra.selectedIndex]?.value}` : '';
-    const nat_ou_sintText = nat_ou_sint.options[nat_ou_sint.selectedIndex]?.value || '';
-    const unidadeText = unidade.options[unidade.selectedIndex]?.text || '';    
+    const valomm = mm.value ? `${mm.value} Mm` : '';
+    const numerosvalor = numeros.value ? `Nº ${numeros.value}` : '';
+    const pedravalor = pedra.selectedIndex > 0 ? ` ${pedra.options[pedra.selectedIndex]?.value}` : '';
+    const nat_ou_sintText = nat_ou_sint.selectedIndex > 0 ? nat_ou_sint.options[nat_ou_sint.selectedIndex]?.value : '';
+    const unidadeText = unidade.selectedIndex > 0 ? unidade.options[unidade.selectedIndex]?.text : '';    
     const descricao_etiqueta_manualValue = descricao_etiqueta_manual.value || '';
     const pontosText = pontos.value ? `${pontos.value}` : '';
-    const formatoText = formato.options[formato.selectedIndex]?.value || '';
+    const formatoText = formato.selectedIndex > 0 ? formato.options[formato.selectedIndex]?.value : '';
     
 
     // Criar a string apenas com valores definidos
     descricaoEtiqueta.value = [
       // subgrupoText, 
-      categoriaText,
-      materialText,
+      categoriaText ? `${categoriaText}` : '',
+      materialText ? `${materialText}` : '',
       // ` - ${grupoText} `,
-      modeloText ? ` ${modeloText}` : '',
+      modeloText ? `${modeloText}` : '',
       //` ${grupoText}`,
-      macica_ou_ocaText ? ` ${macica_ou_ocaText}` : '',
-      pesoValue ? ` ${pesoValue}` : '',
-      valoaros ? ` Aro ${valoaros}` : '',
-      valocm ? ` ${valocm}` : '',
-      numerosvalor ? ` ${numerosvalor}` : '',
+      macica_ou_ocaText ? `${macica_ou_ocaText}` : '',
+      pesoValue ? `${pesoValue}` : '',
+      valoaros ? `Aro ${valoaros}` : '',
+      valocm ? `${valocm}` : '',
+      numerosvalor ? `${numerosvalor}` : '',
       pedravalor,
-      formatoText ? ` ${formatoText}` : '',
-      nat_ou_sintText ? ` ${nat_ou_sintText}` : '',
-      pontosText ? ` ${pontosText} Pontos` : '',
-      valomm ? ` ${valomm}` : '',
-      descricao_etiqueta_manualValue ? ` [ ${descricao_etiqueta_manualValue} ]` : ''
+      formatoText ? `${formatoText}` : '',
+      nat_ou_sintText ? `${nat_ou_sintText}` : '',
+      pontosText ? `${pontosText} Pontos` : '',
+      valomm ? `${valomm}` : '',
+      descricao_etiqueta_manualValue ? `[ ${descricao_etiqueta_manualValue} ]` : ''
     ].filter(text => text.trim() !== '').join(' ');
 
   }
