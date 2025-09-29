@@ -87,8 +87,9 @@
             <i class="fas fa-fw fa-dollar-sign"></i>
             <span>Financeiro</span>
         </a>
-        <div id="financeiro" class="collapse <?php echo in_array($link[1], ['Contas', 'CategoriaDespesa', 'Cartoes', 'ComissaoVendedor']) ? 'show' : ''; ?>" aria-labelledby="headingFinanceiro" data-bs-parent="#accordionSidebar">
+        <div id="financeiro" class="collapse <?php echo in_array($link[1], ['Contas', 'CategoriaDespesa', 'Cartoes', 'ComissaoVendedor', 'Caixa']) ? 'show' : ''; ?>" aria-labelledby="headingFinanceiro" data-bs-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
+                <a class="collapse-item" href="<?php echo "{$url}!/Caixa/lista" ?>">Fluxo de Caixa</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Contas/listar/P" ?>">Contas a Pagar</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Contas/listar/R" ?>">Contas a Receber</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/CategoriaDespesa/listar" ?>">Categoria de Despesa</a>

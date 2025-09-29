@@ -100,17 +100,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <input type="date" class="form-control" id="data_entrega" name="data_entrega" value="<?php echo adicionarDiasUteis($data_atual, 15); ?>" required>
                 </div>
 
-                <div class="col-lg-4" style="display: none;">
+                <div class="col-lg-6" style="display: none;">
                     <label for="cod_vendedor" class="form-label">Código do Vendedor</label>
                     <input type="text" class="form-control" id="cod_vendedor" name="cod_vendedor" value="<?php echo $_COOKIE['id']; ?>">
-                </div>
-                <div class="col-lg-2">
-                    <label for="status_pedido" class="form-label">Status do Pedido</label>
-                    <select class="form-select" id="status_pedido" name="status_pedido" required>
-                        <option value="Pendente">Pendente</option>
-                        <option value="Pago">Pago</option>
-
-                    </select>
                 </div>
 
                 <div class="col-12">
@@ -140,7 +132,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             </div>
                             <div class="col-lg-2">
                                 <label class="form-label">Preço</label>
-                                <input type="number" step="0.01" class="form-control product-price-display" name="produtos[0][preco]" placeholder="Preço" readonly>
+                                <div class="input-group">
+                                <span class="input-group-text" id="basic-addon1">R$</span>
+                                <input type="text" class="form-control product-price-display" name="produtos[0][preco]" placeholder="Preço" readonly oninput="let v = this.value.replace(/\D/g,''); if(v.length < 3) { v = v.padStart(3, '0'); } this.value = (parseInt(v,10)/100).toFixed(2).replace('.', ',');" inputmode="decimal">
+                                </div>
                             </div>
                             <div class="col-lg-2">
                                 <label class="form-label">Quantidade</label>
@@ -345,11 +340,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                 <div class="col-lg-12">
                     <label for="total" class="form-label">Total do Pedido</label>
+                    
+                    <div class="input-group">
+                                <span class="input-group-text" id="basic-addon1">R$</span>
                     <input type="number" step="0.01" class="form-control text-white" id="total" name="total" style="background-color: #198754;" readonly>
+                    </div>
                 </div>
-                <div class="col-lg-2">
+
+                
+                <div class="col-lg-3">
+                    <label for="status_pedido" class="form-label">Status do Pedido</label>
+                    <select class="form-select" id="status_pedido" name="status_pedido" required>
+                        <option value="Pendente">Pendente</option>
+                        <option value="Pago">Pago</option>
+
+                    </select>
+                </div>
+                <div class="col-lg-8">
                     <label for="valor_pago" class="form-label">Valor Pago</label>
+                    <div class="input-group">
+                                <span class="input-group-text" id="basic-addon1">R$</span>
                     <input type="number" step="0.01" class="form-control" id="valor_pago" name="valor_pago">
+                    </div>
+                </div>
+                <div class="col-lg-1 d-flex align-items-bottom justify-content-bottom">
+                    <button class="btn btn-primary w-100" id="totalCopy"><i class="fa fa-calculator"></i></button>
                 </div>
                 <div class="col-lg-12">
                     <label for="observacoes" class="form-label">Observações</label>
@@ -401,7 +416,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                                         data-name="<?php echo $produto['nome_produto']; ?>"
                                                         data-price="<?php echo $produto['preco']; ?>"
                                                         data-estoque="<?php echo $produto['estoque']; ?>"
-                                                        data-capa="<?= isset($produto['capa']) && !empty($produto['capa']) ? htmlspecialchars($produto['capa']) : $url . '/assets/img_padrao.webp'; ?>">
+                                                        data-capa="<?= isset($produto['capa']) && !empty($produto['capa']) ? htmlspecialchars($produto['capa']) : $url . '/assets/img_padrao.webp'; ?>"
+                                                        data-bs-dismiss="modal">
                                                         Selecionar
                                                     </button>
                                                 </td>
@@ -479,6 +495,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     }
                 });
 
+                // Evento para quando o modal é fechado (por qualquer meio)
+                modalElement.addEventListener('hidden.bs.modal', function () {
+                    // Limpa o campo de busca do modal
+                    const productSearch = document.getElementById('productSearch');
+                    if (productSearch) {
+                        productSearch.value = '';
+                        // Reexibe todas as linhas da tabela
+                        const tableRows = document.querySelectorAll('#produtoTable tbody tr');
+                        tableRows.forEach(row => {
+                            row.style.display = '';
+                        });
+                    }
+                    // Reset do índice ativo
+                    activeIndex = null;
+                });
+
                 // Selecionar produto no modal
                 document.addEventListener('click', function(e) {
                     if (e.target && e.target.classList.contains('btn-select-product')) {
@@ -498,10 +530,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             parentItem.querySelector('.product-price-display').value = productPrice;
                             //troca o src da capa
                             parentItem.querySelector('.capa').src = capa;
-                           
+                            
+                            // Recalcula o total após selecionar o produto
+                            calculateTotal();
                         }
 
-                        modal.hide(); // Fecha o modal
+                        // Fecha o modal de forma mais robusta
+                        modal.hide();
+                        
+                        // Limpa o campo de busca do modal
+                        const productSearch = document.getElementById('productSearch');
+                        if (productSearch) {
+                            productSearch.value = '';
+                            // Reexibe todas as linhas da tabela
+                            const tableRows = document.querySelectorAll('#produtoTable tbody tr');
+                            tableRows.forEach(row => {
+                                row.style.display = '';
+                            });
+                        }
+                        
+                        // Reset do índice ativo
+                        activeIndex = null;
                     }
                 });
 
@@ -524,7 +573,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <input type="hidden" name="produtos[${productIndex}][estoque_atual]" class="estoque_atual">
                 </div>
                 <div class="col-lg-2">
+                                <div class="input-group">
+                                <span class="input-group-text" id="basic-addon1">R$</span>
                     <input type="number" step="0.01" class="form-control product-price-display" name="produtos[${productIndex}][preco]" placeholder="Preço" readonly>
+                                </div>
                 </div>
                 <div class="col-lg-2">
                     <input type="number" class="form-control" name="produtos[${productIndex}][quantidade]" placeholder="Quantidade" required>
@@ -715,6 +767,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 // Adiciona os eventos de mudança nos selects
                 cartaoTipo.addEventListener('change', removeJurosFromTotal);
                 formaPagamento.addEventListener('change', removeJurosFromTotal);
+            });
+
+            // Botão para copiar o total para o valor pago
+            document.addEventListener('DOMContentLoaded', () => {
+                const totalCopyButton = document.getElementById('totalCopy');
+                const totalField = document.getElementById('total');
+                const valorPagoField = document.getElementById('valor_pago');
+                
+                totalCopyButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const totalValue = totalField.value;
+                    if (totalValue && totalValue !== '0.00') {
+                        valorPagoField.value = totalValue;
+                    } else {
+                        alert('O total do pedido deve ser calculado primeiro.');
+                    }
+                });
             });
 
             document.addEventListener('DOMContentLoaded', () => {

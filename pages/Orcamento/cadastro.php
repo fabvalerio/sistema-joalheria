@@ -101,17 +101,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <input type="date" class="form-control" id="data_entrega" name="data_entrega">
                 </div>
 
-                <div class="col-lg-4" style="display: none;">
+                <div class="col-lg-6" style="display: none;">
                     <label for="cod_vendedor" class="form-label">Código do Vendedor</label>
                     <input type="text" class="form-control" id="cod_vendedor" name="cod_vendedor" value="<?php echo $_COOKIE['id']; ?>">
-                </div>
-                <div class="col-lg-2">
-                    <label for="status_pedido" class="form-label">Status do Pedido</label>
-                    <select class="form-select" id="status_pedido" name="status_pedido" required>
-                        <option value="Pendente">Pendente</option>
-                        <option value="Pago">Pago</option>
-
-                    </select>
                 </div>
 
                 <div class="col-12">
@@ -140,7 +132,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             </div>
                             <div class="col-lg-2">
                                 <label class="form-label">Preço</label>
+                                <div class="input-group">
+                                <span class="input-group-text" id="basic-addon1">R$</span>
                                 <input type="number" step="0.01" class="form-control product-price-display" name="produtos[0][preco]" placeholder="Preço" readonly>
+                                </div>
                             </div>
                             <div class="col-lg-2">
                                 <label class="form-label">Quantidade</label>
@@ -355,11 +350,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                 <div class="col-lg-12">
                     <label for="total" class="form-label">Total do Pedido</label>
+                                <div class="input-group">
+                                <span class="input-group-text" id="basic-addon1">R$</span>
                     <input type="number" step="0.01" class="form-control text-white" id="total" name="total" style="background-color: #198754;" readonly>
+                                </div>
                 </div>
                 <div class="col-lg-2">
+                    <label for="status_pedido" class="form-label">Status do Pedido</label>
+                    <select class="form-select" id="status_pedido" name="status_pedido" required>
+                        <option value="Pendente">Pendente</option>
+                        <option value="Pago">Pago</option>
+
+                    </select>
+                </div>
+                <div class="col-lg-9">
                     <label for="valor_pago" class="form-label">Valor Pago</label>
+                                <div class="input-group">
+                                <span class="input-group-text" id="basic-addon1">R$</span>
                     <input type="number" step="0.01" class="form-control" id="valor_pago" name="valor_pago">
+                                </div>
+                </div>
+                <div class="col-lg-1 d-flex align-items-bottom justify-content-bottom">
+                    <button class="btn btn-primary w-100" id="totalCopy"><i class="fa fa-calculator"></i></button>
                 </div>
 
 
@@ -414,7 +426,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                                         data-name="<?php echo $produto['nome_produto']; ?>"
                                                         data-price="<?php echo $produto['preco']; ?>"
                                                         data-estoque="<?php echo $produto['estoque']; ?>"
-                                                        data-capa="<?= isset($produto['capa']) && !empty($produto['capa']) ? htmlspecialchars($produto['capa']) : $url . '/assets/img_padrao.webp'; ?>">
+                                                        data-capa="<?= isset($produto['capa']) && !empty($produto['capa']) ? htmlspecialchars($produto['capa']) : $url . '/assets/img_padrao.webp'; ?>"
+                                                        data-bs-dismiss="modal">
                                                         Selecionar
                                                     </button>
                                                 </td>
@@ -565,7 +578,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <input type="hidden" name="produtos[${productIndex}][estoque_atual]" class="estoque_atual">
                 </div>
                 <div class="col-lg-2">
+                                <div class="input-group">
+                                <span class="input-group-text" id="basic-addon1">R$</span>
                     <input type="number" step="0.01" class="form-control product-price-display" name="produtos[${productIndex}][preco]" placeholder="Preço" readonly>
+                                </div>
                 </div>
                 <div class="col-lg-2">
                     <input type="number" class="form-control" name="produtos[${productIndex}][quantidade]" placeholder="Quantidade" required>
@@ -782,4 +798,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
   }
 });
+
+            // Funcionalidade do botão totalCopy
+            document.addEventListener('DOMContentLoaded', () => {
+                const totalCopyButton = document.getElementById('totalCopy');
+                const totalField = document.getElementById('total');
+                const valorPagoField = document.getElementById('valor_pago');
+
+                totalCopyButton.addEventListener('click', (event) => {
+                    // Copia o valor do total para o valor pago
+                    valorPagoField.value = totalField.value;
+                    
+                    // Previne o comportamento padrão do botão (não atualiza a página)
+                    event.preventDefault();
+                    return false;
+                });
+            });
         </script>
