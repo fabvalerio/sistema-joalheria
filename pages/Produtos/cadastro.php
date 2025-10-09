@@ -1,3 +1,18 @@
+
+<!-- Select2 (busca interna no select) -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+ 
+<style>
+
+.select2 {
+  width: calc(100% - 150px)!important;
+}
+.select2-container--default .select2-selection--single {
+    height: 42px;
+}
+</style>
+    
+    
 <?php
 
 //erro de php
@@ -9,6 +24,7 @@ error_reporting(E_ALL);
 use App\Models\Produtos\Controller;
 use App\Models\Material\Controller as MaterialController;
 use App\Models\Categoria\Controller as CategoriaController;
+use App\Models\Insumos\Controller as InsumosController;
 
 // Instanciar o Controller
 $controller = new Controller();
@@ -22,7 +38,27 @@ $modelos = $controller->listarModelos();
 $pedras = $controller->listarPedras();
 $formatos = $controller->listarFormatos();
 
+
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
+  //os campos de input insumos[] preciso transformar em json para salvar no banco
+  // echo '<pre>';
+  // print_r($_POST['insumos']);
+  // echo '</pre>';
+  
+  // Filtrar apenas os itens com chaves numéricas (os dados completos)
+  $insumos_array = array_filter($_POST['insumos'], function($key) {
+    return is_numeric($key);
+  }, ARRAY_FILTER_USE_KEY);
+  
+  // Reindexar o array para ter índices sequenciais
+  $insumos_array = array_values($insumos_array);
+  
+  // Converter para JSON
+  $insumos_json = json_encode($insumos_array, JSON_UNESCAPED_UNICODE);
+  
+
   $dados = [
     'descricao_etiqueta' => $_POST['descricao_etiqueta'],
     'fornecedor_id' => $_POST['fornecedor_id'],
@@ -52,7 +88,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     'codigo_fabricante' => $_POST['codigo_fabricante'] ?? null,
     'material_id' => $_POST['material_id'] ?? null,
     'categoria_id' => $_POST['categoria_id'] ?? null,
+    'insumos' => $insumos_json ?? null,
   ];
+
+  //print_r($dados);exit;
 
   $return = $controller->cadastro($dados);
 
@@ -430,6 +469,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="col-12">
               <hr>
             </div>
+
             <!-- Cotação -->
             <div class="col-lg-4">
               <label class="form-label">Cotação</label>
@@ -468,11 +508,61 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
               </div>
             </div>
+
+
+            
+
+            <!-- Lista de insumos onde o cliente pode adicionar vários insumos -->
+            <?php 
+              //Insumos
+                $insumosController = new InsumosController();
+                $insumos = $insumosController->listar();
+              ?>
+            <div class="col-12">
+              <label class="form-label">Insumos</label>
+              <div class="input-group">
+              <select class="form-select" name="insumos" id="insumos">
+                <option value="">Selecione o Insumo</option>
+                <?php foreach ($insumos as $insumo): ?>
+                  <option value="<?= $insumo['id'] ?>" data-em-reais="<?= $insumo['em_reais'] ?? 0 ?>">
+                    <?= htmlspecialchars($insumo['descricao_etiqueta'] ?? '') ?>
+                  </option>
+                <?php endforeach; ?>
+              </select>
+              <button type="button" class="btn btn-success" onclick="adicionarInsumo()">Adicionar Insumo</button>
+            </div>
+
+            <!-- Lista de insumos adicionados -->
+            <div class="col-12" id="insumos-adicionados" style="display: none;">
+              <label class="form-label alert alert-warning w-100 mt-2 p-2">Insumos Adicionados</label>
+              <div class="table-responsive">
+                <table class="table table-striped" id="tabela-insumos">
+                  <thead>
+                    <tr>
+                      <th>Insumo</th>
+                      <th>Quantidade</th>
+                      <th>Em Reais</th>
+                      <th>Subtotal</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody id="corpo-tabela-insumos">
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <hr>
+            </div>
+
+
             <div class="col-lg-12">
                     <label for="observacoes" class="form-label">Observações</label>
                     <textarea class="form-control" id="observacoes" name="observacoes" rows="3"></textarea>
                 </div>
-          </div>
+          
+              </div>
         </div>
 
 
@@ -548,6 +638,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
   </div>
 </div>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
   const cotacaoSelect = document.getElementById('cotacao');
   const precoQlInput = document.getElementById('preco_ql');
@@ -765,4 +856,176 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       reader.readAsDataURL(file); // Lê o arquivo como Base64
     }
   });
+
+  // Array para armazenar os insumos adicionados
+  let insumosAdicionados = [];
+
+  // Inicializa Select2 para o select de insumos (busca embutida)
+  $(function() {
+    if (window.jQuery && $('#insumos').length) {
+      $('#insumos').select2({
+        width: 'resolve',
+        placeholder: 'Selecione o Insumo',
+        allowClear: true,
+        dropdownParent: $('body')
+      });
+    }
+  });
+
+  // Função para adicionar insumo
+  function adicionarInsumo() {
+    const selectInsumos = document.getElementById('insumos');
+    const insumoId = selectInsumos.value;
+    const insumoNome = selectInsumos.options[selectInsumos.selectedIndex].text;
+
+    // Verificar se um insumo foi selecionado
+    if (!insumoId) {
+      alert('Por favor, selecione um insumo.');
+      return;
+    }
+
+    // Verificar se o insumo já foi adicionado
+    if (insumosAdicionados.find(insumo => insumo.id === insumoId)) {
+      alert('Este insumo já foi adicionado.');
+      return;
+    }
+
+    // Buscar o valor em_reais do insumo selecionado
+    const insumoEmReais = selectInsumos.options[selectInsumos.selectedIndex].getAttribute('data-em-reais') || 0;
+    const emReais = parseFloat(insumoEmReais) || 0;
+
+    // Adicionar insumo ao array
+    insumosAdicionados.push({
+      id: insumoId,
+      nome: insumoNome,
+      quantidade: 1,
+      em_reais: emReais,
+      subtotal: emReais * 1
+    });
+
+    // Atualizar a tabela
+    atualizarTabelaInsumos();
+    
+    // Limpar o select
+    selectInsumos.value = '';
+  }
+
+  // Função para atualizar a tabela de insumos
+  function atualizarTabelaInsumos() {
+    const tbody = document.getElementById('corpo-tabela-insumos');
+    const divInsumos = document.getElementById('insumos-adicionados');
+    
+    // Limpar o tbody
+    tbody.innerHTML = '';
+
+    if (insumosAdicionados.length === 0) {
+      divInsumos.style.display = 'none';
+      return;
+    }
+
+    // Mostrar a div de insumos
+    divInsumos.style.display = 'block';
+
+    // Adicionar cada insumo na tabela
+    insumosAdicionados.forEach((insumo, index) => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>
+         ${insumo.nome}
+         <input type="hidden" name="insumos[id][${insumo.id}]" value="${insumo.id}">
+        </td>
+        <td>
+          <input type="number" 
+                 class="form-control form-control-sm" 
+                 name="insumos[quantidade][${insumo.id}]"
+                 value="${insumo.quantidade}" 
+                 min="1" 
+                 onchange="atualizarQuantidadeInsumo(${index}, this.value)">
+        </td>
+        <td>
+          <span class="badge bg-info">
+            R$ ${insumo.em_reais.toFixed(2)}
+          </span>
+        </td>
+        <td>
+          <span class="badge bg-success">
+            R$ ${insumo.subtotal.toFixed(2)}
+          </span>
+        </td>
+        <td>
+          <button type="button" 
+                  class="btn btn-danger btn-sm" 
+                  onclick="removerInsumo(${index})">
+            <i class="fas fa-trash"></i>
+          </button>
+        </td>
+      `;
+      tbody.appendChild(row);
+    });
+
+    // Atualizar campos hidden para envio do formulário
+    atualizarCamposHidden();
+  }
+
+  // Função para atualizar quantidade do insumo
+  function atualizarQuantidadeInsumo(index, quantidade) {
+    if (quantidade < 1) {
+      quantidade = 1;
+    }
+    insumosAdicionados[index].quantidade = parseInt(quantidade);
+    // Recalcular subtotal
+    insumosAdicionados[index].subtotal = insumosAdicionados[index].em_reais * insumosAdicionados[index].quantidade;
+    
+    // Atualizar a tabela para mostrar o novo subtotal
+    atualizarTabelaInsumos();
+    atualizarCamposHidden();
+  }
+
+  // Função para remover insumo
+  function removerInsumo(index) {
+    insumosAdicionados.splice(index, 1);
+    atualizarTabelaInsumos();
+  }
+
+  // Função para atualizar campos hidden com os insumos
+  function atualizarCamposHidden() {
+    // Remover campos hidden existentes
+    const camposExistentes = document.querySelectorAll('input[name^="insumos_"]');
+    camposExistentes.forEach(campo => campo.remove());
+
+    // Adicionar novos campos hidden
+    insumosAdicionados.forEach((insumo, index) => {
+      const inputId = document.createElement('input');
+      inputId.type = 'hidden';
+      inputId.name = `insumos[${index}][id]`;
+      inputId.value = insumo.id;
+      document.querySelector('form').appendChild(inputId);
+
+      const inputQuantidade = document.createElement('input');
+      inputQuantidade.type = 'hidden';
+      inputQuantidade.name = `insumos[${index}][quantidade]`;
+      inputQuantidade.value = insumo.quantidade;
+      document.querySelector('form').appendChild(inputQuantidade);
+
+      const inputEmReais = document.createElement('input');
+      inputEmReais.type = 'hidden';
+      inputEmReais.name = `insumos[${index}][em_reais]`;
+      inputEmReais.value = insumo.em_reais;
+      document.querySelector('form').appendChild(inputEmReais);
+
+      const inputSubtotal = document.createElement('input');
+      inputSubtotal.type = 'hidden';
+      inputSubtotal.name = `insumos[${index}][subtotal]`;
+      inputSubtotal.value = insumo.subtotal;
+      document.querySelector('form').appendChild(inputSubtotal);
+    });
+
+    // Criar campo JSON para salvar no banco
+    const jsonInsumos = JSON.stringify(insumosAdicionados);
+    const inputJson = document.createElement('input');
+    inputJson.type = 'hidden';
+    inputJson.name = 'insumos_json';
+    inputJson.value = jsonInsumos;
+    document.querySelector('form').appendChild(inputJson);
+  }
 </script>

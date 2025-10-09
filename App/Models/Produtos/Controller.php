@@ -77,6 +77,7 @@ class Controller
             p.codigo_fabricante,
             p.material_id,
             p.categoria_id,
+            p.insumos,
 
             -- ESSENCIAIS PARA O SELECT FUNCIONAR
             p.fornecedor_id,
@@ -115,11 +116,11 @@ class Controller
         INSERT INTO produtos (
             descricao_etiqueta, fornecedor_id, modelo, macica_ou_oca, numeros, pedra, 
             nat_ou_sint, peso, aros, cm, pontos, mm, grupo_id, subgrupo_id, unidade, 
-                estoque_princ, cotacao, preco_ql, peso_gr, custo, margem, em_reais, capa, formato, observacoes, codigo_fabricante, material_id, categoria_id
+                estoque_princ, cotacao, preco_ql, peso_gr, custo, margem, em_reais, capa, formato, observacoes, codigo_fabricante, material_id, categoria_id, insumos
         ) VALUES (
             :descricao_etiqueta, :fornecedor_id, :modelo, :macica_ou_oca, :numeros, :pedra, 
             :nat_ou_sint, :peso, :aros, :cm, :pontos, :mm, :grupo_id, :subgrupo_id, :unidade, 
-            :estoque_princ, :cotacao, :preco_ql, :peso_gr, :custo, :margem, :em_reais, :capa, :formato, :observacoes, :codigo_fabricante, :material_id, :categoria_id
+            :estoque_princ, :cotacao, :preco_ql, :peso_gr, :custo, :margem, :em_reais, :capa, :formato, :observacoes, :codigo_fabricante, :material_id, :categoria_id, :insumos
         )
     ");
 
@@ -152,7 +153,8 @@ class Controller
             'observacoes',
             'codigo_fabricante',
             'material_id',
-            'categoria_id'
+            'categoria_id',
+            'insumos'
         ];
 
         // Garantindo que campos ausentes sejam tratados como NULL
@@ -271,7 +273,9 @@ class Controller
                 observacoes = :observacoes,
                 codigo_fabricante = :codigo_fabricante,
                 material_id = :material_id,
-                categoria_id = :categoria_id
+                categoria_id = :categoria_id,
+                insumos = :insumos
+
             WHERE id = :id
         ");
 
@@ -304,7 +308,8 @@ class Controller
             'observacoes',
             'codigo_fabricante',
             'material_id',
-            'categoria_id'
+            'categoria_id',
+            'insumos'
         ];
 
         // Garantindo que valores vazios sejam tratados como NULL
