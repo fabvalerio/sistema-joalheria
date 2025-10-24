@@ -57,7 +57,7 @@ $grupoClientes = $controller->listar();
             <thead>
                 <tr>
                     <th>Nome do Grupo</th>
-                    <th>Comissão dos Vendedores (%)</th>
+                    <th>Desconto (%)</th>
                     <th width="220">Ações</th>
                 </tr>
             </thead>

@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <input type="text" class="form-control" name="nome_grupo" required>
                 </div>
                 <div class="col-lg-6">
-                    <label for="" class="form-label">Comissão dos Vendedores (%)</label>
+                    <label for="" class="form-label">Desconto (%)</label>
                     <input type="number" step="0.01" class="form-control" name="comissao_vendedores" required>
                 </div>
                 <div class="col-lg-12">

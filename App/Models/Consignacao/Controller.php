@@ -15,7 +15,8 @@ class Controller
                 c.id, 
                 c.data_consignacao, 
                 c.valor, 
-                c.status, 
+                c.status,
+                c.desconto_percentual, 
                 cl.nome_pf, 
                 cl.nome_fantasia_pj
             FROM 
@@ -40,7 +41,8 @@ class Controller
                 c.data_consignacao, 
                 c.valor, 
                 c.status, 
-                c.observacao, 
+                c.observacao,
+                c.desconto_percentual, 
                 cl.nome_pf, 
                 cl.nome_fantasia_pj,
                 ci.id AS item_id
@@ -89,9 +91,9 @@ class Controller
         // Inserir a consignação
         $db->query("
             INSERT INTO consignacao (
-                cliente_id, data_consignacao, valor, status, observacao
+                cliente_id, data_consignacao, valor, status, observacao, desconto_percentual
             ) VALUES (
-                :cliente_id, :data_consignacao, :valor, :status, :observacao
+                :cliente_id, :data_consignacao, :valor, :status, :observacao, :desconto_percentual
             )
         ");
         $db->bind(':cliente_id', $dados['cliente_id']);
@@ -99,7 +101,7 @@ class Controller
         $db->bind(':valor', $dados['valor']);
         $db->bind(':status', $dados['status']);
         $db->bind(':observacao', $dados['observacao']);
-
+        $db->bind(':desconto_percentual', $dados['desconto_percentual']);
         if ($db->execute()) {
             $consignacaoId = $db->lastInsertId();
 
@@ -151,8 +153,6 @@ class Controller
                 id, nome_pf, nome_fantasia_pj, cpf, cnpj_pj
             FROM 
                 clientes
-            WHERE 
-                tipo_cliente = 'PJ'
             ORDER BY 
                 nome_pf ASC, nome_fantasia_pj ASC
         ");
@@ -188,11 +188,13 @@ class Controller
             UPDATE consignacao
             SET 
                 status = :status,
-                valor = :valor
+                valor = :valor,
+                desconto_percentual = :desconto_percentual
             WHERE id = :id
         ");
         $db->bind(':status', $dados['status']);
         $db->bind(':valor', $dados['valor']);
+        $db->bind(':desconto_percentual', $dados['desconto_percentual']);
         $db->bind(':id', $id);
 
         if (!$db->execute()) {

@@ -58,24 +58,58 @@ $consignacoes = $controller->listar();
           <th>Cliente</th>
           <th>Data da Consignação</th>
           <th>Status</th>
+          <th>Desconto (%)</th>
+          <th>Valor Desconto (R$)</th>
           <th>Valor Total (R$)</th>
           <th>Ações</th>
         </tr>
       </thead>
       <tbody>
         <?php foreach ($consignacoes as $consignacao): ?>
+          <?php
+          // Calcular valores de desconto
+          $desconto_percentual = $consignacao['desconto_percentual'] ?? 0;
+          $valor_total = $consignacao['valor'] ?? 0;
+          
+          // Se há desconto, calcular o subtotal e o valor do desconto
+          if ($desconto_percentual > 0 && $valor_total > 0) {
+              // valor_total = subtotal - (subtotal * desconto_percentual / 100)
+              // valor_total = subtotal * (1 - desconto_percentual/100)
+              // subtotal = valor_total / (1 - desconto_percentual/100)
+              $subtotal = $valor_total / (1 - ($desconto_percentual / 100));
+              $valor_desconto = $subtotal - $valor_total;
+          } else {
+              $valor_desconto = 0;
+          }
+          ?>
           <tr>
             <td><?= htmlspecialchars($consignacao['id']) ?></td>
             <td>
-              <?= htmlspecialchars($consignacao['nome_fantasia_pj'] ?? $consignacao['nome_fantasia_pj'] ?? 'Não informado') ?>
+              <?= htmlspecialchars($consignacao['nome_pf'] ?? $consignacao['nome_fantasia_pj'] ?? 'Não informado') ?>
             </td>
             <td><?= htmlspecialchars(date('d/m/Y', strtotime($consignacao['data_consignacao']))) ?></td>
-            <td><?= htmlspecialchars($consignacao['status']) ?></td>
             <td>
-              R$<?= isset($consignacao['valor']) && $consignacao['valor'] !== null
-                  ? number_format($consignacao['valor'], 2, ',', '.')
-                  : '0,00'; ?>
+              <?php
+              $status_class = '';
+              switch ($consignacao['status']) {
+                  case 'Aberta':
+                      $status_class = 'badge bg-success';
+                      break;
+                  case 'Finalizada':
+                      $status_class = 'badge bg-primary';
+                      break;
+                  case 'Canceleda':
+                      $status_class = 'badge bg-danger';
+                      break;
+                  default:
+                      $status_class = 'badge bg-secondary';
+              }
+              ?>
+              <span class="<?= $status_class ?>"><?= htmlspecialchars($consignacao['status']) ?></span>
             </td>
+            <td><?= number_format($desconto_percentual, 2, ',', '.') ?>%</td>
+            <td>R$ <?= number_format($valor_desconto, 2, ',', '.') ?></td>
+            <td class="fw-bold text-success">R$ <?= number_format($valor_total, 2, ',', '.') ?></td>
             <td>
               <div class="dropdown">
                 <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">

@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <input type="text" class="form-control" name="nome" required>
             </div>
             <div class="mb-3">
-                <label class="form-label">Valor</label>
+                <label class="form-label">Valor (R$)</label>
                 <input type="number" step="0.01" class="form-control" name="valor" required>
             </div>
             <button type="submit" class="btn btn-primary">Salvar</button>

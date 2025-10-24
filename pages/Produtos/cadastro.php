@@ -556,6 +556,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
               <hr>
             </div>
 
+<div class="col-12">
+                <div class="row">
+                    <div class="col-lg-6">
+                      <label for="Res_Subtotal" class="form-label">Subtotal</label>
+                      <input type="text" class="form-control" id="Res_Subtotal" placeholder="Subtotal" readonly>
+                    </div>
+                    <div class="col-lg-6">
+                      <label for="Res_Coeficente" class="form-label">Coeficiente Geral</label>
+                      <input type="text" class="form-control" id="Res_Coeficente" placeholder="Coeficiente Geral" readonly>
+                    </div>
+                </div>
+</div>
+
+<div class="col-12">
+  <hr>
+</div>
+
 
             <div class="col-lg-12">
                     <label for="observacoes" class="form-label">Observações</label>
@@ -656,6 +673,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       camposCotacao.style.display = 'none';
       limparCamposCotacao();
     }
+    // Recalcular coeficiente quando cotação mudar
+    calcularSubtotalGeral();
   });
 
   // Atualizar Custo e Em Reais automaticamente
@@ -676,6 +695,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Calcular Em Reais
     const emReais = custo * (1 + margem / 100);
     emReaisInput.value = emReais.toFixed(2);
+    
+    // Calcular subtotal geral
+    calcularSubtotalGeral();
   }
 
   function limparCamposCotacao() {
@@ -908,6 +930,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     // Limpar o select
     selectInsumos.value = '';
+    
+    // Calcular subtotal geral
+    calcularSubtotalGeral();
   }
 
   // Função para atualizar a tabela de insumos
@@ -979,12 +1004,46 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Atualizar a tabela para mostrar o novo subtotal
     atualizarTabelaInsumos();
     atualizarCamposHidden();
+    calcularSubtotalGeral();
   }
 
   // Função para remover insumo
   function removerInsumo(index) {
     insumosAdicionados.splice(index, 1);
     atualizarTabelaInsumos();
+    calcularSubtotalGeral();
+  }
+
+  // Função para calcular subtotal geral (soma de todos insumos + em_reais)
+  function calcularSubtotalGeral() {
+    // Somar todos os subtotais dos insumos
+    let totalInsumos = 0;
+    insumosAdicionados.forEach((insumo) => {
+      totalInsumos += insumo.subtotal;
+    });
+    
+    // Pegar o valor do campo em_reais
+    const emReaisValue = parseFloat(document.getElementById('em_reais').value || 0);
+    
+    // Calcular o subtotal geral
+    const subtotalGeral = totalInsumos + emReaisValue;
+    
+    // Atualizar o campo Res_Subtotal
+    const resSubtotal = document.getElementById('Res_Subtotal');
+    resSubtotal.value = 'R$ ' + subtotalGeral.toFixed(2);
+    
+    // Calcular o coeficiente (Res_Subtotal / cotacaoValor)
+    const cotacaoSelect = document.getElementById('cotacao');
+    const cotacaoValor = parseFloat(cotacaoSelect.options[cotacaoSelect.selectedIndex]?.dataset?.valor || 0);
+    
+    let coeficiente = 0;
+    if (cotacaoValor > 0) {
+      coeficiente = subtotalGeral / cotacaoValor;
+    }
+    
+    // Atualizar o campo Res_Coeficente
+    const resCoeficiente = document.getElementById('Res_Coeficente');
+    resCoeficiente.value = coeficiente.toFixed(2);
   }
 
   // Função para atualizar campos hidden com os insumos

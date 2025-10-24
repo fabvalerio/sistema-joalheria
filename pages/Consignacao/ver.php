@@ -42,11 +42,39 @@ $itens = $dados['itens'];
                 <strong>Status:</strong> 
                 <?= htmlspecialchars($consignacao['status'] ?? 'Aberta') ?>
             </div>
-            <div class="col-lg-6">
+            
+            <?php 
+            // Calcular subtotal dos itens
+            $subtotal = 0;
+            foreach ($itens as $item) {
+                $subtotal += $item['quantidade'] * $item['valor'];
+            }
+            
+            // Obter desconto percentual
+            $desconto_percentual = $consignacao['desconto_percentual'] ?? 0;
+            
+            // Calcular valor do desconto
+            $valor_desconto = ($subtotal * $desconto_percentual) / 100;
+            
+            // Calcular total com desconto
+            $valor_total = $subtotal - $valor_desconto;
+            ?>
+            
+            <div class="col-lg-3">
+                <strong>Subtotal:</strong> 
+                <p class="mb-0">R$ <?= number_format($subtotal, 2, ',', '.'); ?></p>
+            </div>
+            <div class="col-lg-3">
+                <strong>Desconto (%):</strong> 
+                <p class="mb-0"><?= number_format($desconto_percentual, 2, ',', '.'); ?>%</p>
+            </div>
+            <div class="col-lg-3">
+                <strong>Valor do Desconto:</strong> 
+                <p class="mb-0">R$ <?= number_format($valor_desconto, 2, ',', '.'); ?></p>
+            </div>
+            <div class="col-lg-3">
                 <strong>Valor Total:</strong> 
-                R$<?= isset($consignacao['valor']) 
-                    ? number_format($consignacao['valor'], 2, ',', '.') 
-                    : '0,00'; ?>
+                <p class="mb-0 text-success fw-bold">R$ <?= number_format($valor_total, 2, ',', '.'); ?></p>
             </div>
             <div class="col-12">
                 <strong>Observações:</strong>

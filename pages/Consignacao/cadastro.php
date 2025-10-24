@@ -1,3 +1,15 @@
+<!-- Select2 (busca interna no select) -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+
+<style>
+.select2 {
+  width: 100%!important;
+}
+.select2-container--default .select2-selection--single {
+    height: 42px;
+}
+</style>
+
 <?php
 
 use App\Models\Consignacao\Controller;
@@ -13,6 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         'valor' => $_POST['valor'] ?? 0,
         'status' => $_POST['status'] ?? 'Aberta',
         'observacao' => $_POST['observacao'] ?? null,
+        'desconto_percentual' => $_POST['desconto_percentual'] ?? 0,
         'itens' => [] // Inicializa o array de itens da consignação
     ];
 
@@ -68,11 +81,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="col-lg-3">
+                <div class="col-lg-3 col-6">
                     <label for="data_consignacao" class="form-label">Data da Consignação</label>
                     <input type="date" class="form-control" id="data_consignacao" name="data_consignacao" required>
                 </div>
-                <div class="col-lg-3">
+                <div class="col-lg-3 col-6">
                     <label for="status" class="form-label">Status</label>
                     <select class="form-select" id="status" name="status" required>
                         <option value="Aberta">Aberta</option>
@@ -94,11 +107,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 <input type="hidden" name="produtos[0][id]" class="product-id">
                                 <input type="hidden" name="produtos[0][valor_unitario]" class="product-price">
                             </div>
-                            <div class="col-lg-2">
+                            <div class="col-lg-2 col-6">
                                 <label class="form-label">Preço Unitário</label>
                                 <input type="number" step="0.01" class="form-control product-price-display" name="produtos[0][valor_unitario]" readonly>
                             </div>
-                            <div class="col-lg-2">
+                            <div class="col-lg-2 col-6">
                                 <label class="form-label">Quantidade</label>
                                 <input type="number" class="form-control" name="produtos[0][quantidade]" required>
                             </div>
@@ -113,10 +126,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <label for="observacao" class="form-label">Observações</label>
                     <textarea class="form-control" id="observacao" name="observacao" rows="3"></textarea>
                 </div>
-                <div class="col-lg-3">
-    <label for="valor" class="form-label">Valor Total</label>
-    <input type="number" step="0.01" class="form-control text-white" id="valor" name="valor" style="background-color: #198754;" readonly>
-</div>
+                
+                <!-- Campos de valores -->
+                <div class="col-lg-3 col-6">
+                    <label for="subtotal" class="form-label">Subtotal</label>
+                    <input type="number" step="0.01" class="form-control" id="subtotal" readonly>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <label for="desconto_percentual" class="form-label">Desconto (%)</label>
+                    <input type="number" step="0.01" class="form-control" id="desconto_percentual" name="desconto_percentual" readonly>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <label for="desconto_valor" class="form-label">Valor do Desconto</label>
+                    <input type="number" step="0.01" class="form-control" id="desconto_valor" readonly>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <label for="valor" class="form-label">Valor Total</label>
+                    <input type="number" step="0.01" class="form-control text-white" id="valor" name="valor" style="background-color: #198754;" readonly>
+                </div>
 
             </div>
 
@@ -135,35 +162,43 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <table class="table table-bordered table-hover">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Nome</th>
-                                    <th>Preço</th>
-                                    <th>Estoque Atual</th>
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="modalProductList">
-                                <?php foreach ($produtos as $produto): ?>
+                        <!-- Campo de pesquisa -->
+                        <div class="mb-3">
+                            <label for="searchProduct" class="form-label">Pesquisar Produto</label>
+                            <input type="text" class="form-control" id="searchProduct" placeholder="Digite para pesquisar...">
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover" id="productTable">
+                                <thead>
                                     <tr>
-                                        <td><?php echo $produto['id']; ?></td>
-                                        <td><?php echo $produto['nome_produto']; ?></td>
-                                        <td><?php echo $produto['preco']; ?></td>
-                                        <td><?php echo $produto['estoque']; ?></td>
-                                        <td>
-                                            <button type="button" class="btn btn-primary btn-select-product"
-                                                data-id="<?php echo $produto['id']; ?>"
-                                                data-name="<?php echo $produto['nome_produto']; ?>"
-                                                data-price="<?php echo $produto['preco']; ?>">
-                                                Selecionar
-                                            </button>
-                                        </td>
+                                        <th>ID</th>
+                                        <th>Nome</th>
+                                        <th>Preço</th>
+                                        <th>Estoque Atual</th>
+                                        <th>Ações</th>
                                     </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody id="modalProductList">
+                                    <?php foreach ($produtos as $produto): ?>
+                                        <tr>
+                                            <td><?php echo $produto['id']; ?></td>
+                                            <td><?php echo $produto['nome_produto']; ?></td>
+                                            <td><?php echo $produto['preco']; ?></td>
+                                            <td><?php echo $produto['estoque']; ?></td>
+                                            <td>
+                                                <button type="button" class="btn btn-primary btn-sm btn-select-product"
+                                                    data-id="<?php echo $produto['id']; ?>"
+                                                    data-name="<?php echo $produto['nome_produto']; ?>"
+                                                    data-price="<?php echo $produto['preco']; ?>">
+                                                    Selecionar
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -171,25 +206,58 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
 </div>
 
+<!-- Select2 Script - Carregado primeiro -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <script>
+    // Variável global para o cálculo de totais
+    window.descontoAtual = 0;
+    
+    // URL base do sistema
+    window.urlBase = '<?php echo $url; ?>';
+
     document.addEventListener('DOMContentLoaded', () => {
         const productList = document.getElementById('product-list');
+        const subtotalField = document.getElementById('subtotal'); // Campo de subtotal
+        const descontoPercentualField = document.getElementById('desconto_percentual'); // Campo de desconto %
+        const descontoValorField = document.getElementById('desconto_valor'); // Campo de valor do desconto
         const totalField = document.getElementById('valor'); // Campo de valor total
         const modalElement = document.getElementById('productModal');
         const modal = new bootstrap.Modal(modalElement); // Modal Bootstrap
         let activeIndex = null;
 
         // Função para calcular o valor total
-        function calculateTotal() {
-            let total = 0;
+        window.calculateTotal = function() {
+            let subtotal = 0;
             const productItems = document.querySelectorAll('.product-item');
+            
             productItems.forEach(item => {
                 const price = parseFloat(item.querySelector('.product-price').value) || 0;
                 const quantity = parseFloat(item.querySelector('input[name*="[quantidade]"]').value) || 0;
-                total += price * quantity;
+                subtotal += price * quantity;
             });
+            
+            console.log('Calculando total - Subtotal:', subtotal, 'Desconto atual:', window.descontoAtual);
+            
+            // Atualizar subtotal
+            subtotalField.value = subtotal.toFixed(2);
+            
+            // Calcular desconto
+            const valorDesconto = (subtotal * window.descontoAtual) / 100;
+            descontoValorField.value = valorDesconto.toFixed(2);
+            
+            // Calcular total com desconto
+            const total = subtotal - valorDesconto;
             totalField.value = total.toFixed(2);
+            
+            console.log('Valores calculados - Subtotal:', subtotal, 'Desconto valor:', valorDesconto, 'Total:', total);
         }
+        
+        // Disponibilizar campos globalmente para debug
+        window.descontoPercentualField = descontoPercentualField;
+        window.subtotalField = subtotalField;
+        window.descontoValorField = descontoValorField;
+        window.totalField = totalField;
 
         // Abrir o modal ao clicar no input de produto
         document.addEventListener('click', function(e) {
@@ -217,7 +285,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 }
 
                 modal.hide(); // Fecha o modal
-                calculateTotal(); // Atualiza o total
+                window.calculateTotal(); // Atualiza o total
             }
         });
 
@@ -251,7 +319,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Recalcular total ao alterar quantidade
         document.addEventListener('input', function(e) {
             if (e.target && e.target.matches('input[name*="[quantidade]"]')) {
-                calculateTotal();
+                window.calculateTotal();
             }
         });
 
@@ -260,9 +328,145 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (e.target && e.target.classList.contains('btn-remove')) {
                 e.preventDefault();
                 e.target.closest('.product-item').remove();
-                calculateTotal(); // Atualiza o total após remover
+                window.calculateTotal(); // Atualiza o total após remover
             }
         });
+    });
+
+    // Funcionalidade de pesquisa na tabela
+    document.getElementById('searchProduct').addEventListener('keyup', function() {
+        const searchValue = this.value.toLowerCase();
+        const tableRows = document.querySelectorAll('#modalProductList tr');
+        
+        tableRows.forEach(row => {
+            const productName = row.cells[1].textContent.toLowerCase();
+            const productId = row.cells[0].textContent.toLowerCase();
+            
+            if (productName.includes(searchValue) || productId.includes(searchValue)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+
+    // Limpar pesquisa ao fechar o modal
+    document.getElementById('productModal').addEventListener('hidden.bs.modal', function () {
+        document.getElementById('searchProduct').value = '';
+        const tableRows = document.querySelectorAll('#modalProductList tr');
+        tableRows.forEach(row => {
+            row.style.display = '';
+        });
+    });
+    
+    // Inicializar Select2 após DOM carregar
+    $(document).ready(function() {
+        console.log('Inicializando Select2...');
+        
+        $('#cliente_id').select2({
+            width: '100%',
+            placeholder: 'Selecione um cliente',
+            allowClear: true
+        });
+
+        console.log('Select2 inicializado. Registrando evento change...');
+        
+        // Buscar desconto do cliente quando selecionado
+        $('#cliente_id').on('change', function() {
+            const clienteId = $(this).val();
+            
+            console.log('=== EVENTO CHANGE DISPARADO ===');
+            console.log('Cliente selecionado ID:', clienteId);
+            
+            if (clienteId) {
+                // Adicionar timestamp para evitar cache
+                const timestamp = new Date().getTime();
+                // Usar URL base do sistema + api
+                const url = `${window.urlBase}api/buscar_desconto_cliente.php?cliente_id=${clienteId}&_=${timestamp}`;
+                console.log('Fazendo requisição para:', url);
+                console.log('URL base:', window.urlBase);
+                
+                fetch(url)
+                    .then(response => {
+                        console.log('Resposta recebida - Status:', response.status);
+                        console.log('Content-Type:', response.headers.get('content-type'));
+                        return response.text(); // Primeiro pegar como texto para ver o conteúdo
+                    })
+                    .then(text => {
+                        console.log('Resposta raw (texto):', text);
+                        try {
+                            const data = JSON.parse(text);
+                            return data;
+                        } catch (e) {
+                            console.error('Erro ao fazer parse do JSON:', e);
+                            console.error('Conteúdo recebido:', text.substring(0, 500)); // Primeiros 500 caracteres
+                            throw new Error('Resposta não é um JSON válido');
+                        }
+                    })
+                    .then(data => {
+                        console.log('Dados recebidos:', data);
+                        
+                        if (data.success) {
+                            // Atualizar variável global
+                            window.descontoAtual = parseFloat(data.desconto) || 0;
+                            console.log('Desconto atual atualizado para:', window.descontoAtual);
+                            
+                            // Buscar campo diretamente pelo ID
+                            const campoDesconto = document.getElementById('desconto_percentual');
+                            console.log('Campo desconto encontrado:', campoDesconto);
+                            console.log('Valor atual do campo:', campoDesconto ? campoDesconto.value : 'null');
+                            
+                            if (campoDesconto) {
+                                const valorAnterior = campoDesconto.value;
+                                campoDesconto.value = window.descontoAtual.toFixed(2);
+                                console.log('✓ Campo desconto_percentual atualizado');
+                                console.log('  - Valor anterior:', valorAnterior);
+                                console.log('  - Valor novo:', campoDesconto.value);
+                                console.log('  - Campo readonly:', campoDesconto.readOnly);
+                                
+                                // Forçar atualização visual
+                                campoDesconto.setAttribute('value', window.descontoAtual.toFixed(2));
+                            } else {
+                                console.error('✗ Campo desconto_percentual não encontrado!');
+                            }
+                            
+                            // Recalcular total
+                            console.log('Chamando calculateTotal()...');
+                            if (typeof window.calculateTotal === 'function') {
+                                window.calculateTotal();
+                                console.log('✓ calculateTotal() executado');
+                            } else {
+                                console.error('✗ Função calculateTotal não está disponível!');
+                            }
+                        } else {
+                            console.error('Erro na resposta:', data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao buscar desconto:', error);
+                        window.descontoAtual = 0;
+                        const campoDesconto = document.getElementById('desconto_percentual');
+                        if (campoDesconto) {
+                            campoDesconto.value = '0.00';
+                        }
+                        if (typeof window.calculateTotal === 'function') {
+                            window.calculateTotal();
+                        }
+                    });
+            } else {
+                console.log('Nenhum cliente selecionado, zerando desconto');
+                window.descontoAtual = 0;
+                const campoDesconto = document.getElementById('desconto_percentual');
+                if (campoDesconto) {
+                    campoDesconto.value = '0.00';
+                }
+                if (typeof window.calculateTotal === 'function') {
+                    window.calculateTotal();
+                }
+            }
+        });
+        
+        console.log('Evento change registrado com sucesso!');
     });
 </script>
 

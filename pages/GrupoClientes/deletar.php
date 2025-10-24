@@ -42,7 +42,7 @@ if (isset($link['4']) && $link['4'] == 'deletar') {
                 <?php echo htmlspecialchars($return['nome_grupo']); ?>
             </div>
             <div class="col-lg-6">
-                <label for="" class="form-label d-block fw-bold">Comissão dos Vendedores (%)</label>
+                <label for="" class="form-label d-block fw-bold">Desconto (%)</label>
                 <?php echo htmlspecialchars($return['comissao_vendedores']); ?>
             </div>
         </div>

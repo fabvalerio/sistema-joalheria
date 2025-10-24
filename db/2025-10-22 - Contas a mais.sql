@@ -1,0 +1,1 @@
+ALTER TABLE `cotacoes` ADD `valor_atacado` VARCHAR(10) NULL AFTER `valor`, ADD `valor_consignado` VARCHAR(10) NULL AFTER `valor_atacado`;

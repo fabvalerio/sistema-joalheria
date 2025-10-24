@@ -1,0 +1,17 @@
+# Permitir acesso direto aos arquivos PHP da API
+# Não passar pelo roteamento do index.php
+
+# Permitir acesso de todos
+Order Allow,Deny
+Allow from all
+
+# Processar arquivos PHP normalmente
+<IfModule mod_php7.c>
+    php_flag engine on
+</IfModule>
+
+<IfModule mod_rewrite.c>
+    # Desabilitar rewrite para esta pasta
+    RewriteEngine Off
+</IfModule>
+

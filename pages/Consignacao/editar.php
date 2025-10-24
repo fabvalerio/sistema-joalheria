@@ -75,13 +75,40 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <strong>Data da Consignação:</strong>
         <?= htmlspecialchars(date('d/m/Y', strtotime($consignacao['data_consignacao']))) ?>
       </div>
-      <div class="col-lg-6">
+      
+      <?php 
+      // Calcular subtotal dos itens
+      $subtotal = 0;
+      foreach ($itens as $item) {
+          $qtd_restante = $item['quantidade'] - ($item['qtd_devolvido'] ?? 0);
+          $subtotal += $qtd_restante * $item['valor'];
+      }
+      
+      // Obter desconto percentual
+      $desconto_percentual = $consignacao['desconto_percentual'] ?? 0;
+      
+      // Calcular valor do desconto
+      $valor_desconto = ($subtotal * $desconto_percentual) / 100;
+      
+      // Calcular total com desconto
+      $valor_total = $subtotal - $valor_desconto;
+      ?>
+      
+      <div class="col-lg-3">
+        <strong>Subtotal:</strong>
+        <p class="mb-0">R$ <span id="subtotal_display"><?= number_format($subtotal, 2, ',', '.'); ?></span></p>
+      </div>
+      <div class="col-lg-3">
+        <strong>Desconto (%):</strong>
+        <p class="mb-0"><span id="desconto_percentual"><?= number_format($desconto_percentual, 2, ',', '.'); ?></span>%</p>
+      </div>
+      <div class="col-lg-3">
+        <strong>Valor do Desconto:</strong>
+        <p class="mb-0">R$ <span id="valor_desconto_display"><?= number_format($valor_desconto, 2, ',', '.'); ?></span></p>
+      </div>
+      <div class="col-lg-3">
         <strong>Valor Total:</strong>
-        <span class="text-success text-lg">R$<span id="valor_total">
-            <?= isset($consignacao['valor'])
-              ? number_format($consignacao['valor'], 2, ',', '.')
-              : '0,00'; ?>
-          </span></span>
+        <p class="mb-0 text-success fw-bold fs-5">R$ <span id="valor_total"><?= number_format($valor_total, 2, ',', '.'); ?></span></p>
       </div>
     </div>
 
@@ -142,8 +169,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </tbody>
       </table>
 
-      <!-- Campo Hidden para o valor atualizado -->
-      <input type="hidden" id="valor" name="valor" value="<?= htmlspecialchars($consignacao['valor']) ?>">
+      <!-- Campo Hidden para o valor atualizado (com desconto aplicado) -->
+      <input type="hidden" id="valor" name="valor" value="<?= number_format($valor_total, 2, '.', '') ?>">
 
       <div class="col-lg-12 mt-1 text-danger">
         <?php if ($consignacao['status'] === 'Finalizada' || $consignacao['status'] === 'Cancelada') {
@@ -162,27 +189,56 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   document.addEventListener('DOMContentLoaded', () => {
     const devolvidoInputs = document.querySelectorAll('.devolvido-input');
     const valorHidden = document.getElementById('valor');
-    const valorTotal = document.getElementById('valor_total');
+    const valorTotalDisplay = document.getElementById('valor_total');
+    const subtotalDisplay = document.getElementById('subtotal_display');
+    const valorDescontoDisplay = document.getElementById('valor_desconto_display');
+    const descontoPercentualElement = document.getElementById('desconto_percentual');
+    
+    // Obter desconto percentual
+    const descontoPercentual = parseFloat(descontoPercentualElement.textContent.replace(',', '.')) || 0;
 
-    devolvidoInputs.forEach(input => {
-      input.addEventListener('input', () => {
-        let total = 0;
+    function calcularValores() {
+      let subtotal = 0;
 
-        devolvidoInputs.forEach(el => {
-          const preco = parseFloat(el.dataset.preco) || 0;
-          const quantidade = parseFloat(el.dataset.quantidade) || 0;
-          const devolvido = parseFloat(el.value) || 0;
-          const restante = quantidade - devolvido;
+      // Calcular subtotal dos itens restantes (não devolvidos)
+      devolvidoInputs.forEach(el => {
+        const preco = parseFloat(el.dataset.preco) || 0;
+        const quantidade = parseFloat(el.dataset.quantidade) || 0;
+        const devolvido = parseFloat(el.value) || 0;
+        const restante = quantidade - devolvido;
 
-          total += restante * preco;
-        });
-
-        valorHidden.value = total.toFixed(2);
-        valorTotal.textContent = total.toLocaleString('pt-BR', {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2
-        });
+        subtotal += restante * preco;
       });
+
+      // Calcular valor do desconto
+      const valorDesconto = (subtotal * descontoPercentual) / 100;
+      
+      // Calcular total com desconto
+      const total = subtotal - valorDesconto;
+
+      // Atualizar displays
+      subtotalDisplay.textContent = subtotal.toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+      
+      valorDescontoDisplay.textContent = valorDesconto.toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+
+      valorTotalDisplay.textContent = total.toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+      
+      // Atualizar campo hidden com o valor total (com desconto)
+      valorHidden.value = total.toFixed(2);
+    }
+
+    // Adicionar evento de input para todos os campos de quantidade devolvida
+    devolvidoInputs.forEach(input => {
+      input.addEventListener('input', calcularValores);
     });
   });
 </script>
