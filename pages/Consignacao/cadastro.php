@@ -26,7 +26,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         'status' => $_POST['status'] ?? 'Aberta',
         'observacao' => $_POST['observacao'] ?? null,
         'desconto_percentual' => $_POST['desconto_percentual'] ?? 0,
-        'itens' => [] // Inicializa o array de itens da consignação
+        'itens' => [], // Inicializa o array de itens da consignação,
+        'bonificacao' => floatval($_POST['bonificacao'] ?? 0)
     ];
 
     // Capturar os produtos enviados via POST
@@ -107,9 +108,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 <input type="hidden" name="produtos[0][id]" class="product-id">
                                 <input type="hidden" name="produtos[0][valor_unitario]" class="product-price">
                             </div>
+                                <input type="hidden" step="0.01" class="form-control product-price-display" name="produtos[0][valor_unitario]" readonly>
                             <div class="col-lg-2 col-6">
-                                <label class="form-label">Preço Unitário</label>
-                                <input type="number" step="0.01" class="form-control product-price-display" name="produtos[0][valor_unitario]" readonly>
+                                <label class="form-label">Preço R$</label>
+                                <input type="number" step="0.01" class="form-control product-price-display" name="produtos[0][valor_unitario_desconto]" readonly>
                             </div>
                             <div class="col-lg-2 col-6">
                                 <label class="form-label">Quantidade</label>
@@ -128,17 +130,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
                 
                 <!-- Campos de valores -->
-                <div class="col-lg-3 col-6">
-                    <label for="subtotal" class="form-label">Subtotal</label>
-                    <input type="number" step="0.01" class="form-control" id="subtotal" readonly>
+                <div class="col">
+                    <!-- <label for="subtotal" class="form-label">Subtotal</label> -->
+                    <input type="hidden" step="0.01" class="form-control" id="subtotal" readonly>
+                </div>
+                <div class="col">
+                    <!-- <label for="desconto_percentual" class="form-label">Desconto (%)</label> -->
+                    <input type="hidden" step="0.01" class="form-control" id="desconto_percentual" name="desconto_percentual" readonly>
                 </div>
                 <div class="col-lg-3 col-6">
-                    <label for="desconto_percentual" class="form-label">Desconto (%)</label>
-                    <input type="number" step="0.01" class="form-control" id="desconto_percentual" name="desconto_percentual" readonly>
+                    <label for="bonificacao" class="form-label">Bonificação (R$) *Opcional</label> 
+                    <input type="number" class="form-control" id="bonificacao" name="bonificacao">
                 </div>
                 <div class="col-lg-3 col-6">
-                    <label for="desconto_valor" class="form-label">Valor do Desconto</label>
-                    <input type="number" step="0.01" class="form-control" id="desconto_valor" readonly>
+                    <!-- <label for="desconto_valor" class="form-label">Valor do Desconto</label> -->
+                    <input type="hidden" step="0.01" class="form-control" id="desconto_valor" readonly>
+                    <label for="total_itens" class="form-label">Total de Itens</label> 
+                    <input type="number" class="form-control" id="total_itens" readonly>
                 </div>
                 <div class="col-lg-3 col-6">
                     <label for="valor" class="form-label">Valor Total</label>
@@ -229,18 +237,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Função para calcular o valor total
         window.calculateTotal = function() {
             let subtotal = 0;
+            let totalItens = 0;
             const productItems = document.querySelectorAll('.product-item');
+            const totalItensField = document.getElementById('total_itens');
             
             productItems.forEach(item => {
                 const price = parseFloat(item.querySelector('.product-price').value) || 0;
                 const quantity = parseFloat(item.querySelector('input[name*="[quantidade]"]').value) || 0;
                 subtotal += price * quantity;
+                totalItens += quantity;
             });
             
-            console.log('Calculando total - Subtotal:', subtotal, 'Desconto atual:', window.descontoAtual);
+            console.log('Calculando total - Subtotal:', subtotal, 'Desconto atual:', window.descontoAtual, 'Total de itens:', totalItens);
             
             // Atualizar subtotal
             subtotalField.value = subtotal.toFixed(2);
+            
+            // Atualizar total de itens
+            if (totalItensField) {
+                totalItensField.value = totalItens;
+            }
             
             // Calcular desconto
             const valorDesconto = (subtotal * window.descontoAtual) / 100;
@@ -250,7 +266,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             const total = subtotal - valorDesconto;
             totalField.value = total.toFixed(2);
             
-            console.log('Valores calculados - Subtotal:', subtotal, 'Desconto valor:', valorDesconto, 'Total:', total);
+            console.log('Valores calculados - Subtotal:', subtotal, 'Desconto valor:', valorDesconto, 'Total:', total, 'Total Itens:', totalItens);
         }
         
         // Disponibilizar campos globalmente para debug
@@ -267,6 +283,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
         });
 
+        // Função para calcular preço com desconto para cada produto
+        window.calculateProductDiscount = function(productItem) {
+            const priceField = productItem.querySelector('.product-price');
+            const priceDiscountField = productItem.querySelector('input[name*="[valor_unitario_desconto]"]');
+            
+            if (priceField && priceDiscountField) {
+                const price = parseFloat(priceField.value) || 0;
+                const discount = window.descontoAtual || 0;
+                const discountedPrice = price - (price * discount / 100);
+                priceDiscountField.value = discountedPrice.toFixed(2);
+            }
+        }
+
+        // Atualizar todos os preços com desconto
+        window.updateAllProductDiscounts = function() {
+            const productItems = document.querySelectorAll('.product-item');
+            productItems.forEach(item => {
+                window.calculateProductDiscount(item);
+            });
+        }
+
         // Selecionar produto no modal
         document.addEventListener('click', function(e) {
             if (e.target && e.target.classList.contains('btn-select-product')) {
@@ -282,6 +319,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     parentItem.querySelector('.product-id').value = productId;
                     parentItem.querySelector('.product-price').value = productPrice;
                     parentItem.querySelector('.product-price-display').value = productPrice;
+                    
+                    // Calcular preço com desconto
+                    window.calculateProductDiscount(parentItem);
                 }
 
                 modal.hide(); // Fecha o modal
@@ -301,10 +341,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <input type="hidden" name="produtos[${productIndex}][id]" class="product-id">
                             <input type="hidden" name="produtos[${productIndex}][valor_unitario]" class="product-price">
                         </div>
-                        <div class="col-lg-2">
-                            <input type="number" step="0.01" class="form-control product-price-display" name="produtos[${productIndex}][valor_unitario]" readonly>
+                            <input type="hidden" step="0.01" class="form-control product-price-display" name="produtos[${productIndex}][valor_unitario]" readonly>
+                        <div class="col-lg-2 col-6">
+                            <input type="number" step="0.01" class="form-control" name="produtos[${productIndex}][valor_unitario_desconto]" readonly>
                         </div>
-                        <div class="col-lg-2">
+                        <div class="col-lg-2 col-6">
                             <input type="number" class="form-control" name="produtos[${productIndex}][quantidade]" required>
                         </div>
                         <div class="col-lg-2">
@@ -430,6 +471,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 console.error('✗ Campo desconto_percentual não encontrado!');
                             }
                             
+                            // Atualizar todos os preços com desconto dos produtos
+                            console.log('Atualizando preços com desconto...');
+                            if (typeof window.updateAllProductDiscounts === 'function') {
+                                window.updateAllProductDiscounts();
+                                console.log('✓ Preços com desconto atualizados');
+                            }
+                            
                             // Recalcular total
                             console.log('Chamando calculateTotal()...');
                             if (typeof window.calculateTotal === 'function') {
@@ -449,6 +497,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         if (campoDesconto) {
                             campoDesconto.value = '0.00';
                         }
+                        // Atualizar preços com desconto
+                        if (typeof window.updateAllProductDiscounts === 'function') {
+                            window.updateAllProductDiscounts();
+                        }
                         if (typeof window.calculateTotal === 'function') {
                             window.calculateTotal();
                         }
@@ -459,6 +511,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 const campoDesconto = document.getElementById('desconto_percentual');
                 if (campoDesconto) {
                     campoDesconto.value = '0.00';
+                }
+                // Atualizar preços com desconto
+                if (typeof window.updateAllProductDiscounts === 'function') {
+                    window.updateAllProductDiscounts();
                 }
                 if (typeof window.calculateTotal === 'function') {
                     window.calculateTotal();

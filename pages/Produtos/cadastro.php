@@ -47,10 +47,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   // print_r($_POST['insumos']);
   // echo '</pre>';
   
-  // Filtrar apenas os itens com chaves numéricas (os dados completos)
-  $insumos_array = array_filter($_POST['insumos'], function($key) {
-    return is_numeric($key);
-  }, ARRAY_FILTER_USE_KEY);
+  // Verificar se insumos foi enviado e é um array
+  $insumos_array = [];
+  if (isset($_POST['insumos']) && is_array($_POST['insumos'])) {
+    // Filtrar apenas os itens com chaves numéricas (os dados completos)
+    $insumos_array = array_filter($_POST['insumos'], function($key) {
+      return is_numeric($key);
+    }, ARRAY_FILTER_USE_KEY);
+  }
   
   // Reindexar o array para ter índices sequenciais
   $insumos_array = array_values($insumos_array);

@@ -321,4 +321,86 @@ class Controller
             'navegacaoHtml' => $htmlPaginacao
         ];
     }
+
+    // Relatório de Consignações
+    public function consignacoes($status = null, $inicio = null, $fim = null)
+    {
+        $where = "WHERE c.id > 0";
+
+        // Filtro por status
+        if (!empty($status) && in_array($status, ['Aberta', 'Finalizada', 'Canceleda'])) {
+            $where .= " AND c.status = '{$status}'";
+        }
+
+        // Filtro por data
+        if (!empty($inicio) && !empty($fim)) {
+            $where .= " AND c.data_consignacao BETWEEN '{$inicio}' AND '{$fim}'";
+        }
+
+        $db = new db();
+
+        $query = "
+            SELECT 
+                c.id, 
+                c.data_consignacao, 
+                c.valor, 
+                c.status,
+                c.desconto_percentual,
+                c.observacao,
+                cl.nome_pf, 
+                cl.nome_fantasia_pj,
+                COUNT(ci.id) as total_itens
+            FROM 
+                consignacao c
+            LEFT JOIN 
+                clientes cl ON c.cliente_id = cl.id
+            LEFT JOIN
+                consignacao_itens ci ON c.id = ci.consignacao_id
+            {$where}
+            GROUP BY c.id
+            ORDER BY 
+                c.data_consignacao DESC
+        ";
+
+        $db->query($query);
+        return $db->resultSet();
+    }
+
+    // Soma e estatísticas de consignações
+    public function somaConsignacoes($status = null, $inicio = null, $fim = null)
+    {
+        $where = "WHERE c.id > 0";
+
+        // Filtro por status
+        if (!empty($status) && in_array($status, ['Aberta', 'Finalizada', 'Canceleda'])) {
+            $where .= " AND c.status = '{$status}'";
+        }
+
+        // Filtro por data
+        if (!empty($inicio) && !empty($fim)) {
+            $where .= " AND c.data_consignacao BETWEEN '{$inicio}' AND '{$fim}'";
+        }
+
+        $db = new db();
+
+        $whereSub = str_replace('c.', '', $where); // Remove o alias 'c.' para as subconsultas
+        
+        $query = "
+            SELECT 
+                COUNT(c.id) as total_consignacoes,
+                SUM(c.valor) as valor_total,
+                AVG(c.desconto_percentual) as desconto_medio,
+                SUM(c.valor / (1 - (c.desconto_percentual / 100))) as subtotal_total,
+                SUM((c.valor / (1 - (c.desconto_percentual / 100))) - c.valor) as desconto_total,
+                (SELECT COUNT(*) FROM consignacao {$whereSub} AND status = 'Aberta') as total_abertas,
+                (SELECT COUNT(*) FROM consignacao {$whereSub} AND status = 'Finalizada') as total_finalizadas,
+                (SELECT COUNT(*) FROM consignacao {$whereSub} AND status = 'Canceleda') as total_canceladas
+            FROM 
+                consignacao c
+            {$where}
+        ";
+
+        $db->query($query);
+        return $db->single();
+    }
 }

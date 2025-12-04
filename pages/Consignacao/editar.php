@@ -17,11 +17,41 @@ $itens = $dados['itens'];
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
+  // Função para converter valor brasileiro para formato americano
+  $converterValor = function($valor) {
+    if (empty($valor) || $valor === '') return 0;
+    
+    // Converte para string e remove espaços
+    $valor = trim((string)$valor);
+    
+    // Se tem vírgula, é formato brasileiro (ex: 100,00 ou 1.000,50)
+    if (strpos($valor, ',') !== false) {
+      // Remove pontos de milhar primeiro
+      $valor = str_replace('.', '', $valor);
+      // Depois substitui vírgula por ponto decimal
+      $valor = str_replace(',', '.', $valor);
+    } elseif (strpos($valor, '.') !== false) {
+      // Se tem ponto mas não vírgula, verifica se é formato americano
+      $partes = explode('.', $valor);
+      // Se tem apenas um ponto e a parte após o ponto tem 1-2 dígitos = formato americano
+      if (count($partes) === 2 && strlen($partes[1]) <= 2 && strlen($partes[1]) > 0) {
+        // Formato americano válido (ex: 100.50), mantém como está
+      } else {
+        // Múltiplos pontos ou formato inválido = remove todos os pontos (trata como milhares)
+        $valor = str_replace('.', '', $valor);
+      }
+    }
+    
+    return floatval($valor);
+  };
+
   // Captura os dados do status e itens
   $dadosAtualizados = [
     'id' => $id,
     'status' => $_POST['status'] ?? null,
     'valor' => $_POST['valor'] ?? $consignacao['valor'], // Novo valor atualizado
+    'desconto_percentual' => $_POST['desconto_percentual'] ?? $consignacao['desconto_percentual'],
+    'bonificacao' => $converterValor($_POST['bonificacao'] ?? $consignacao['bonificacao'] ?? 0),
     'itens' => []
   ];
 
@@ -63,16 +93,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   <div class="card-body">
     <h4 class="card-title">Dados da Consignação</h4>
     <div class="row g-3">
-      <div class="col-lg-6">
+      <div class="col-lg-4">
         <strong>Cliente:</strong>
+        <br>
         <?= htmlspecialchars(
           !empty($consignacao['nome_pf'])
             ? $consignacao['nome_pf']
             : ($consignacao['nome_fantasia_pj'] ?? 'Não informado')
         ) ?>
       </div>
-      <div class="col-lg-6">
+      <div class="col-lg-4">
         <strong>Data da Consignação:</strong>
+        <br>
         <?= htmlspecialchars(date('d/m/Y', strtotime($consignacao['data_consignacao']))) ?>
       </div>
       
@@ -101,6 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       <div class="col-lg-3">
         <strong>Desconto (%):</strong>
         <p class="mb-0"><span id="desconto_percentual"><?= number_format($desconto_percentual, 2, ',', '.'); ?></span>%</p>
+        <input type="hidden" id="desconto_percentual_hidden" name="desconto_percentual" value="<?= $desconto_percentual ?>">
       </div>
       <div class="col-lg-3">
         <strong>Valor do Desconto:</strong>
@@ -115,11 +148,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <hr>
     <h4 class="card-title">Itens da Consignação</h4>
     <form method="POST" action="<?php echo "{$url}!/{$link[1]}/{$link[2]}/{$id}" ?>" class="needs-validation" novalidate>
-      <div class="col-lg-6">
-        <label for="status" class="form-label"><strong>Status:</strong></label>
-        <select class="form-select" id="status" name="status">
-          <option value="Finalizada">Finalizada</option>
-        </select>
+      <div class="row g-3 mb-3">
+        <div class="col-lg-6">
+          <label for="status" class="form-label"><strong>Status:</strong></label>
+          <select class="form-select" id="status" name="status">
+            <option value="Aberta" <?= ($consignacao['status'] ?? '') === 'Aberta' ? 'selected' : '' ?>>Aberta</option>
+            <option value="Finalizada" <?= ($consignacao['status'] ?? '') === 'Finalizada' ? 'selected' : '' ?>>Finalizada</option>
+          </select>
+        </div>
+        <div class="col-lg-6">
+          <label for="bonificacao" class="form-label"><strong>Bonificação (R$)*</strong></label>
+          <input type="text" class="form-control" id="bonificacao" name="bonificacao" placeholder="0,00" value="<?= number_format(floatval($consignacao['bonificacao'] ?? 0), 2, ',', '.') ?>">
+        </div>
       </div>
       <table class="table table-striped">
         <thead>
@@ -128,11 +168,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <th>Quantidade</th>
             <th>Quantidade Devolvida</th>
             <th>Valor Unitário (R$)</th>
+            <th>Valor c/ Desconto (R$)</th>
             <th>Subtotal (R$)</th>
           </tr>
         </thead>
         <tbody>
-          <?php foreach ($itens as $item): ?>
+          <?php foreach ($itens as $item): 
+            $valor_com_desconto = $item['valor'] - ($item['valor'] * $desconto_percentual / 100);
+          ?>
             <tr>
               <td><?= htmlspecialchars($item['nome_produto'] ?? 'Produto não encontrado') ?></td>
               <td><?= htmlspecialchars($item['quantidade'] ?? '0') ?></td>
@@ -158,6 +201,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 R$<?= isset($item['valor'])
                     ? number_format($item['valor'], 2, ',', '.')
                     : '0,00'; ?>
+              </td>
+              <td>
+                R$<?= number_format($valor_com_desconto, 2, ',', '.'); ?>
               </td>
               <td>
                 R$<span class="subtotal">

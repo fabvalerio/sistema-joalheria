@@ -18,7 +18,10 @@ class Controller
                 c.status,
                 c.desconto_percentual, 
                 cl.nome_pf, 
-                cl.nome_fantasia_pj
+                cl.nome_fantasia_pj,
+                cl.telefone,
+                cl.whatsapp,
+                c.bonificacao
             FROM 
                 consignacao c
             LEFT JOIN 
@@ -45,7 +48,10 @@ class Controller
                 c.desconto_percentual, 
                 cl.nome_pf, 
                 cl.nome_fantasia_pj,
-                ci.id AS item_id
+                cl.telefone,
+                cl.whatsapp,
+                ci.id AS item_id,
+                c.bonificacao
             FROM 
                 consignacao c
             LEFT JOIN 
@@ -54,6 +60,8 @@ class Controller
                 consignacao_itens ci ON c.id = ci.consignacao_id
             WHERE 
                 c.id = :id
+            ORDER BY 
+                ci.id ASC
         ");
         $db->bind(':id', $id);
         $consignacao = $db->single();
@@ -73,6 +81,8 @@ class Controller
                 produtos p ON ci.produto_id = p.id
             WHERE 
                 ci.consignacao_id = :consignacao_id
+            ORDER BY 
+                ci.id ASC
         ");
         $db->bind(':consignacao_id', $id);
         $itens = $db->resultSet();
@@ -91,9 +101,9 @@ class Controller
         // Inserir a consignação
         $db->query("
             INSERT INTO consignacao (
-                cliente_id, data_consignacao, valor, status, observacao, desconto_percentual
+                cliente_id, data_consignacao, valor, status, observacao, desconto_percentual, bonificacao
             ) VALUES (
-                :cliente_id, :data_consignacao, :valor, :status, :observacao, :desconto_percentual
+                :cliente_id, :data_consignacao, :valor, :status, :observacao, :desconto_percentual, :bonificacao
             )
         ");
         $db->bind(':cliente_id', $dados['cliente_id']);
@@ -102,6 +112,8 @@ class Controller
         $db->bind(':status', $dados['status']);
         $db->bind(':observacao', $dados['observacao']);
         $db->bind(':desconto_percentual', $dados['desconto_percentual']);
+        $db->bind(':bonificacao', $dados['bonificacao']);
+
         if ($db->execute()) {
             $consignacaoId = $db->lastInsertId();
 
@@ -189,12 +201,14 @@ class Controller
             SET 
                 status = :status,
                 valor = :valor,
-                desconto_percentual = :desconto_percentual
+                desconto_percentual = :desconto_percentual,
+                bonificacao = :bonificacao
             WHERE id = :id
         ");
         $db->bind(':status', $dados['status']);
         $db->bind(':valor', $dados['valor']);
         $db->bind(':desconto_percentual', $dados['desconto_percentual']);
+        $db->bind(':bonificacao', $dados['bonificacao']);
         $db->bind(':id', $id);
 
         if (!$db->execute()) {

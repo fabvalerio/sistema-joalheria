@@ -1,0 +1,1 @@
+ALTER TABLE `consignacao` ADD `bonificacao` DECIMAL(10,2) NULL AFTER `observacao`;

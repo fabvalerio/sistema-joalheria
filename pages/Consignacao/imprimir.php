@@ -30,19 +30,20 @@ $itens = $dados['itens'];
 ?>
 
 
+<a href="<?php echo "{$url}!/{$link[1]}/listar"; ?>" class="btn btn-warning text-primary mb-5">Voltar</a>
 
 <div class="card print">
     <div class="card-header bg-light text-white d-flex justify-content-between align-items-center" >
         <h3 class="card-title text-dark">
+            <img src="<?php echo $url?>assets/logo2.png" class="me-5" height="80" alt="">
             Detalhes da Consignação
         </h3>
-        <a href="<?php echo "{$url}!/{$link[1]}/listar"; ?>" class="btn btn-warning text-primary mb-5">Voltar</a>
     </div>
 
     <div class="card-body">
         <h4 class="card-title">Dados da Consignação</h4>
         <div class="row g-3">
-            <div class="col-lg-2">
+            <div class="col-lg-3">
                 <strong>Cliente:</strong> 
                 <br>
                 <?= htmlspecialchars(
@@ -51,7 +52,7 @@ $itens = $dados['itens'];
                     : ($consignacao['nome_fantasia_pj'] ?? 'Não informado')
                 ) ?>
             </div>
-            <div class="col-lg-2">
+            <div class="col-lg-3">
                 <strong>Whatsapp:</strong> 
                 <br>
                 <?= $consignacao['whatsapp'] ?? '-' ?>
@@ -67,19 +68,13 @@ $itens = $dados['itens'];
                 <?= htmlspecialchars(date('d/m/Y', strtotime($consignacao['data_consignacao']))) ?>
             </div>
             <div class="col-lg-2">
-                <strong>Bonificação:</strong> 
-                <br>
-                <span class="badge badge-info d-inline-block">
-                    <?= 'R$ ' . number_format(floatval($consignacao['bonificacao'] ?? 0), 2, ',', '.'); ?>
-                </span>
-            </div>
-            <div class="col-lg-2">
                 <strong>Status:</strong> 
                 <br>
                 <span class="badge badge-info d-inline-block">
                     <?= htmlspecialchars($consignacao['status']) ?>
                 </span>
             </div>
+            
             
             <?php 
             // Calcular subtotal dos itens (considerando devoluções)
@@ -130,10 +125,7 @@ $itens = $dados['itens'];
             </thead>
             <tbody>
                 <?php if (is_array($itens) && count($itens) > 0): ?>
-                    <?php 
-                    $total_itens_vendidos = 0;
-                    $total_valor_para_pagar = 0;
-                    foreach ($itens as $item): ?>
+                    <?php foreach ($itens as $item): ?>
                         <?php
                         $quantidade = floatval($item['quantidade'] ?? 0);
                         $valor = floatval($item['valor'] ?? 0);
@@ -155,7 +147,7 @@ $itens = $dados['itens'];
                         endforeach; 
                     ?>
                     <tr>
-                        <td colspan="5" class="text-end">Itens Vendidos: <span class="badge badge-warning"><?php echo $total_itens_vendidos ?></span></td>
+                    <td colspan="5" class="text-end">Itens Vendidos: <span class="badge badge-warning"><?php echo $total_itens_vendidos ?></span></td>
                         <td colspan="2" class="text-end">Valor total: <span class="badge badge-warning">R$<?php echo number_format($total_valor_para_pagar, 2, ',', '.') ?></span></td>
                     </tr>
                 <?php else: ?>
@@ -165,6 +157,51 @@ $itens = $dados['itens'];
                 <?php endif; ?>
             </tbody>
         </table>
+        <div class="mt-5">
+            __________________________<br>
+            Assinatura do Cliente<br>
+            Data: <?php echo date('d/m/Y') ?>
+        </div>
     </div>
 </div>
 
+
+<a href="#" id="imprimir" class="mt-5 btn btn-danger">Imprimir</a>
+
+<script>
+document.getElementById('imprimir').addEventListener('click', function(e) {
+    e.preventDefault();
+    
+    // Pega o conteúdo da div.print
+    var conteudo = document.querySelector('.print').innerHTML;
+    
+    // Cria uma nova janela
+    var janelaImpressao = window.open('', '', 'height=600,width=800');
+    
+    // Escreve o conteúdo na nova janela
+    janelaImpressao.document.write('<html><head><title>Impressão - Consignação</title>');
+    janelaImpressao.document.write('<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">');
+    // Inclui o CSS do Bootstrap corretamente na janela de impressão
+    janelaImpressao.document.write('<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">');
+    janelaImpressao.document.write('<style>');
+    janelaImpressao.document.write('@media print {');
+    janelaImpressao.document.write('  body { margin: 0; padding: 20px; }');
+    janelaImpressao.document.write('  .card { border: none; box-shadow: none; }');
+    janelaImpressao.document.write('}');
+    janelaImpressao.document.write('body{font-size: 10px;}');
+    janelaImpressao.document.write('</style>');
+    janelaImpressao.document.write('</head><body>');
+    janelaImpressao.document.write(conteudo);
+    janelaImpressao.document.write('</body></html>');
+    
+    // Fecha o documento
+    janelaImpressao.document.close();
+    
+    // Aguarda o carregamento e imprime
+    janelaImpressao.onload = function() {
+        janelaImpressao.focus();
+        janelaImpressao.print();
+        janelaImpressao.close();
+    };
+});
+</script>
