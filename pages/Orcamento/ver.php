@@ -22,11 +22,12 @@ $itens = $dados['itens'];
         <h3 class="card-title">Detalhes do Pedido</h3>
         <div>
         <a href="<?php echo "{$url}!/{$link[1]}/listar"; ?>" class="btn btn-warning text-primary">Voltar</a>
+        <a href="<?php echo "{$url}pages/Orcamento/imprimir.php?id={$id}"; ?>" class="btn btn-info text-primary print" target="_blank">Imprimir</a>
         <a href="<?php echo "{$url}!/Fabrica/aberto/{$id}"; ?>" class="btn btn-info text-primary">Fábrica</a>
         </div>
     </div>
 
-    <div class="card-body">
+    <div class="card-body print-tela">
         <h4 class="card-title">Dados do Pedido</h4>
         <div class="row g-3">
             <div class="col-lg-6">

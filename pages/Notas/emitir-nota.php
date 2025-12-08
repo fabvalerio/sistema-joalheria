@@ -359,4 +359,4 @@ function imprimirNota() {
 }
 </script>
 
-<?php die(); ?>
+<?php //die(); ?>
