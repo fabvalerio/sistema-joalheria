@@ -188,6 +188,7 @@ class Controller
                             p.data_entrega,
                             p.observacoes,
                             c.nome_pf,
+                            c.telefone,
                             c.nome_fantasia_pj
                             -- f.status as status_fabrica
                         FROM 

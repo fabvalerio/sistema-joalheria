@@ -57,7 +57,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if ($return) {
         echo notify('success', "Pedido cadastrado com sucesso!");
-        echo '<meta http-equiv="refresh" content="2; url=' . $url . '!/' . $link[1] . '/listar">';
+        // Recupera o ID do pedido cadastrado a partir do retorno do cadastro
+        // Supondo que $return contenha o ID inserido (ajuste conforme sua lógica de Controller)
+        $pedido_id = is_array($return) && isset($return['id']) ? $return['id'] : $return;
+
+        if ($pedido_id) {
+            $imprimir_url = "https://web4br.com/sistema-joias/pages/Orcamento/imprimir.php?id=" . urlencode($pedido_id);
+            echo "<script>window.open('{$imprimir_url}', '_blank');</script>";
+        }
     } else {
         echo notify('danger', "Erro ao cadastrar o pedido.");
     }

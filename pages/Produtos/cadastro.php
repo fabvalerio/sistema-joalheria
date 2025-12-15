@@ -739,8 +739,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
   // Adicionar listeners para atualização da descrição
 
-  [fornecedor, material, categoria, grupo, subgrupo, modelo, macica_ou_oca, nat_ou_sint, unidade, peso, pedra, numeros, aros, cm, mm, pontos, formato].forEach(select => {
-    select.addEventListener('change', () => {
+  [fornecedor, material, categoria, grupo, subgrupo, modelo, macica_ou_oca, nat_ou_sint, unidade, peso, pedra, numeros, aros, cm, mm, pontos, formato].forEach(el => {
+    const atualizar = () => {
       if (fornecedor.value && grupo.value && subgrupo.value) {
         camposAdicionais.style.display = 'block';
         atualizarDescricaoEtiqueta();
@@ -748,16 +748,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         camposAdicionais.style.display = 'none';
         descricaoEtiqueta.value = '';
       }
-    });
+    };
+    // Atualiza em change (selects) e input (text/number) para resposta em tempo real
+    el.addEventListener('change', atualizar);
+    el.addEventListener('input', atualizar);
   });
 
   // Listener para o evento 'input' do campo manual
   descricao_etiqueta_manual.addEventListener('input', atualizarDescricaoEtiqueta);
-
-  // Função para remover espaços duplos
-  function removerEspacosDuplos(texto) {
-    return texto.replace(/\s{2,}/g, ' ');
-  }
 
   // Bloquear espaços duplos no campo descricao_etiqueta_manual
   descricao_etiqueta_manual.addEventListener('input', function(e) {
@@ -787,6 +785,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
   });
 
+  // Helper: remove duplicate spaces
+  function removerEspacosDuplos(texto) {
+    return texto.replace(/\s{2,}/g, ' ').trim();
+  }
+
+  // Helper: shorten each word to first 4 chars + '.'
+  function abreviarQuatroPorPalavra(texto) {
+    if (!texto) return '';
+    // Normalizar espaços
+    const normalized = removerEspacosDuplos(texto);
+    return normalized
+      .split(/\s+/)
+      .map(word => {
+        // Se a palavra já tiver 4 ou menos caracteres, manter e adicionar ponto
+        const slice = word.length <= 4 ? word : word.slice(0, 4);
+        // return slice + '.';
+        return slice;
+      })
+      .join(' ');
+  }
+
   // Atualizar Descrição Etiqueta automaticamente
   function atualizarDescricaoEtiqueta() {
     const grupoText = grupo.options[grupo.selectedIndex]?.text || '';
@@ -809,16 +828,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     const descricao_etiqueta_manualValue = descricao_etiqueta_manual.value || '';
     const pontosText = pontos.value ? `${pontos.value}` : '';
     const formatoText = formato.selectedIndex > 0 ? formato.options[formato.selectedIndex]?.value : '';
-    
 
-    // Criar a string apenas com valores definidos
-    descricaoEtiqueta.value = [
-      // subgrupoText, 
+    // Criar a lista de partes sem o texto manual (para gerar a abreviação)
+    const partesBase = [
       categoriaText ? `${categoriaText}` : '',
       materialText ? `${materialText}` : '',
-      // ` - ${grupoText} `,
       modeloText ? `${modeloText}` : '',
-      //` ${grupoText}`,
       macica_ou_ocaText ? `${macica_ou_ocaText}` : '',
       pesoValue ? `${pesoValue}` : '',
       valoaros ? `Aro ${valoaros}` : '',
@@ -828,10 +843,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       formatoText ? `${formatoText}` : '',
       nat_ou_sintText ? `${nat_ou_sintText}` : '',
       pontosText ? `${pontosText} Pontos` : '',
-      valomm ? `${valomm}` : '',
-      descricao_etiqueta_manualValue ? `[ ${descricao_etiqueta_manualValue} ]` : ''
-    ].filter(text => text.trim() !== '').join(' ');
+      valomm ? `${valomm}` : ''
+    ].filter(text => text.trim() !== '');
 
+    // Gerar a versão abreviada e replicar para o campo manual somente se não estiver em foco
+    if (document.activeElement !== descricao_etiqueta_manual) {
+      const textoParaAbreviar = partesBase.join(' ');
+      const abreviado = abreviarQuatroPorPalavra(textoParaAbreviar);
+      descricao_etiqueta_manual.value = abreviado;
+    }
+
+    // Re-obter o valor manual (pode ter sido alterado acima) e montar a descrição completa
+    const manualAtulizado = descricao_etiqueta_manual.value || '';
+    const descricaoCompleta = [...partesBase, manualAtulizado ? ` ${manualAtulizado} ` : '']
+      .filter(text => text.trim() !== '').join(' ');
+
+    descricaoEtiqueta.value = descricaoCompleta;
   }
 
   // Atualizar subgrupos dinamicamente ao alterar o grupo

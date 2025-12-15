@@ -157,8 +157,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
           </select>
         </div>
         <div class="col-lg-6">
-          <label for="bonificacao" class="form-label"><strong>Bonificação (R$)*</strong></label>
-          <input type="text" class="form-control" id="bonificacao" name="bonificacao" placeholder="0,00" value="<?= number_format(floatval($consignacao['bonificacao'] ?? 0), 2, ',', '.') ?>">
+          <label for="bonificacao" class="form-label"><strong>Bonificação (%)*</strong></label>
+          <input type="text" class="form-control" id="bonificacao" name="bonificacao" placeholder="0" value="<?= floatval($consignacao['bonificacao'] ?? 0) ?>">
         </div>
       </div>
       <table class="table table-striped">

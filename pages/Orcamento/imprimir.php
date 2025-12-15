@@ -33,67 +33,6 @@ $action = $_GET['action'] ?? 'index';
 // Finaliza o buffer de saída para evitar erros
 ob_end_flush();
 
-if ($_COOKIE['nivel_acesso'] != "Administrador") {
-
-    if (isset($link[2]) && $link[2] != "") {
-
-        // Obtém o JSON de permissões do cookie (ou usa um JSON vazio se não existir)
-        $permissoes_json = $_COOKIE['permissoes'] ?? '{}';
-
-        // Primeiro `json_decode()` para remover a barra invertida (\)
-        $permissoes_json = json_decode($permissoes_json, true);
-
-        // Segundo `json_decode()` para converter a string JSON em array associativo
-        $permissoes = json_decode($permissoes_json, true);
-
-        // Debug: Verifica se o JSON foi realmente convertido para um array
-        if (!is_array($permissoes) || empty($permissoes)) {
-            echo "NÃO PERMITIDO (Permissões não encontradas).";
-            exit();
-        }
-
-        // Obtém a URL atual e extrai o nome do módulo e da página (ação)
-        $uri = $_SERVER['REQUEST_URI']; // Exemplo: "/!/Cargos/listar"
-        $link = explode("/", trim($uri, "/")); // Divide a URL
-
-        // Verifica se há pelo menos 3 partes na URL (para evitar erros)
-        if (count($link) < 3) {
-            echo "NÃO PERMITIDO (URL inválida).";
-            exit();
-        }
-
-        $modulo_atual = $link[1]; // O nome do módulo está sempre na posição 1
-        $acao = $link[2]; // Ação está sempre na posição 2 (listar, editar, etc.)
-
-        // Verifica se o usuário tem permissão para este módulo
-        if (!isset($permissoes[$modulo_atual])) {
-            header("Location: {$url}!/naopermitido");
-            exit;
-        }
-
-        // Obtém as permissões do módulo atual
-        $modulo_permissoes = $permissoes[$modulo_atual];
-
-        $visualizar = $modulo_permissoes['visualizar'] ?? false;
-        $manipular = $modulo_permissoes['manipular'] ?? false;
-
-        // **Regra de Permissão**:
-        // ✅ Se "manipular" for true → PERMITIDO para tudo
-        if ($manipular) {
-            $permitido = "SIM";
-        } else {
-            // ✅ Se "visualizar" for true → PERMITIDO apenas para "listar" e "ver"
-            $permitido = ($visualizar && in_array($acao, ["listar", "ver"]));
-            $permitido = $permitido ? "SIM" : "NÃO";
-        }
-        if ($permitido != "SIM") {
-            header("Location: {$url}!/naopermitido");
-            exit;
-        }
-    }
-
-}
-
 
 use App\Models\Orcamento\Controller;
 
@@ -112,11 +51,11 @@ $itens = $dados['itens'];
 // Buscar dados da loja (você pode ajustar conforme necessário)
 $loja = [
     'nome' => 'JOALHERIA GONCALVES',
-    'endereco' => 'DR. BRANDINHA, 338 - 1º. Andar <br> Sala 11',
-    'cidade' => 'SOROCABA - SP',
-    'cep' => 'CEP:18.010-120',
+    'endereco' => 'Rua Monsenhor João Soares, 143 - Centro',
+    'cidade' => 'Sorocaba - SP',
+    'cep' => 'CEP:18010-000',
     'telefones' => '(15)97404-9700 / (15)99186-7699 / (15)97405-0267 / (15)97405-0593',
-    'email' => 'contato@joalheiragiagoncalves.com.br'
+    'email' => 'contato@goncalvesjoias.com.br'
 ];
 
 ?>
@@ -169,9 +108,9 @@ $loja = [
         }
 
         .section-separator {
-            border-bottom: 1px dashed #000;
+            /* border-bottom: 1px dashed #000; */
             margin: 8px 0;
-            padding-bottom: 8px;
+            /* padding-bottom: 8px; */
         }
 
         .receipt-info {
@@ -270,7 +209,7 @@ $loja = [
             margin: 8px 0;
             padding: 4px;
             border: 1px dashed #000;
-            min-height: 40px;
+            /* min-height: 40px; */
             line-height: 1.3;
         }
 
@@ -282,7 +221,7 @@ $loja = [
         }
 
         .signature-line {
-            margin-top: 15px;
+            margin-top: 30px;
             padding-top: 10px;
             border-top: 1px solid #000;
             text-align: center;
@@ -328,7 +267,7 @@ $loja = [
             <div class="receipt-info">
                 <div class="receipt-info-row">
                     <div class="receipt-info-label">PEDIDO:</div>
-                    <div class="receipt-info-value"><?= $id ?></div>
+                    <div class="receipt-info-value"><?= str_pad($id, 6, '0', STR_PAD_LEFT) ?></div>
                 </div>
                 <div class="receipt-info-row">
                     <div class="receipt-info-label">DATA PEDIDO:</div>
@@ -355,6 +294,12 @@ $loja = [
                     ) ?>
                 </div>
             </div>
+            <div class="receipt-info-row">
+                <div class="receipt-info-label">TELEFONE:</div>
+                <div class="receipt-info-value">
+                    <?= $pedido['telefone'] ?? '----'; ?>
+                </div>
+            </div>
             <?php if (!empty($pedido['forma_pagamento'])): ?>
             <div class="receipt-info-row">
                 <div class="receipt-info-label">PAGAMENTO:</div>
@@ -366,12 +311,12 @@ $loja = [
         <!-- Items -->
         <div class="section-separator">
             <h3 class="section-title">DESCRIÇÃO</h3>
-            <table class="items-table">
+            <table class="items-table" style="font-size: 8px;">
                 <thead>
                     <tr>
+                        <th style="width: 15%; text-align: left;">QTD.</th>
                         <th style="width: 50%;">PRODUTO</th>
-                        <th style="width: 15%; text-align: right;">QTD.</th>
-                        <th style="width: 20%; text-align: right;">V.UN.</th>
+                        <!-- <th style="width: 20%; text-align: right;">V.UN.</th> -->
                         <th style="width: 15%; text-align: right;">TOTAL</th>
                     </tr>
                 </thead>
@@ -380,15 +325,26 @@ $loja = [
                         $subtotal = ($item['quantidade'] * $item['valor_unitario']) * (1 - ($item['desconto_percentual'] / 100));
                     ?>
                     <tr>
+                        <td class="text-left"><?= number_format($item['quantidade'], 2, ',', '.') ?></td>
                         <td><?= htmlspecialchars($item['nome_produto'] ?? $item['descricao_produto']) ?></td>
-                        <td class="text-right"><?= number_format($item['quantidade'], 2, ',', '.') ?></td>
-                        <td class="text-right">R$<?= number_format($item['valor_unitario'], 2, ',', '.') ?></td>
+                        <!-- <td class="text-right">R$<?= number_format($item['valor_unitario'], 2, ',', '.') ?></td> -->
                         <td class="text-right">R$<?= number_format($subtotal, 2, ',', '.') ?></td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
+
+        
+
+        <!-- Observations -->
+        <?php if (!empty($pedido['observacoes'])): ?>
+        <div class="section-separator">
+            <div class="observations">
+                <?= nl2br(htmlspecialchars($pedido['observacoes'])) ?>
+            </div>
+        </div>
+        <?php endif; ?>
 
         <!-- Totals -->
         <div class="totals">
@@ -409,15 +365,6 @@ $loja = [
                 </div>
             </div>
         </div>
-
-        <!-- Observations -->
-        <?php if (!empty($pedido['observacoes'])): ?>
-        <div class="section-separator">
-            <div class="observations">
-                <?= nl2br(htmlspecialchars($pedido['observacoes'])) ?>
-            </div>
-        </div>
-        <?php endif; ?>
 
         <!-- Footer -->
         <div class="footer">

@@ -139,7 +139,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <input type="hidden" step="0.01" class="form-control" id="desconto_percentual" name="desconto_percentual" readonly>
                 </div>
                 <div class="col-lg-3 col-6">
-                    <label for="bonificacao" class="form-label">Bonificação (R$) *Opcional</label> 
+                    <label for="bonificacao" class="form-label">Bonificação (%) *Opcional</label> 
                     <input type="number" class="form-control" id="bonificacao" name="bonificacao">
                 </div>
                 <div class="col-lg-3 col-6">

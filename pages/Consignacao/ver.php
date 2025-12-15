@@ -70,7 +70,7 @@ $itens = $dados['itens'];
                 <strong>Bonificação:</strong> 
                 <br>
                 <span class="badge badge-info d-inline-block">
-                    <?= 'R$ ' . number_format(floatval($consignacao['bonificacao'] ?? 0), 2, ',', '.'); ?>
+                    <?=floatval($consignacao['bonificacao'] ?? 0); ?> %
                 </span>
             </div>
             <div class="col-lg-2">
@@ -158,6 +158,19 @@ $itens = $dados['itens'];
                         <td colspan="5" class="text-end">Itens Vendidos: <span class="badge badge-warning"><?php echo $total_itens_vendidos ?></span></td>
                         <td colspan="2" class="text-end">Valor total: <span class="badge badge-warning">R$<?php echo number_format($total_valor_para_pagar, 2, ',', '.') ?></span></td>
                     </tr>
+                    <?php
+                        if( $consignacao['bonificacao'] > 0 ){
+                            $valor_bonificacao = ($total_valor_para_pagar * $consignacao['bonificacao']) / 100;
+                            $total_valor_para_pagar -= $valor_bonificacao;
+                    ?>
+                    
+                    <tr>
+                        <td colspan="5" class="text-end">Bonificação: <span class="badge badge-info"><?php echo $consignacao['bonificacao'] ?> %</span></td>
+                        <td colspan="2" class="text-end">Bonificação <?php if($consignacao['status'] =='Aberta'){ echo " à receber";}?>: <span class="badge badge-info">R$<?php echo number_format($valor_bonificacao, 2, ',', '.') ?></span></td>
+                    </tr>
+                    <?php 
+                        } //if
+                    ?>
                 <?php else: ?>
                     <tr>
                         <td colspan="5" class="text-center">Nenhum item encontrado</td>
