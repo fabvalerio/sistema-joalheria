@@ -1,4 +1,4 @@
 /pages/Notas/qrcode
 /pages/Notas/xml
 db/*.sql
-
+db/webbrcom_joias.sql
