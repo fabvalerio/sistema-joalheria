@@ -237,6 +237,7 @@ $materialController = new MaterialController();
                                 </button>
                                 <ul class="dropdown-menu">
                                     <li><a href="<?= "{$url}!/{$link[1]}/ver/{$produto['id']}" ?>" class="dropdown-item">Ver</a></li>
+                                    <li><a href="<?= "{$url}!/{$link[1]}/clone/{$produto['id']}" ?>" class="dropdown-item">Clonar</a></li>
                                     <li><a href="<?= "{$url}!/{$link[1]}/etiqueta/{$produto['id']}" ?>" class="dropdown-item">Imprimir Etiqueta Código</a></li>
                                     <li><a href="<?= "{$url}!/{$link[1]}/editar/{$produto['id']}" ?>" class="dropdown-item">Editar</a></li>
                                     <li><a href="<?= "{$url}!/{$link[1]}/deletar/{$produto['id']}" ?>" class="dropdown-item text-danger">Excluir</a></li>

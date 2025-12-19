@@ -74,7 +74,9 @@ class Controller
                 ci.quantidade, 
                 ci.valor, 
                 ci.qtd_devolvido, 
-                p.descricao_etiqueta AS nome_produto
+                p.descricao_etiqueta AS nome_produto,
+                p.codigo_fabricante,
+                p.id as produto_id
             FROM 
                 consignacao_itens ci
             LEFT JOIN 
@@ -82,7 +84,7 @@ class Controller
             WHERE 
                 ci.consignacao_id = :consignacao_id
             ORDER BY 
-                ci.id ASC
+                p.id ASC
         ");
         $db->bind(':consignacao_id', $id);
         $itens = $db->resultSet();

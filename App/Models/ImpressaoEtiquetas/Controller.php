@@ -7,7 +7,7 @@ use db;
 class Controller
 {
     // Listar produtos para impressão de etiquetas com paginação
-    public function listar($filtro = '', $paginaAtual = 1, $itensPorPagina = 100)
+    public function listar($filtro = '', $paginaAtual = 1, $itensPorPagina = 20)
     {
         $db = new db();
         
@@ -36,7 +36,7 @@ class Controller
                     p.descricao_etiqueta
                 FROM produtos p
                 {$where}
-                ORDER BY p.descricao_etiqueta
+                ORDER BY p.id
                 LIMIT {$itensPorPagina} OFFSET {$offset}";
         
         $db->query($query);

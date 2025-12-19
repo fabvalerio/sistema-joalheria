@@ -119,13 +119,15 @@ $totalRegistros = $resultado['totalRegistros'];
                         <th class="table-checkbox-col">
                             <input type="checkbox" id="checkbox-master" title="Selecionar todos desta página">
                         </th>
+                        <th>Código</th>
                         <th>Produto</th>
+                        <th style="width: 100px; text-align: center;">Quantidade</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (empty($produtos)): ?>
                         <tr>
-                            <td colspan="2" class="text-center text-muted py-4">
+                            <td colspan="3" class="text-center text-muted py-4">
                                 <i class="fas fa-inbox fa-3x mb-3"></i>
                                 <p>Nenhum produto encontrado</p>
                             </td>
@@ -140,7 +142,18 @@ $totalRegistros = $resultado['totalRegistros'];
                                            value="<?= $produto['id'] ?>"
                                            data-descricao="<?= htmlspecialchars($produto['descricao_etiqueta']) ?>">
                                 </td>
+                                <td><?= htmlspecialchars($produto['id']) ?></td>
                                 <td><?= htmlspecialchars($produto['descricao_etiqueta']) ?></td>
+                                <td style="text-align: center;">
+                                    <input type="number" 
+                                           class="form-control form-control-sm quantidade-input" 
+                                           data-id="<?= $produto['id'] ?>" 
+                                           value="1" 
+                                           min="1" 
+                                           max="999" 
+                                           style="width: 70px; display: inline-block;"
+                                           disabled>
+                                </td>
                             </tr>
                         <?php endforeach; ?>
                     <?php endif; ?>
@@ -265,12 +278,19 @@ function salvarSelecoes(selecoes) {
 // Atualizar contador
 function atualizarContador() {
     const selecoes = carregarSelecoes();
-    const total = Object.keys(selecoes).length;
-    $('#contador-selecionados').text(total + ' selecionado(s)');
-    $('#contador-btn').text(total);
+    const totalProdutos = Object.keys(selecoes).length;
+    let totalEtiquetas = 0;
+    
+    // Calcular total de etiquetas
+    Object.values(selecoes).forEach(item => {
+        totalEtiquetas += item.quantidade || 1;
+    });
+    
+    $('#contador-selecionados').text(totalProdutos + ' produto(s), ' + totalEtiquetas + ' etiqueta(s)');
+    $('#contador-btn').text(totalEtiquetas);
     
     // Habilitar/desabilitar botão de impressão
-    $('#btn-imprimir').prop('disabled', total === 0);
+    $('#btn-imprimir').prop('disabled', totalProdutos === 0);
 }
 
 // Restaurar estado dos checkboxes ao carregar página
@@ -281,6 +301,9 @@ function restaurarEstado() {
         const id = $(this).val();
         if (selecoes[id]) {
             $(this).prop('checked', true);
+            const $quantInput = $('.quantidade-input[data-id="' + id + '"]');
+            $quantInput.prop('disabled', false);
+            $quantInput.val(selecoes[id].quantidade || 1);
         }
     });
     
@@ -292,15 +315,34 @@ $(document).on('change', '.checkbox-produto', function() {
     const selecoes = carregarSelecoes();
     const id = $(this).val();
     const descricao = $(this).data('descricao');
+    const $quantInput = $('.quantidade-input[data-id="' + id + '"]');
     
     if ($(this).is(':checked')) {
-        selecoes[id] = descricao;
+        const quantidade = parseInt($quantInput.val()) || 1;
+        selecoes[id] = {
+            descricao: descricao,
+            quantidade: quantidade
+        };
+        $quantInput.prop('disabled', false);
     } else {
         delete selecoes[id];
+        $quantInput.prop('disabled', true);
     }
     
     salvarSelecoes(selecoes);
     atualizarContador();
+});
+
+// Ao alterar quantidade
+$(document).on('change', '.quantidade-input', function() {
+    const id = $(this).data('id');
+    const selecoes = carregarSelecoes();
+    
+    if (selecoes[id]) {
+        selecoes[id].quantidade = parseInt($(this).val()) || 1;
+        salvarSelecoes(selecoes);
+        atualizarContador();
+    }
 });
 
 // Checkbox master (selecionar todos da página)
@@ -322,6 +364,7 @@ $('#btn-limpar-selecao').on('click', function() {
         $('.checkbox-produto').prop('checked', false);
         $('#checkbox-master').prop('checked', false);
         atualizarContador();
+        location.reload();
     }
 });
 
@@ -335,8 +378,14 @@ $('#btn-imprimir').on('click', function() {
         return;
     }
     
+    // Construir array com formato id:quantidade
+    const idsComQuantidade = ids.map(id => {
+        const quantidade = selecoes[id].quantidade || 1;
+        return id + ':' + quantidade;
+    });
+    
     // Redirecionar para página de visualização
-    window.location.href = '<?= $url ?>!/<?= $link[1] ?>/visualizar&ids=' + ids.join(',');
+    window.location.href = '<?= $url ?>!/<?= $link[1] ?>/visualizar&ids=' + idsComQuantidade.join(',');
 });
 
 // Restaurar estado ao carregar página

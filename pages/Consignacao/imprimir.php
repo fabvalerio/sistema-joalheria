@@ -27,8 +27,15 @@ if (!$dados || !isset($dados['consignacao']) || !isset($dados['itens'])) {
 $consignacao = $dados['consignacao'];
 $itens = $dados['itens'];
 
+
+      
+    // Obter desconto percentual
+    $desconto_percentual = $consignacao['desconto_percentual'] ?? 0;
 ?>
 
+<script>
+    console.log('Desconto de: <?php echo $desconto_percentual; ?>');
+</script>
 
 <a href="<?php echo "{$url}!/{$link[1]}/listar"; ?>" class="btn btn-warning text-primary mb-5">Voltar</a>
 
@@ -46,21 +53,27 @@ $itens = $dados['itens'];
             <div class="col-lg-3">
                 <strong>Cliente:</strong> 
                 <br>
+                <span style="font-size: 20px">
                 <?= htmlspecialchars(
                     !empty($consignacao['nome_pf']) 
                     ? $consignacao['nome_pf'] 
                     : ($consignacao['nome_fantasia_pj'] ?? 'Não informado')
                 ) ?>
+                </span>
             </div>
             <div class="col-lg-3">
                 <strong>Whatsapp:</strong> 
                 <br>
+                <span style="font-size: 20px">
                 <?= $consignacao['whatsapp'] ?? '-' ?>
+                </span>
             </div>
             <div class="col-lg-2">
                 <strong>Telefone:</strong> 
                 <br>
+                <span style="font-size: 20px">
                 <?= $consignacao['telefone'] ?? '-' ?>
+                </span>
             </div>
             <div class="col-lg-2">
                 <strong>Data da Consignação:</strong> 
@@ -90,9 +103,6 @@ $itens = $dados['itens'];
                 }
             }
             
-            // Obter desconto percentual
-            $desconto_percentual = floatval($consignacao['desconto_percentual'] ?? 0);
-            
             // Calcular valor do desconto
             $valor_desconto = ($subtotal * $desconto_percentual) / 100;
             
@@ -114,30 +124,38 @@ $itens = $dados['itens'];
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th>Id</th>
+                    <th>Código</th>
                     <th>Produto</th>
                     <th class="text-end">Peça</th>
+                    <?php if($consignacao['status'] !='Aberta'){ ?>
                     <th class="text-end">Devolvida</th>
                     <th class="text-end">Vendidos</th>
+                    <?php } ?>
                     <th class="text-end">Valor Unit.</th>
                     <th class="text-end">Subtotal</th>
                 </tr>
             </thead>
             <tbody>
+                <?php 
+                $total_itens_vendidos = 0;
+                $total_valor_para_pagar = 0;
+                ?>
                 <?php if (is_array($itens) && count($itens) > 0): ?>
                     <?php foreach ($itens as $item): ?>
                         <?php
                         $quantidade = floatval($item['quantidade'] ?? 0);
-                        $valor = floatval($item['valor'] ?? 0);
+                        $valor = $item['valor'] - floatval((($item['valor'] * $desconto_percentual) / 100) ?? 0);
                         $qtd_devolvido = floatval($item['qtd_devolvido'] ?? 0);
-                        $subtotal_item = ($quantidade - $qtd_devolvido) * $valor;
+                        $subtotal_item = (($quantidade - $qtd_devolvido) * $valor);
                         ?>
                         <tr>
-                            <td><?= str_pad($item['id'], 5, '0', STR_PAD_LEFT) ?></td>
+                            <td><?= str_pad($item['produto_id'], 6, '0', STR_PAD_LEFT) ?></td>
                             <td><?= htmlspecialchars($item['nome_produto'] ?? 'Produto não encontrado') ?></td>
                             <td class="text-end"><span class="badge badge-info"><?= $quantidade ?></span></td>
+                            <?php if($consignacao['status'] !='Aberta'){ ?>
                             <td class="text-end"><span class="badge badge-danger"><?= ($qtd_devolvido) ?></span></td>
                             <td class="text-end"><span class="badge badge-success"><?php echo $quantidade - $qtd_devolvido ?></span></td>
+                            <?php } ?>
                             <td class="text-end">R$ <?= number_format($valor, 2, ',', '.') ?></td>
                             <td class="text-end"><span class="badge badge-success">R$ <?= number_format($subtotal_item, 2, ',', '.') ?></span></td>
                         </tr>
@@ -147,8 +165,10 @@ $itens = $dados['itens'];
                         endforeach; 
                     ?>
                     <tr>
-                    <td colspan="5" class="text-end">Itens Vendidos: <span class="badge badge-warning"><?php echo $total_itens_vendidos ?></span></td>
-                        <td colspan="2" class="text-end">Valor total: <span class="badge badge-warning">R$<?php echo number_format($total_valor_para_pagar, 2, ',', '.') ?></span></td>
+                        <?php if($consignacao['status'] !='Aberta'){ ?>
+                        <td colspan="5" class="text-end">Itens Vendidos: <span class="badge badge-warning"><?php echo $total_itens_vendidos ?></span></td>
+                        <?php } ?>
+                        <td colspan="<?php if($consignacao['status'] !='Aberta'){ echo '3'; }else{ echo "7"; }?>" class="text-end">Valor total: <span class="badge badge-warning">R$<?php echo number_format($total_valor_para_pagar, 2, ',', '.') ?></span></td>
                     </tr>
                     <?php
                         if( $consignacao['bonificacao'] > 0 ){

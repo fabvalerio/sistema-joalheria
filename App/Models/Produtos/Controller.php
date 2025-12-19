@@ -224,7 +224,9 @@ class Controller
                 $db->bind(":quantidade_minima", $dados['quantidade_minima'] ?? 0);
                 $db->bind(":quantidade", $dados['estoque_princ'] ?? 0);
 
-                return $db->execute();
+                if ($db->execute()) {
+                    return $produto_id; // Retorna o ID do produto cadastrado
+                }
             }
         }
 

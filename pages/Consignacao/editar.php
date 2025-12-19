@@ -164,6 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       <table class="table table-striped">
         <thead>
           <tr>
+            <th>Código</th>
             <th>Produto</th>
             <th>Quantidade</th>
             <th>Quantidade Devolvida</th>
@@ -177,25 +178,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $valor_com_desconto = $item['valor'] - ($item['valor'] * $desconto_percentual / 100);
           ?>
             <tr>
+              <td><?= htmlspecialchars($item['produto_id'] ?? 'N/A') ?></td>
               <td><?= htmlspecialchars($item['nome_produto'] ?? 'Produto não encontrado') ?></td>
               <td><?= htmlspecialchars($item['quantidade'] ?? '0') ?></td>
               <td>
                 <!-- Campo para a quantidade devolvida -->
-                <input type="number" step="0.01" class="form-control devolvido-input"
-                  name="itens[<?= htmlspecialchars($item['id']) ?>][qtd_devolvido]"
-                  data-preco="<?= htmlspecialchars($item['valor']) ?>"
-                  data-quantidade="<?= htmlspecialchars($item['quantidade']) ?>"
-                  value="<?= htmlspecialchars($item['qtd_devolvido'] ?? '0.00') ?>"
+                <input type="number" step="0.01" class="form-control devolvido-input" name="itens[<?= htmlspecialchars($item['id']) ?>][qtd_devolvido]" data-preco="<?= htmlspecialchars($item['valor']) ?>" data-quantidade="<?= htmlspecialchars($item['quantidade']) ?>" value="<?= htmlspecialchars($item['qtd_devolvido'] ?? '0.00') ?>"
                   <?php if ($consignacao['status'] === 'Finalizada') {
                     echo 'readonly';
                   } ?>>
                 <!-- Campo oculto para o identificador correto -->
-                <input type="hidden"
-                  name="itens[<?= htmlspecialchars($item['id']) ?>][id]"
-                  value="<?= htmlspecialchars($item['id'] ?? '') ?>">
-                <input type="hidden"
-                  name="itens[<?= htmlspecialchars($item['id']) ?>][produto_id]"
-                  value="<?= htmlspecialchars($item['produto_id'] ?? '') ?>">
+                <input type="hidden" name="itens[<?= htmlspecialchars($item['id']) ?>][id]" value="<?= htmlspecialchars($item['id'] ?? '') ?>">
+                <input type="hidden" name="itens[<?= htmlspecialchars($item['id']) ?>][produto_id]" value="<?= htmlspecialchars($item['produto_id'] ?? '') ?>">
               </td>
               <td>
                 R$<?= isset($item['valor'])
@@ -207,7 +201,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
               </td>
               <td>
                 R$<span class="subtotal">
-                  <?= number_format(($item['quantidade'] ?? 0) * ($item['valor'] ?? 0), 2, ',', '.'); ?>
+                  <?= number_format(($item['quantidade'] ?? 0) * ($valor_com_desconto ?? 0), 2, ',', '.'); ?>
                 </span>
               </td>
             </tr>
