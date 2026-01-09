@@ -55,6 +55,7 @@ $grupos = $controller->listar();
             <thead>
                 <tr>
                     <th>Nome do Grupo</th>
+                    <th>Dias de Confecção</th>
                     <th width="220">Ações</th>
                 </tr>
             </thead>
@@ -62,6 +63,7 @@ $grupos = $controller->listar();
                 <?php foreach ($grupos as $grupo): ?>
                     <tr>
                         <td><?= htmlspecialchars($grupo['nome_grupo']) ?></td>
+                        <td><?= htmlspecialchars($grupo['tempo'] ?? '0') ?> dias</td>
                         <td>
                             <div class="dropdown">
                                 <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">

@@ -1,0 +1,1 @@
+ALTER TABLE `grupo_produtos` ADD `tempo` INT NULL AFTER `nome_grupo`;

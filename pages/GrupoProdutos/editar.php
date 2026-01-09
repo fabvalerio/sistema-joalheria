@@ -14,7 +14,8 @@ if (!$return) {
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $dados = [
-        'nome_grupo' => $_POST['nome_grupo']
+        'nome_grupo' => $_POST['nome_grupo'],
+        'tempo' => $_POST['tempo']
     ];
 
     $returnUpdate = $controller->editar($id, $dados);
@@ -41,6 +42,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <div class="col-lg-12">
                     <label for="" class="form-label">Nome do Grupo</label>
                     <input type="text" class="form-control" name="nome_grupo" value="<?= $return['nome_grupo'] ?>" required>
+                </div>
+                <div class="col-lg-12">
+                    <label for="" class="form-label">Dias de Confecção</label>
+                    <input type="number" class="form-control" name="tempo" value="<?= $return['tempo'] ?? '' ?>" min="0" placeholder="Número de dias">
                 </div>
                 <div class="col-lg-12">
                     <button type="submit" class="btn btn-primary float-end">Salvar Alterações</button>
