@@ -66,33 +66,26 @@ function resumirTextoEtiqueta($texto) {
 <style>
     .etiqueta-preview {
         width: 8cm;
-        height: 2cm;
-        border: 1px solid #ccc;
-        margin: 10px;
+        height: 1.1cm;
         display: inline-block;
         position: relative;
-        background: white;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     
     .etiqueta-preview.direita {
         margin-right: 0;
-        margin-left: auto;
     }
     
     .etiqueta-preview.esquerda {
         margin-left: 0;
-        margin-right: auto;
     }
     
     .etiqueta-preview-container {
         display: flex;
         flex-wrap: wrap;
-        gap: 10px;
         justify-content: center;
-        padding: 20px;
+        padding: 0.25cm;
         background: #f5f5f5;
-        width: 350px;
+        width: 8.5cm;
         margin: 0 auto;
     }
     
@@ -101,30 +94,30 @@ function resumirTextoEtiqueta($texto) {
         left: 0;
         top: 0;
         width: 4cm;
-        height: 2cm;
-        border-right: 1px dashed #999;
+        height: 1.1cm;
         display: flex;
+        background: #fff;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        box-sizing: border-box;
     }
     
     .area-impressao.direita {
         left: auto;
-        right: 0;
-        border-right: none;
-        border-left: 1px dashed #999;
+        right: 0;     
+        z-index: 100;
     }
     
     .area-impressao.esquerda {
         left: 0;
         right: auto;
-        border-right: 1px dashed #999;
-        border-left: none;
     }
     
     .area-texto {
         width: 2cm;
-        height: 1.9cm;
-        padding: 5px;
-        font-size: 6pt;
+        height: 1.1cm;
+        padding: 3px;
+        font-size: 5pt;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -132,17 +125,21 @@ function resumirTextoEtiqueta($texto) {
         word-wrap: break-word;
         overflow: hidden;
         border-right: 1px solid #ddd;
+        box-sizing: border-box;
     }
     
     .area-barcode {
         width: 2cm;
-        height: 2cm;
-        /* display: flex; */
+        height: 1.1cm;
+        display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
         padding: 2px;
         text-align: center;
-        font-size: 12px;
+        font-size: 7px;
+        box-sizing: border-box;  
+        overflow: hidden;
     }
     
     .area-vazia {
@@ -150,13 +147,14 @@ function resumirTextoEtiqueta($texto) {
         right: 0;
         top: 0;
         width: 4cm;
-        height: 2cm;
-        background: #f9f9f9;
+        height: 1.1cm;
         display: flex;
         align-items: center;
-        justify-content: center;
+        justify-content: flex-start;
         color: #999;
         font-size: 8pt;
+        box-sizing: border-box;
+        flex-direction: column;
     }
     
     .area-vazia.direita {
@@ -170,8 +168,36 @@ function resumirTextoEtiqueta($texto) {
     }
     
     .barcode-svg {
+        max-width: 51px;
+        height: auto;
+    }
+
+    .marginTop{
+        margin-top: -0.4cm;
+    }
+
+    .marginBottom{
+        margin-top: 0.4cm!important;
+    }
+    
+    .border-etiqueta{
+        border: 1px solid #ccc;
         width: 100%;
-        height: 100%;
+        font-size: 8px;
+        height: 0.3cm;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        background: #fff;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+    .border-etiqueta2{
+        height: 0.4cm;
+        border: 1px solid #ccc;
+        width: 100%;
+        border-radius: 4px;
     }
 </style>
 
@@ -219,8 +245,13 @@ function resumirTextoEtiqueta($texto) {
                 for ($i = 0; $i < $quantidade; $i++): 
                     $lado = ($indexGlobal % 2 === 0) ? 'direita' : 'esquerda';
                     $barcodeId = $produto['id'] . '-' . $i;
+
+                    $encaixeTop = ($indexGlobal > 0 ) ? 'marginTop' : '';
+                    if($indexGlobal > 0){
+                        $enter = ($indexGlobal % 2 === 0) ? 'marginBottom' : '';
+                    }
             ?>
-                    <div class="etiqueta-preview <?= $lado ?>">
+                    <div class="etiqueta-preview <?= $lado ?> <?= $encaixeTop ?> <?= $enter ?>">
                         <div class="area-impressao <?= $lado ?>">
                             <div class="area-texto">
                                 <?= htmlspecialchars(resumirTextoEtiqueta($produto['descricao_etiqueta'])) ?>
@@ -233,7 +264,12 @@ function resumirTextoEtiqueta($texto) {
                             </div>
                         </div>
                         <div class="area-vazia <?= $lado ?>">
-                            (área em branco)
+                            <?php echo ($indexGlobal % 2 === 0) ? '<div class="border-etiqueta2"></div>' : '<div class="border-etiqueta2"></div>';   ?>
+                            <div class="border-etiqueta">
+                                (área em branco)
+                            </div>
+                            <?php echo ($indexGlobal % 2 === 0) ? '' : '<div class="border-etiqueta2"></div>';   ?>
+                            
                         </div>
                     </div>
             <?php 
@@ -279,6 +315,6 @@ endforeach;
 // Função para imprimir
 function imprimirEtiquetas() {
     const ids = '<?= $ids_string ?>';
-    window.open('<?= $url ?>!/<?= $link[1] ?>/imprimir&ids=' + ids, '_blank');
+    window.open('<?= $url ?>pages/<?= $link[1] ?>/imprimir.php?ids=' + ids, '_new');
 }
 </script>

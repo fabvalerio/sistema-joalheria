@@ -187,8 +187,10 @@ class Controller
                             p.status_pedido,
                             p.data_entrega,
                             p.observacoes,
+                            c.id as idCliente,
                             c.nome_pf,
                             c.telefone,
+                            c.whatsapp,
                             c.nome_fantasia_pj
                             -- f.status as status_fabrica
                         FROM 

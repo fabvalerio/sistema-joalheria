@@ -56,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if ($return) {
         echo notify('success', "Pedido cadastrado com sucesso!");
-        echo '<meta http-equiv="refresh" content="2; url=' . $url . '!/' . $link[1] . '/listar">';
+        echo '<meta http-equiv="refresh" content="2; url=' . $url . '!/Notas/emitir-nota/' . $return . '">';
     } else {
         echo notify('danger', "Erro ao cadastrar o pedido.");
     }
@@ -454,7 +454,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <!-- Botão de Cadastro -->
             <div class="col-lg-12 mt-4">
                 <button type="submit" class="btn btn-primary float-end">Cadastrar Pedido</button>
-                <button type="button" class="btn btn-secondary" id="altera_cartao">Alterar Cartão</button>
+                <!-- <button type="button" class="btn btn-secondary" id="altera_cartao">Alterar Cartão</button> -->
             </div>
         </form>
 

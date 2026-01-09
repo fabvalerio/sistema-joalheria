@@ -1,4 +1,39 @@
 <?php
+// Garante que não há saída antes do início da sessão
+ob_start();
+
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Inicia a sessão apenas se ainda não estiver ativa
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Verifica se o usuário está autenticado
+if (!isset($_COOKIE['id']) || empty($_COOKIE['id'])) {
+    // Redireciona para a página de login se não estiver autenticado
+    $url = "https://" . $_SERVER['HTTP_HOST'] . "/sistema-joias/";
+    header("Location: " . $url . "login.php");
+    exit();
+}
+
+$dir = '../../';
+
+// Incluir arquivos necessários APÓS verificar a sessão
+include $dir.'db/db.class.php';
+include $dir.'App/php/htaccess.php';
+include $dir.'App/php/function.php';
+include $dir.'App/php/notify.php';
+
+// Controlador e ação padrão
+$controller = $_GET['controller'] ?? 'Home';
+$action = $_GET['action'] ?? 'index';
+
+// Finaliza o buffer de saída para evitar erros
+ob_end_flush();
+
+
 
 use App\Models\ImpressaoEtiquetas\Controller;
 
@@ -66,34 +101,24 @@ function resumirTextoEtiqueta($texto) {
 <style>
     .etiqueta-preview {
         width: 8cm;
-        height: 2cm;
-        /* border: 1px solid #ccc; */
-        margin: 10px;
+        height: 1.1cm;
         display: inline-block;
         position: relative;
-        background: white;
-        /* box-shadow: 0 2px 4px rgba(0,0,0,0.1); */
     }
     
     .etiqueta-preview.direita {
         margin-right: 0;
-        margin-left: auto;
     }
     
     .etiqueta-preview.esquerda {
         margin-left: 0;
-        margin-right: auto;
     }
     
     .etiqueta-preview-container {
         display: flex;
         flex-wrap: wrap;
-        gap: 10px;
         justify-content: center;
-        padding: 20px;
-        /* background: #f5f5f5; */
-        width: 350px;
-        margin: 0 auto;
+        max-width: 8.5cm;
     }
     
     .area-impressao {
@@ -101,48 +126,48 @@ function resumirTextoEtiqueta($texto) {
         left: 0;
         top: 0;
         width: 4cm;
-        height: 2cm;
-        border-right: 1px dashed #999;
+        height: 1.1cm;
         display: flex;
+        box-sizing: border-box;
     }
     
     .area-impressao.direita {
         left: auto;
         right: 0;
-        border-right: none;
-        border-left: 1px dashed #999;
+        z-index: 100;
     }
     
     .area-impressao.esquerda {
         left: 0;
         right: auto;
-        border-right: 1px dashed #999;
-        border-left: none;
     }
     
     .area-texto {
         width: 2cm;
-        height: 1.9cm;
-        padding: 5px;
-        font-size: 6pt;
+        height: 1.1cm;
+        padding: 3px;
+        font-size: 5pt;
         display: flex;
         align-items: center;
         justify-content: center;
         text-align: center;
         word-wrap: break-word;
         overflow: hidden;
-        border-right: 1px solid #ddd;
+        box-sizing: border-box;
     }
     
     .area-barcode {
         width: 2cm;
-        height: 2cm;
-        /* display: flex; */
+        height: 1.1cm;
+        display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
         padding: 2px;
         text-align: center;
-        font-size: 12px;
+        font-size: 7px;
+        box-sizing: border-box;
+        overflow: hidden;
     }
     
     .area-vazia {
@@ -150,13 +175,14 @@ function resumirTextoEtiqueta($texto) {
         right: 0;
         top: 0;
         width: 4cm;
-        height: 2cm;
-        /* background: #f9f9f9; */
+        height: 1.1cm;
         display: flex;
         align-items: center;
-        justify-content: center;
+        justify-content: flex-start;
         color: #999;
         font-size: 8pt;
+        box-sizing: border-box;
+        flex-direction: column;
     }
     
     .area-vazia.direita {
@@ -170,51 +196,22 @@ function resumirTextoEtiqueta($texto) {
     }
     
     .barcode-svg {
-        width: 100%;
-        height: 60%;
+        max-width: 51px;
+        height: auto;
     }
-    
-    @media print {
-        body * {
-            visibility: hidden;
-        }
-        .etiqueta-preview-container,
-        .etiqueta-preview-container * {
-            visibility: visible;
-        }
-        .etiqueta-preview-container {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            padding: 0;
-            margin: 0;
-        }
+
+    .marginTop{
+        margin-top: -0.4cm;
     }
+
+    .marginBottom{
+        margin-top: 0.4cm!important;
+    }
+
 </style>
 
-<div class="card">
-    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-        <h3 class="card-title">
-            <i class="fas fa-eye"></i> Visualização das Etiquetas
-        </h3>
-        <?php 
-        $totalEtiquetas = array_sum($produtos_com_quantidade);
-        $totalProdutos = count($produtos);
-        ?>
-        <span class="badge bg-light text-primary"><?= $totalProdutos ?> produto(s), <?= $totalEtiquetas ?> etiqueta(s)</span>
-    </div>
-
-    <div class="card-body">
-
-        <div class="text-center mb-3">
-            <a href="<?= $url ?>!/<?= $link[1] ?>/listar" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Voltar
-            </a>
-            <button onclick="imprimirEtiquetas()" class="btn btn-success btn-lg">
-                <i class="fas fa-print"></i> Confirmar Impressão
-            </button>
-        </div>
+<div>
+    <div>
 
         <div class="etiqueta-preview-container">
             <?php 
@@ -227,15 +224,22 @@ function resumirTextoEtiqueta($texto) {
                 for ($i = 0; $i < $quantidade; $i++): 
                     $lado = ($indexGlobal % 2 === 0) ? 'direita' : 'esquerda';
                     $barcodeId = $produto['id'] . '-' . $i;
+
+                    $encaixeTop = ($indexGlobal > 0 ) ? 'marginTop' : '';
+                    if($indexGlobal > 0){
+                        $enter = ($indexGlobal % 2 === 0) ? 'marginBottom' : '';
+                    }
             ?>
-                    <div class="etiqueta-preview <?= $lado ?>">
-                        <div class="area-impressao <?= $lado ?>">
+                    <div class="etiqueta-preview <?= $lado ?? '' ?> <?= $encaixeTop ?? '' ?> <?= $enter ?? '' ?>">
+                        <div class="area-impressao <?= $lado ?? '' ?>">
                             <div class="area-texto">
                                 <?= htmlspecialchars(resumirTextoEtiqueta($produto['descricao_etiqueta'])) ?>
                             </div>
                             <div class="area-barcode">
                                 <div><?= $produto['id'] ?></div>
-                                <svg class="barcode-svg" id="barcode-<?= $barcodeId ?>"></svg>
+                                <div>
+                                    <svg class="barcode-svg" id="barcode-<?= $barcodeId ?>"></svg>
+                                </div>
                             </div>
                         </div>
                         <div class="area-vazia <?= $lado ?>">
@@ -249,11 +253,6 @@ function resumirTextoEtiqueta($texto) {
             ?>
         </div>
 
-        <div class="text-center mt-3">
-            <button onclick="imprimirEtiquetas()" class="btn btn-success btn-lg">
-                <i class="fas fa-print"></i> Imprimir Etiquetas
-            </button>
-        </div>
     </div>
 </div>
 
@@ -282,8 +281,7 @@ foreach ($produtos as $produto):
 endforeach; 
 ?>
 
+
 // Função para imprimir
-function imprimirEtiquetas() {
     window.print();
-}
 </script>

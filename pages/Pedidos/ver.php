@@ -20,9 +20,11 @@ $itens = $dados['itens'];
 <div class="card">
     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
         <h3 class="card-title">Detalhes do Pedido</h3>
+        <div>
+        <a href="<?php echo "{$url}!/Notas/emitir-nota/{$link[3]}"; ?>" class="btn btn-success">Imprimir Nf-e</a>
         <a href="<?php echo "{$url}!/{$link[1]}/listar"; ?>" class="btn btn-warning text-primary">Voltar</a>
+        </div>
     </div>
-
     <div class="card-body">
         <h4 class="card-title">Dados do Pedido</h4>
         <div class="row g-3">

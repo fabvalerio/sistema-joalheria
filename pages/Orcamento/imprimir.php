@@ -70,6 +70,7 @@ $loja = [
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            text-transform: uppercase;
         }
 
         body {
@@ -82,27 +83,27 @@ $loja = [
             width: 80mm;
             background-color: white;
             margin: 0 auto;
-            padding: 10mm;
+            padding: 5mm;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             border: 1px solid #ddd;
         }
 
         .receipt-header {
-            text-align: center;
+            /* text-align: center; */
             margin-bottom: 10px;
             border-bottom: 2px dashed #000;
             padding-bottom: 8px;
         }
 
         .receipt-header h1 {
-            font-size: 14px;
-            font-weight: bold;
+            font-size: 18px;
+            font-weight: 900;
             margin-bottom: 2px;
             line-height: 1.2;
         }
 
         .receipt-header p {
-            font-size: 10px;
+            font-size: 12px;
             margin: 2px 0;
             line-height: 1.3;
         }
@@ -114,7 +115,7 @@ $loja = [
         }
 
         .receipt-info {
-            font-size: 10px;
+            font-size: 12px;
             margin-bottom: 8px;
         }
 
@@ -137,7 +138,7 @@ $loja = [
         }
 
         .section-title {
-            font-size: 11px;
+            font-size: 12px;
             font-weight: bold;
             margin: 8px 0 4px 0;
             text-align: left;
@@ -146,7 +147,7 @@ $loja = [
 
         .items-table {
             width: 100%;
-            font-size: 9px;
+            font-size: 12px;
             margin-bottom: 8px;
         }
 
@@ -175,7 +176,7 @@ $loja = [
         }
 
         .totals {
-            font-size: 10px;
+            font-size: 12px;
             margin: 8px 0;
         }
 
@@ -236,8 +237,8 @@ $loja = [
             }
 
             .receipt-container {
-                width: 80mm;
-                padding: 10mm;
+                /* width: 80mm; */
+                /* padding: 10mm; */
                 margin: 0;
                 box-shadow: none;
                 border: none;
@@ -245,7 +246,7 @@ $loja = [
             }
 
             @page {
-                size: 80mm auto;
+                /* size: 80mm auto; */
                 margin: 0;
             }
         }
@@ -258,9 +259,14 @@ $loja = [
             <h1><?= $loja['nome'] ?></h1>
             <p><?= $loja['endereco'] ?> <?= $loja['cidade'] ?></p>
             <p><?= $loja['cep'] ?></p>
-            <p>FONE: <?= $loja['telefones'] ?></p>
-            <p>E-mail: <?= $loja['email'] ?></p>
+            <div style="font-size: 11px;display: flex;flex-direction: row;">
+                <div>FONE:</div>
+                <div><?= $loja['telefones'] ?></div>
+            </div>
+            <p style="font-size: 11px; text-transform: lowercase;">E-mail: <?= $loja['email'] ?></p>
         </div>
+
+        <p style="text-align: center; font-size: 10px;">--- Via da loja ---</p>
 
         <!-- Pedido Info -->
         <div class="section-separator">
@@ -287,6 +293,7 @@ $loja = [
             <div class="receipt-info-row">
                 <div class="receipt-info-label">CLIENTE:</div>
                 <div class="receipt-info-value">
+                    <?= $pedido['idCliente'] ?? '' ?> - 
                     <?= htmlspecialchars(
                         !empty($pedido['nome_pf']) 
                         ? $pedido['nome_pf'] 
@@ -300,6 +307,14 @@ $loja = [
                     <?= $pedido['telefone'] ?? '----'; ?>
                 </div>
             </div>
+            <?php if (!empty($pedido['whatsapp'])): ?>
+            <div class="receipt-info-row">
+                <div class="receipt-info-label">Whatsapp:</div>
+                <div class="receipt-info-value">
+                    <?= $pedido['whatsapp'] ?? '----'; ?>
+                </div>
+            </div>
+            <?php endif; ?>
             <?php if (!empty($pedido['forma_pagamento'])): ?>
             <div class="receipt-info-row">
                 <div class="receipt-info-label">PAGAMENTO:</div>
@@ -311,28 +326,154 @@ $loja = [
         <!-- Items -->
         <div class="section-separator">
             <h3 class="section-title">DESCRIÇÃO</h3>
-            <table class="items-table" style="font-size: 8px;">
-                <thead>
-                    <tr>
-                        <th style="width: 15%; text-align: left;">QTD.</th>
-                        <th style="width: 50%;">PRODUTO</th>
-                        <!-- <th style="width: 20%; text-align: right;">V.UN.</th> -->
-                        <th style="width: 15%; text-align: right;">TOTAL</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($itens as $item): 
+            
+            <div style="font-size: 12px;">
+                <?php foreach ($itens as $item): 
                         $subtotal = ($item['quantidade'] * $item['valor_unitario']) * (1 - ($item['desconto_percentual'] / 100));
                     ?>
-                    <tr>
-                        <td class="text-left"><?= number_format($item['quantidade'], 2, ',', '.') ?></td>
-                        <td><?= htmlspecialchars($item['nome_produto'] ?? $item['descricao_produto']) ?></td>
-                        <!-- <td class="text-right">R$<?= number_format($item['valor_unitario'], 2, ',', '.') ?></td> -->
-                        <td class="text-right">R$<?= number_format($subtotal, 2, ',', '.') ?></td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+                        <?= number_format($item['quantidade'], 2, ',', '.') ?>
+                        &nbsp;&nbsp;&nbsp;
+                        <?= htmlspecialchars($item['nome_produto'] ?? $item['descricao_produto']) ?>
+                        <br>
+                        R$<?= number_format($subtotal, 2, ',', '.') ?>
+                        <br>
+                <?php endforeach; ?>
+            </div>
+
+        </div>
+
+        
+
+        <!-- Observations -->
+        <?php if (!empty($pedido['observacoes'])): ?>
+        <div class="section-separator">
+            <div class="observations">
+                <?= nl2br(htmlspecialchars($pedido['observacoes'])) ?>
+            </div>
+        </div>
+        <?php endif; ?>
+
+        <!-- Totals -->
+        <div class="totals">
+            <div class="totals-row">
+                <span class="totals-label">SUB-TOTAL:</span>
+                <span class="totals-value">R$<?= number_format($pedido['total'], 2, ',', '.') ?></span>
+            </div>
+            <?php if (!empty($pedido['desconto']) && $pedido['desconto'] > 0): ?>
+            <div class="totals-row">
+                <span class="totals-label">DESC./ACRÉSC.:</span>
+                <span class="totals-value">-<?= number_format($pedido['desconto'], 2, ',', '.') ?>%</span>
+            </div>
+            <?php endif; ?>
+            <div class="total-final">
+                <div class="totals-row">
+                    <span>TOTAL COMANDO:</span>
+                    <span>R$<?= number_format($pedido['total'], 2, ',', '.') ?></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>CONCORDO COM O SERVIÇO ACIMA DESCRIMINADO.</p>
+            <div class="signature-line">
+                Assinatura do Cliente
+            </div>
+            <p style="margin-top: 8px; font-size: 8px;">
+                - NÃO ENTREGAREMOS AS JOIAS SEM ESTE COMPROVANTE.<br>
+                - NÃO NOS RESPONSABILIZAMOS POR ELE APÓS 90 DIAS DA DATA DE CONCLUSÃO DO SERVIÇO.
+            </p>
+        </div>
+
+    <hr style="margin: 30px 0;">
+        <!-- Header -->
+
+        <div class="receipt-header">
+            <h1><?= $loja['nome'] ?></h1>
+            <p><?= $loja['endereco'] ?> <?= $loja['cidade'] ?></p>
+            <p><?= $loja['cep'] ?></p>
+            <div style="font-size: 11px;display: flex;flex-direction: row;">
+                <div>FONE:</div>
+                <div><?= $loja['telefones'] ?></div>
+            </div>
+            <p style="font-size: 11px; text-transform: lowercase;">E-mail: <?= $loja['email'] ?></p>
+        </div>
+
+        
+        <p style="text-align: center; font-size: 10px;">--- Via do Cliente ---</p>
+
+        <!-- Pedido Info -->
+        <div class="section-separator">
+            <div class="receipt-info">
+                <div class="receipt-info-row">
+                    <div class="receipt-info-label">PEDIDO:</div>
+                    <div class="receipt-info-value"><?= str_pad($id, 6, '0', STR_PAD_LEFT) ?></div>
+                </div>
+                <div class="receipt-info-row">
+                    <div class="receipt-info-label">DATA PEDIDO:</div>
+                    <div class="receipt-info-value"><?= date('d/m/Y', strtotime($pedido['data_pedido'])) ?></div>
+                </div>
+                <?php if (!empty($pedido['data_entrega'])): ?>
+                <div class="receipt-info-row">
+                    <div class="receipt-info-label">DATA ENTREGA:</div>
+                    <div class="receipt-info-value"><?= date('d/m/Y', strtotime($pedido['data_entrega'])) ?></div>
+                </div>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- Cliente Info -->
+        <div class="receipt-info">
+            <div class="receipt-info-row">
+                <div class="receipt-info-label">CLIENTE:</div>
+                <div class="receipt-info-value">
+                    <?= $pedido['idCliente'] ?? '' ?> - 
+                    <?= htmlspecialchars(
+                        !empty($pedido['nome_pf']) 
+                        ? $pedido['nome_pf'] 
+                        : ($pedido['nome_fantasia_pj'] ?? 'Não informado')
+                    ) ?>
+                </div>
+            </div>
+            <div class="receipt-info-row">
+                <div class="receipt-info-label">TELEFONE:</div>
+                <div class="receipt-info-value">
+                    <?= $pedido['telefone'] ?? '----'; ?>
+                </div>
+            </div>
+            <?php if (!empty($pedido['whatsapp'])): ?>
+            <div class="receipt-info-row">
+                <div class="receipt-info-label">Whatsapp:</div>
+                <div class="receipt-info-value">
+                    <?= $pedido['whatsapp'] ?? '----'; ?>
+                </div>
+            </div>
+            <?php endif; ?>
+            <?php if (!empty($pedido['forma_pagamento'])): ?>
+            <div class="receipt-info-row">
+                <div class="receipt-info-label">PAGAMENTO:</div>
+                <div class="receipt-info-value"><?= htmlspecialchars($pedido['forma_pagamento']) ?></div>
+            </div>
+            <?php endif; ?>
+        </div>
+
+        <!-- Items -->
+        <div class="section-separator">
+            <h3 class="section-title">DESCRIÇÃO</h3>
+            
+            <div style="font-size: 12px;">
+                <?php foreach ($itens as $item): 
+                        $subtotal = ($item['quantidade'] * $item['valor_unitario']) * (1 - ($item['desconto_percentual'] / 100));
+                    ?>
+                        <?= number_format($item['quantidade'], 2, ',', '.') ?>
+                        &nbsp;&nbsp;&nbsp;
+                        <?= htmlspecialchars($item['nome_produto'] ?? $item['descricao_produto']) ?>
+                        <br>
+                        R$<?= number_format($subtotal, 2, ',', '.') ?>
+                        <br>
+                <?php endforeach; ?>
+            </div>
+
         </div>
 
         
@@ -378,6 +519,8 @@ $loja = [
             </p>
         </div>
     </div>
+
+
 
     <script>
         window.onload = function() {

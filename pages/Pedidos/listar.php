@@ -10,7 +10,7 @@ $pedidos = $controller->listar();
 <div class="card">
   <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
     <h3 class="card-title">Lista de Pedidos</h3>
-    <a href="<?php echo "{$url}!/{$link[1]}/cadastro"; ?>" class="btn btn-white text-primary">Adicionar Pedido</a>
+    <a href="<?php echo "{$url}!/{$link[1]}/Cadastro"; ?>" class="btn btn-white text-primary">Adicionar Pedido</a>
   </div>
 
   <div class="card-body">
@@ -67,11 +67,11 @@ $pedidos = $controller->listar();
                       </a>
                     <?php } ?>
                   </li>
-                  <?php if ($pedido['status_pedido'] == 'Pendente') { ?>
+                  <?php //if ($pedido['status_pedido'] == 'Pendente') { ?>
                   <li>
                     <a href="<?= "{$url}!/Notas/emitir-nota/{$pedido['id']}" ?>" class="dropdown-item">Emitir Nota</a>
                   </li>
-                  <?php } ?>
+                  <?php //} ?>
                   <li>
                     <?php if (!empty($pedido['status_fabrica'])) { ?>
                       <a href="<?= "{$url}!/Fabrica/pedido/{$pedido['id']}" ?>"
