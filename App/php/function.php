@@ -1,4 +1,8 @@
 <?php
+
+
+use App\Models\Feriados\ControllerFeriados;
+
 $data_atual = date('Y-m-d');
 
 function moeda($valor)
@@ -382,11 +386,20 @@ function adicionarDiasUteis($data, $dias)
 {
     $data = new DateTime($data);
     $adicionados = 0;
+    $controllerFeriados = new ControllerFeriados();
 
     while ($adicionados < $dias) {
         $data->modify('+1 day');
-        if (!in_array($data->format('N'), [6, 7])) { // 6 = Sábado, 7 = Domingo
-            $adicionados++;
+        
+        // Verifica se não é fim de semana (6 = Sábado, 7 = Domingo)
+        if (!in_array($data->format('N'), [6, 7])) {
+            // Verifica se não é feriado
+            $feriado = $controllerFeriados->Feriado($data->format('Y-m-d'));
+            
+            // Se não for feriado, conta como dia útil
+            if (empty($feriado)) {
+                $adicionados++;
+            }
         }
     }
 

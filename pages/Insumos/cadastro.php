@@ -42,7 +42,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     'em_reais' => $_POST['em_reais'] ?? null,
     'capa' => $_POST['capa_base64'] ?? null,
     'formato' => $_POST['formato'] ?? null,
-    'observacoes' => $_POST['observacoes'] ?? null
+    'observacoes' => $_POST['observacoes'] ?? null,
+    'descricao_etiqueta_manual' => $_POST['descricao_etiqueta_manual'] ?? null,
   ];
 
   $return = $controller->cadastro($dados);
@@ -119,7 +120,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
           <div class="row g-3">
             <div class="col-lg-12">
               <div id="preview-container" style="text-align: center;">
-                <img id="preview-thumb" src="" alt="Preview da Imagem" style="max-width: 100%; max-height: 108px; display: none; border: 1px solid #ddd; padding: 5px; border-radius: 5px;">
+                <a href="#" data-bs-toggle="modal" data-bs-target="#modalImagemProduto" style="cursor: pointer; display: none;" id="preview-link">
+                  <img id="preview-thumb" src="" alt="Preview da Imagem" style="max-width: 100%; max-height: 108px; display: block; border: 1px solid #ddd; padding: 5px; border-radius: 5px;">
+                </a>
               </div>
             </div>
             <div class="col-lg-12">
@@ -509,6 +512,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
   </div>
 </div>
+
+<!-- Modal Lightbox para Imagem do Produto -->
+<div class="modal fade" id="modalImagemProduto" tabindex="-1" aria-labelledby="modalImagemProdutoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalImagemProdutoLabel">Imagem do Produto</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center">
+        <img id="modal-image-full" src="" alt="Imagem do Produto" style="max-width: 100%; max-height: 70vh; object-fit: contain;">
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
   const cotacaoSelect = document.getElementById('cotacao');
   const precoQlInput = document.getElementById('preco_ql');
@@ -673,10 +692,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       reader.onload = function(e) {
         const base64 = e.target.result; // Base64 da imagem
         const previewThumb = document.getElementById('preview-thumb');
+        const previewLink = document.getElementById('preview-link');
+        const modalImageFull = document.getElementById('modal-image-full');
         const fotoCapaBase64 = document.getElementById('capa_base64');
 
         previewThumb.src = base64; // Define a imagem para exibição
-        previewThumb.style.display = 'block'; // Exibe o thumbnail
+        previewLink.style.display = 'block'; // Exibe o link clicável
+        modalImageFull.src = base64; // Atualiza a imagem no modal lightbox
         fotoCapaBase64.value = base64; // Armazena o Base64 no campo oculto
       };
 

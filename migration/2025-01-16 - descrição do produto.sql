@@ -1,0 +1,1 @@
+ALTER TABLE `produtos` ADD `descricao_etiqueta_manual` TEXT NULL AFTER `descricao_etiqueta`;

@@ -20,6 +20,8 @@ $materialController = new MaterialController();
 <script>
     $(document).ready(function() {
     $('#example1').DataTable({
+        "order": [[0, "desc"]], // Ordenar pela coluna ID em ordem decrescente
+        "stateSave": true, // Salvar estado da tabela (página, pesquisa, ordenação)
         "language": {
             "sEmptyTable": "Nenhum dado disponível na tabela",
             "sInfo": "Mostrando de _START_ até _END_ de _TOTAL_ entradas",

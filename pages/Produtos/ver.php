@@ -33,11 +33,13 @@ if (!$produto) {
     <div class="row g-3">
     <div class="col-lg-12">
         <label class="form-label fw-bold">Capa</label><br>
-        <img
+        <a href="#" data-bs-toggle="modal" data-bs-target="#modalImagemProduto" style="cursor: pointer;">
+          <img
                                 src="<?= isset($produto['capa']) && !empty($produto['capa']) ? htmlspecialchars($produto['capa']) : $url . '/assets/img_padrao.webp'; ?>"
                                 alt="Capa do Produto"
                                 width="100"
                                 style="height: 100px; object-fit: cover; border: 1px solid #ddd; border-radius: 5px;">
+        </a>
       </div>
       <!-- Descrição Etiqueta -->
       <div class="col-lg-12">
@@ -197,3 +199,18 @@ if (!$produto) {
     </div><!-- /.row -->
   </div><!-- /.card-body -->
 </div><!-- /.card -->
+
+<!-- Modal para visualizar imagem ampliada -->
+<div class="modal fade" id="modalImagemProduto" tabindex="-1" aria-labelledby="modalImagemProdutoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalImagemProdutoLabel">Imagem do Produto</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body text-center">
+        <img id="imagem-ampliada" src="<?= isset($produto['capa']) && !empty($produto['capa']) ? htmlspecialchars($produto['capa']) : $url . '/assets/img_padrao.webp'; ?>" alt="Imagem Ampliada" style="max-width: 100%; height: auto;">
+      </div>
+    </div>
+  </div>
+</div>

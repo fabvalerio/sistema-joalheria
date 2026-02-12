@@ -21,6 +21,15 @@ class ControllerFeriados
         return $db->single();
     }
 
+    public function Feriado($data_feriado)
+    {
+        $db = new db();
+        $db->query("SELECT * FROM feriados WHERE data_feriado = :data_feriado");
+        $db->bind(":data_feriado", $data_feriado);
+        return $db->single();
+    }
+
+
     public function cadastro($dados)
     {
         $db = new db();

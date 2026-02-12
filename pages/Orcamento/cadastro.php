@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Orcamento\Controller;
+use App\Models\GrupoProdutos\Controller as GrupoController;
 
 $controller = new Controller();
 $clientes = $controller->listarClientes(); // Obter lista de clientes
@@ -70,6 +71,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
+//lista de grupo de produtos
+$grupoController = new GrupoController();
+$grupos = $grupoController->listarSelectTempo();
+
 ?>
 <link href="<?php echo $url?>vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
 <div class="card">
@@ -82,6 +87,61 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <form method="POST" action="<?php echo "{$url}!/{$link[1]}/{$link[2]}" ?>" class="needs-validation" novalidate>
             <div class="row g-3">
                 <div class="col-12">
+
+                    <h6 class="card-title">Tipo de Grupo</h6>
+                    <select class="form-select mb-3" id="grupo_produto_id" name="grupo_produto_id">
+                        <option value="0" selected>Nenhum</option>
+                        <?php foreach ($grupos as $grupo): ?>
+                            <option value="<?php echo $grupo['tempo']; ?>"><?php echo htmlspecialchars($grupo['nome_grupo']) . ' - ' . htmlspecialchars($grupo['tempo'] ?? '0') . ' dias'; ?></option>
+                        <?php endforeach; ?>
+                    </select>
+
+                    <script>
+                        document.addEventListener('DOMContentLoaded', () => {
+                            const grupoSelect = document.getElementById('grupo_produto_id');
+                            const dataPedidoInput = document.getElementById('data_pedido');
+                            const dataEntregaInput = document.getElementById('data_entrega');
+
+                            // Função para adicionar dias úteis
+                            function adicionarDiasUteis(dataInicial, diasUteis) {
+                                let data = new Date(dataInicial + 'T00:00:00');
+                                let diasAdicionados = 0;
+
+                                while (diasAdicionados < diasUteis) {
+                                    data.setDate(data.getDate() + 1);
+                                    const diaSemana = data.getDay();
+                                    // Se não for sábado (6) ou domingo (0)
+                                    if (diaSemana !== 0 && diaSemana !== 6) {
+                                        diasAdicionados++;
+                                    }
+                                }
+
+                                return data.toISOString().split('T')[0];
+                            }
+
+                            // Função para atualizar data de entrega
+                            function atualizarDataEntrega() {
+                                const diasUteis = parseInt(grupoSelect.value) || 0;
+                                const dataPedido = dataPedidoInput.value;
+
+                                if (dataPedido && diasUteis > 0) {
+                                    const novaDataEntrega = adicionarDiasUteis(dataPedido, diasUteis);
+                                    dataEntregaInput.value = novaDataEntrega;
+                                } else if (dataPedido) {
+                                    // Se não houver dias úteis, usar a data do pedido
+                                    dataEntregaInput.value = dataPedido;
+                                }
+                            }
+
+                            // Eventos
+                            grupoSelect.addEventListener('change', atualizarDataEntrega);
+                            dataPedidoInput.addEventListener('change', atualizarDataEntrega);
+
+                            // Calcular ao carregar a página
+                            atualizarDataEntrega();
+                        });
+                    </script>
+
                     <hr>
                     <h4 class="card-title">Dados do Orçamento</h4>
                 </div>

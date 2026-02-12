@@ -93,6 +93,12 @@ if (!empty($tipoFiltro)) {
                                 <ul class="dropdown-menu">
 
                                     <li>
+                                        <a href="<?= "{$url}!/{$link[1]}/editar/{$definicao['id']}" ?>" class="dropdown-item text-dark">
+                                            Editar
+                                        </a>
+                                    </li>
+
+                                    <li>
                                         <a href="<?= "{$url}!/{$link[1]}/deletar/{$definicao['id']}" ?>" class="dropdown-item text-danger">
                                             Excluir
                                         </a>

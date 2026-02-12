@@ -12,6 +12,13 @@ class Controller
         return $db->resultSet();
     }
 
+    public function listarSelectTempo()
+    {
+        $db = new db();
+        $db->query("SELECT * FROM grupo_produtos WHERE tempo IS NOT NULL ORDER BY nome_grupo ASC");
+        return $db->resultSet();
+    }
+
     public function ver($id)
     {
         $db = new db();

@@ -282,7 +282,7 @@ $loja = [
                 <?php if (!empty($pedido['data_entrega'])): ?>
                 <div class="receipt-info-row">
                     <div class="receipt-info-label">DATA ENTREGA:</div>
-                    <div class="receipt-info-value"><?= date('d/m/Y', strtotime($pedido['data_entrega'])) ?></div>
+                    <div class="receipt-info-value"><?= subtrairDiasUteis(date('d/m/Y', strtotime($pedido['data_entrega'])), 2) ?></div>
                 </div>
                 <?php endif; ?>
             </div>

@@ -19,6 +19,8 @@ $produtos = $controller->listar();
     // Salva e restaura a página atual da tabela usando localStorage
     $(document).ready(function() {
         var tabela = $('#example1').DataTable({
+        "order": [[0, "asc"]], // Ordenar pela coluna ID em ordem decrescente
+        "stateSave": true, // Salvar estado da tabela (página, pesquisa, ordenação)
             "language": {
                 "sEmptyTable": "Nenhum dado disponível na tabela",
                 "sInfo": "Mostrando de _START_ até _END_ de _TOTAL_ entradas",

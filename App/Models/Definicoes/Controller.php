@@ -34,13 +34,13 @@ class Controller
     }
 
     // Editar um registro pelo ID
-    public function editar($id, $dados)
+    public function editar($dados)
     {
         $db = new db();
         $db->query("UPDATE produto_definicoes SET nome = :nome, tipo = :tipo WHERE id = :id");
         $db->bind(":nome", $dados['nome']);
         $db->bind(":tipo", $dados['tipo']);
-        $db->bind(":id", $id);
+        $db->bind(":id", $dados['id']);
         return $db->execute();
     }
 

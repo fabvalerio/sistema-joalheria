@@ -102,6 +102,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <div id="product-list">
                         <!-- Campo inicial para produtos -->
                         <div class="row g-3 align-items-end product-item mb-2">
+                            <div class="col-lg-2">
+                                 <label class="form-label">Código</label>
+                                 <input type="text" value="" class="form-control product-code" readonly>   
+                            </div>
                             <div class="col-lg-4">
                                 <label class="form-label">Produto</label>
                                 <input type="text" class="form-control product-input" name="produtos[0][descricao]" placeholder="Clique para selecionar um produto" readonly data-index="0">
@@ -317,6 +321,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     const parentItem = activeInput.closest('.product-item');
                     activeInput.value = productName;
                     parentItem.querySelector('.product-id').value = productId;
+                    parentItem.querySelector('.product-code').value = productId;
                     parentItem.querySelector('.product-price').value = productPrice;
                     parentItem.querySelector('.product-price-display').value = productPrice;
                     
@@ -336,6 +341,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 const productIndex = productList.children.length;
                 const newProductItem = `
                     <div class="row g-3 align-items-end product-item mb-2">
+                        <div class="col-lg-2">
+                            <input type="text" value="" class="form-control product-code" readonly>
+                        </div>
                         <div class="col-lg-4">
                             <input type="text" class="form-control product-input" placeholder="Clique para selecionar um produto" name="produtos[${productIndex}][descricao]" readonly data-index="${productIndex}">
                             <input type="hidden" name="produtos[${productIndex}][id]" class="product-id">

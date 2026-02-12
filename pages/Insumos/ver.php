@@ -28,16 +28,18 @@ if (!$produto) {
     <div class="row g-3">
     <div class="col-lg-12">
         <label class="form-label fw-bold">Capa</label><br>
-        <img
+        <a href="#" data-bs-toggle="modal" data-bs-target="#modalImagemProduto" style="cursor: pointer;">
+          <img
                                 src="<?= isset($produto['capa']) && !empty($produto['capa']) ? htmlspecialchars($produto['capa']) : $url . '/assets/img_padrao.webp'; ?>"
                                 alt="Capa do Produto"
                                 width="100"
                                 style="height: 100px; object-fit: cover; border: 1px solid #ddd; border-radius: 5px;">
+        </a>
       </div>
       <!-- Descrição Etiqueta -->
       <div class="col-lg-12">
         <label class="form-label fw-bold">Descrição Etiqueta</label><br>
-        <?= htmlspecialchars($produto['descricao_etiqueta'] ?? '') ?>
+        <?= htmlspecialchars($produto['descricao_etiqueta'] ?? '-') ?>
       </div>
 
       <div class="col-12"><hr></div>
@@ -46,19 +48,19 @@ if (!$produto) {
       <div class="col-lg-4">
         <label class="form-label fw-bold">Fornecedor</label><br>
         <!-- Se no método ver() você estiver selecionando f.nome_fantasia como 'fornecedor_nome', então use $produto['fornecedor_nome'] -->
-        <?= htmlspecialchars($produto['fornecedor_nome'] ?? '') ?>
+        <?= htmlspecialchars($produto['fornecedor_nome'] ?? '-') ?>
       </div>
 
       <!-- Grupo -->
       <div class="col-lg-4">
         <label class="form-label fw-bold">Grupo</label><br>
-        <?= htmlspecialchars($produto['grupo_nome'] ?? '') ?>
+        <?= htmlspecialchars($produto['grupo_nome'] ?? '-') ?>
       </div>
 
       <!-- Subgrupo -->
       <div class="col-lg-4">
         <label class="form-label fw-bold">Subgrupo</label><br>
-        <?= htmlspecialchars($produto['subgrupo_nome'] ?? '') ?>
+        <?= htmlspecialchars($produto['subgrupo_nome'] ?? '-') ?>
       </div>
 
       <div class="col-12"><hr></div>
@@ -66,73 +68,73 @@ if (!$produto) {
       <!-- Descrição Adicional Etiqueta (Manual) -->
       <div class="col-lg-12">
         <label class="form-label fw-bold">Descrição Adicional (Opcional)</label><br>
-        <?= htmlspecialchars($produto['descricao_etiqueta_manual'] ?? '') ?>
+        <?= htmlspecialchars($produto['descricao_etiqueta_manual'] ?? '-') ?>
       </div>
 
       <!-- Modelo -->
       <div class="col-lg-4">
         <label class="form-label fw-bold">Modelo</label><br>
-        <?= htmlspecialchars($produto['modelo'] ?? '') ?>
+        <?= htmlspecialchars($produto['modelo'] ?? '-') ?>
       </div>
 
       <!-- Aros -->
       <div class="col-lg-2">
         <label class="form-label fw-bold">Aros</label><br>
-        <?= htmlspecialchars($produto['aros'] ?? '') ?>
+        <?= htmlspecialchars($produto['aros'] ?? '-') ?>
       </div>
 
       <!-- Pontos -->
       <div class="col-lg-2">
         <label class="form-label fw-bold">Pontos</label><br>
-        <?= htmlspecialchars($produto['pontos'] ?? '') ?>
+        <?= htmlspecialchars($produto['pontos'] ?? '-') ?>
       </div>
 
       <!-- Maciça/Oca -->
       <div class="col-lg-2">
         <label class="form-label fw-bold">Material (Maciça/Oca)</label><br>
-        <?= htmlspecialchars($produto['macica_ou_oca'] ?? '') ?>
+        <?= htmlspecialchars($produto['macica_ou_oca'] ?? '-') ?>
       </div>
 
       <!-- Pedra -->
       <div class="col-lg-2">
         <label class="form-label fw-bold">Pedra</label><br>
-        <?= htmlspecialchars($produto['pedra'] ?? '') ?>
+        <?= htmlspecialchars($produto['pedra'] ?? '-') ?>
       </div>
 
       <!-- Peso (g) -->
       <div class="col-lg-2">
         <label class="form-label fw-bold">Peso (g)</label><br>
-        <?= htmlspecialchars($produto['peso'] ?? '') ?>
+        <?= htmlspecialchars($produto['peso'] ?? '-') ?>
       </div>
 
       <!-- Unidade -->
       <div class="col-lg-2">
         <label class="form-label fw-bold">Unidade</label><br>
-        <?= htmlspecialchars($produto['unidade'] ?? '') ?>
+        <?= htmlspecialchars($produto['unidade'] ?? '-') ?>
       </div>
 
       <!-- Natural ou Sintético -->
       <div class="col-lg-2">
         <label class="form-label fw-bold">Natural ou Sintético</label><br>
-        <?= htmlspecialchars($produto['nat_ou_sint'] ?? '') ?>
+        <?= htmlspecialchars($produto['nat_ou_sint'] ?? '-') ?>
       </div>
 
       <!-- Milímetros (mm) -->
       <div class="col-lg-2">
         <label class="form-label fw-bold">Milímetros (mm)</label><br>
-        <?= htmlspecialchars($produto['mm'] ?? '') ?>
+        <?= htmlspecialchars($produto['mm'] ?? '-') ?>
       </div>
 
       <!-- Centímetros (cm) -->
       <div class="col-lg-2">
         <label class="form-label fw-bold">Centímetros (cm)</label><br>
-        <?= htmlspecialchars($produto['cm'] ?? '') ?>
+        <?= htmlspecialchars($produto['cm'] ?? '-') ?>
       </div>
 
       <!-- Quantidade -->
       <div class="col-lg-2">
         <label class="form-label fw-bold">Quantidade</label><br>
-        <?= htmlspecialchars($produto['estoque_princ'] ?? '') ?>
+        <?= htmlspecialchars($produto['estoque_princ'] ?? '-') ?>
       </div>
 
       <div class="col-12"><hr></div>
@@ -141,25 +143,25 @@ if (!$produto) {
       <div class="col-lg-4">
         <label class="form-label fw-bold">Cotação</label><br>
         <!-- Se no método ver() você estiver selecionando c.nome como 'cotacao_nome', então use $produto['cotacao_nome'] -->
-        <?= htmlspecialchars($produto['cotacao_nome'] ?? '') ?>
+        <?= htmlspecialchars($produto['cotacao_nome'] ?? '-') ?>
       </div>
 
       <!-- Preço QL -->
       <div class="col-lg-2">
         <label class="form-label fw-bold">Preço QL</label><br>
-        <?= htmlspecialchars($produto['preco_ql'] ?? '') ?>
+        <?= htmlspecialchars($produto['preco_ql'] ?? '-') ?>
       </div>
 
       <!-- Peso Gr -->
       <div class="col-lg-2">
         <label class="form-label fw-bold">Peso Gr</label><br>
-        <?= htmlspecialchars($produto['peso_gr'] ?? '') ?>
+        <?= htmlspecialchars($produto['peso_gr'] ?? '-') ?>
       </div>
 
       <!-- Margem -->
       <div class="col-lg-2">
         <label class="form-label fw-bold">Margem (%)</label><br>
-        <?= htmlspecialchars($produto['margem'] ?? '') ?>
+        <?= htmlspecialchars($produto['margem'] ?? '-') ?>
       </div>
 
       <!-- Custo -->
@@ -192,3 +194,18 @@ if (!$produto) {
     </div><!-- /.row -->
   </div><!-- /.card-body -->
 </div><!-- /.card -->
+
+<!-- Modal para visualizar imagem ampliada -->
+<div class="modal fade" id="modalImagemProduto" tabindex="-1" aria-labelledby="modalImagemProdutoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalImagemProdutoLabel">Imagem do Insumo</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body text-center">
+        <img id="imagem-ampliada" src="<?= isset($produto['capa']) && !empty($produto['capa']) ? htmlspecialchars($produto['capa']) : $url . '/assets/img_padrao.webp'; ?>" alt="Imagem Ampliada" style="max-width: 100%; height: auto;">
+      </div>
+    </div>
+  </div>
+</div>

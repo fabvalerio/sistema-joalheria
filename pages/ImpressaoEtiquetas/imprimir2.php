@@ -104,123 +104,115 @@ function resumirTextoEtiqueta($texto) {
     <title>Impressão de Etiquetas</title>
 
 <style>
-    body{
+    /* Configuração para impressora Elgin L42Pro - Etiquetas 40mm x 25mm */
+    
+    * {
         margin: 0;
         padding: 0;
-    }
-    .etiqueta-preview {
-        width: 8.4cm;
-        height: 1cm;
-        display: inline-block;
-        position: relative;
+        box-sizing: border-box;
     }
     
-    .etiqueta-preview.direita {
-        margin-right: 0;
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
     }
     
-    .etiqueta-preview.esquerda {
-        margin-left: 0;
+    @page {
+        size: 40mm 25mm; /* Volta para tamanho individual */
+        margin: 0;
     }
     
     .etiqueta-preview-container {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        max-width: 8.4cm;
-        margin: 0 auto;
+        display: block;
+        width: 40mm; /* Largura para uma única coluna */
     }
     
-    .area-impressao {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 4cm;
-        height: 1cm;
+    .etiqueta-preview {
+        width: 40mm;
+        height: 25mm;
         display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5mm;
+        position: relative;
+        overflow: hidden;
         box-sizing: border-box;
+        page-break-after: always; /* Quebra página após cada etiqueta */
     }
     
-    .area-impressao.direita {
-        left: auto;
-        right: 0;
-        z-index: 100;
+    /* Etiqueta esquerda: texto à esquerda, barcode à direita */
+    .etiqueta-preview.esquerda {
+        flex-direction: row;
     }
     
-    .area-impressao.esquerda {
-        left: 0;
-        right: auto;
+    /* Etiqueta direita: barcode à esquerda, texto à direita */
+    .etiqueta-preview.direita {
+        flex-direction: row-reverse;
+    }
+    
+    /* Remove regra anterior de quebra a cada 2 */
+    .etiqueta-preview:last-child {
+        page-break-after: auto;
     }
     
     .area-texto {
-        width: 2cm;
-        height: 1.1cm;
-        padding: 3px;
-        font-size: 7pt;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        width: 18mm;
+        flex-shrink: 0;
         text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .texto-principal {
+        font-size: 7pt;
+        font-weight: bold;
+        line-height: 1.1;
+        margin-bottom: 1mm;
         word-wrap: break-word;
-        overflow: hidden;
-        box-sizing: border-box;
+    }
+    
+    .texto-codigo {
+        font-size: 6pt;
+        font-weight: normal;
+        margin-top: 0.5mm;
     }
     
     .area-barcode {
-        width: 2cm;
-        height: 1cm;
+        width: 19mm;
+        flex-shrink: 0;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: 2px;
-        text-align: center;
-        font-size: 7px;
-        box-sizing: border-box;
-        overflow: hidden;
-    }
-    
-    .area-vazia {
-        position: absolute;
-        right: 0;
-        top: 0;
-        width: 4cm;
-        height: 1cm;
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        color: #999;
-        font-size: 8pt;
-        box-sizing: border-box;
-        flex-direction: column;
-    }
-    
-    .area-vazia.direita {
-        left: 0;
-        right: auto;
-    }
-    
-    .area-vazia.esquerda {
-        left: auto;
-        right: 0;
     }
     
     .barcode-svg {
-        max-width: 51px;
+        max-width: 19mm;
         height: auto;
+        max-height: 18mm;
     }
-
-    .marginTop{
-        margin-top: -0.13cm; /* alterei de -0.4cm */
-    }
-
-     .folha{
-         height: 18mm;
-    } 
-
 
     /* Configurações específicas para impressão */
     @media print {
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        
+        .etiqueta-preview {
+            margin: 0;
+            border: none;
+        }
+        
+        /* Remove qualquer margem adicional */
+        .etiqueta-preview-container {
+            margin: 0;
+            padding: 0;
+        }
     }
 
 </style>
@@ -238,46 +230,35 @@ function resumirTextoEtiqueta($texto) {
                 
                 // Gerar N etiquetas conforme quantidade
                 for ($i = 0; $i < $quantidade; $i++): 
-                    $lado = ($indexGlobal % 2 === 0) ? 'direita' : 'esquerda';
                     $barcodeId = $produto['id'] . '-' . $i;
-
-                    $encaixeTop = ($indexGlobal > 0 ) ? 'marginTop' : '';
-                    if($indexGlobal > 0){
-                        $enter = ($indexGlobal % 2 === 0) ? 'marginBottom' : '';
-                    }
-
-                    if( $lado == 'direita' ){ echo '<div class="folha">'; }
+                    $lado = ($indexGlobal % 2 === 0) ? 'esquerda' : 'direita';
             ?>
-                    <div class="etiqueta-preview <?=  $encaixeTop ?>">
-                        <div class="area-impressao <?= $lado ?? '' ?>">
-                            <div class="area-texto">
+                    <div class="etiqueta-preview <?= $lado ?>">
+                        <div class="area-texto">
+                            <div class="texto-principal">
                                 <?= htmlspecialchars(resumirTextoEtiqueta($produto['descricao_etiqueta'])) ?>
                             </div>
-                            <div class="area-barcode">
-                                <div style="font-size: 10px;"><?= str_pad($produto['id'], 6, '0', STR_PAD_LEFT) ?></div>
-                                <div>
-                                    <svg class="barcode-svg" id="barcode-<?= $barcodeId ?>"></svg>
-                                </div>
+                            <div class="texto-codigo">
+                                <?= htmlspecialchars($produto['id']) ?>
                             </div>
                         </div>
-                        <!-- <div class="area-vazia <?= $lado ?>"></div> -->
+                        <div class="area-barcode">
+                            <svg class="barcode-svg" id="barcode-<?= $barcodeId ?>"></svg>
+                        </div>
                     </div>
             <?php 
                     $indexGlobal++;
-
-                    if( $lado == 'esquerda' ){ echo '</div>';}
                 endfor;
-
             endforeach; 
             ?>
         </div>
 
 
 <!-- Biblioteca para gerar código de barras -->
-<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11/dist/JsBarcode.all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
 
 <script>
-// Gerar códigos de barras
+// Gerar códigos de barras otimizados para Elgin L42Pro
 <?php 
 foreach ($produtos as $produto): 
     $quantidade = $produtos_com_quantidade[$produto['id']] ?? 1;
@@ -288,11 +269,11 @@ foreach ($produtos as $produto):
     JsBarcode("#barcode-<?= $barcodeId ?>", "<?= $ean13 ?>", {
         format: "EAN13",
         width: 1.2,
-        height: 20,
-        displayValue: false,
+        height: 40,
+        displayValue: true,
         fontSize: 8,
         margin: 0,
-        textMargin: 1,
+        textMargin: 0.5,
         fontOptions: "bold"
     });
 <?php 
