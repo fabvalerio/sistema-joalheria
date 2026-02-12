@@ -107,6 +107,7 @@ function resumirTextoEtiqueta($texto) {
     body{
         margin: 0;
         padding: 0;
+        font-family: 'Times New Roman', Helvetica, sans-serif;
     }
     .etiqueta-preview {
         width: 8.4cm;
@@ -145,22 +146,24 @@ function resumirTextoEtiqueta($texto) {
         left: auto;
         right: 0;
         z-index: 100;
-    }
+        padding: 1mm 0 0 0;
+}
+
     
     .area-impressao.esquerda {
-        left: 0;
+        left: 5px;
         right: auto;
     }
     
     .area-texto {
         width: 2cm;
         height: 1.1cm;
-        padding: 3px;
+        padding: 3px 4px 3px 0px;
         font-size: 7pt;
         display: flex;
         align-items: center;
         justify-content: center;
-        text-align: center;
+        text-align: left;
         word-wrap: break-word;
         overflow: hidden;
         box-sizing: border-box;
@@ -211,7 +214,7 @@ function resumirTextoEtiqueta($texto) {
     }
 
     .marginTop{
-        margin-top: -0.13cm; /* alterei de -0.4cm */
+        margin-top: -0.18cm; /* alterei de -0.4cm */
     }
 
      .folha{
@@ -238,23 +241,23 @@ function resumirTextoEtiqueta($texto) {
                 
                 // Gerar N etiquetas conforme quantidade
                 for ($i = 0; $i < $quantidade; $i++): 
-                    $lado = ($indexGlobal % 2 === 0) ? 'direita' : 'esquerda';
+                    $lado = ($indexGlobal % 2 === 0) ? 'direita' : 'esquerda marginTop';
                     $barcodeId = $produto['id'] . '-' . $i;
-
                     $encaixeTop = ($indexGlobal > 0 ) ? 'marginTop' : '';
                     if($indexGlobal > 0){
                         $enter = ($indexGlobal % 2 === 0) ? 'marginBottom' : '';
                     }
-
                     if( $lado == 'direita' ){ echo '<div class="folha">'; }
+
+                    if($indexGlobal % 2 === 0){
             ?>
-                    <div class="etiqueta-preview <?=  $encaixeTop ?>">
+                    <div class="etiqueta-preview ">
                         <div class="area-impressao <?= $lado ?? '' ?>">
                             <div class="area-texto">
                                 <?= htmlspecialchars(resumirTextoEtiqueta($produto['descricao_etiqueta'])) ?>
                             </div>
                             <div class="area-barcode">
-                                <div style="font-size: 10px;"><?= str_pad($produto['id'], 6, '0', STR_PAD_LEFT) ?></div>
+                                <div style="font-size: 12px; margin-bottom: 5px;"><?= str_pad($produto['id'], 6, '0', STR_PAD_LEFT) ?></div>
                                 <div>
                                     <svg class="barcode-svg" id="barcode-<?= $barcodeId ?>"></svg>
                                 </div>
@@ -263,11 +266,27 @@ function resumirTextoEtiqueta($texto) {
                         <!-- <div class="area-vazia <?= $lado ?>"></div> -->
                     </div>
             <?php 
+                    } else {
+            ?>
+                    <div class="etiqueta-preview ">
+                        <div class="area-impressao <?= $lado ?? '' ?>">
+                            <div class="area-barcode">
+                                <div style="font-size: 12px; margin-bottom: 5px;"><?= str_pad($produto['id'], 6, '0', STR_PAD_LEFT) ?></div>
+                                <div>
+                                    <svg class="barcode-svg" id="barcode-<?= $barcodeId ?>"></svg>
+                                </div>
+                            </div>
+                            <div class="area-texto">
+                                <?= htmlspecialchars(resumirTextoEtiqueta($produto['descricao_etiqueta'])) ?>
+                            </div>
+                        </div>
+                        <!-- <div class="area-vazia <?= $lado ?>"></div> -->
+                    </div>
+            <?php
+                    }
                     $indexGlobal++;
-
                     if( $lado == 'esquerda' ){ echo '</div>';}
                 endfor;
-
             endforeach; 
             ?>
         </div>
@@ -286,14 +305,14 @@ foreach ($produtos as $produto):
         $barcodeId = $produto['id'] . '-' . $i;
 ?>
     JsBarcode("#barcode-<?= $barcodeId ?>", "<?= $ean13 ?>", {
-        format: "EAN13",
-        width: 1.2,
+        format: "pharmacode",
+        // width: 1.2,
         height: 20,
         displayValue: false,
-        fontSize: 8,
+        // fontSize: 8,
         margin: 0,
-        textMargin: 1,
-        fontOptions: "bold"
+        // textMargin: 1,
+        // fontOptions: "bold"
     });
 <?php 
     endfor;
