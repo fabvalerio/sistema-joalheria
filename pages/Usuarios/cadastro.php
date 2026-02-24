@@ -4,8 +4,8 @@ use App\Models\Usuarios\Controller;
 // Obter os cargos
 // Instanciar o Controller de Usuários
 $controller = new Controller();
-// Obter os cargos
 $cargos = $controller->cargos();
+$lojas = $controller->listarLojas();
 $diretorios = $controller->listarDiretorios();
 $permissoesUsuario = [];
 foreach ($diretorios as $dir) {
@@ -33,7 +33,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         'bairro' => $_POST['bairro'],
         'numero' => $_POST['numero'],
         'status' => $_POST['status'],
-        'permissoes' => null // Inicializa as permissões como null
+        'loja_id' => $_POST['loja_id'] ?? null,
+        'permissoes' => null
     ];
     // Verifica se há permissões enviadas
     if (isset($_POST['permissoes'])) {
@@ -162,6 +163,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <option select disabled>Selecione o Status</option>
                         <option value="1">Ativo</option>
                         <option value="0">Inativo</option>
+                    </select>
+                </div>
+                <div class="col-lg-4">
+                    <label for="" class="form-label">Loja</label>
+                    <select class="form-select" name="loja_id">
+                        <option value="">Selecione a Loja</option>
+                        <?php foreach ($lojas as $loja): ?>
+                            <option value="<?= $loja['id'] ?>"><?= htmlspecialchars($loja['nome']) ?> (<?= $loja['tipo'] ?>)</option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
                 <hr>

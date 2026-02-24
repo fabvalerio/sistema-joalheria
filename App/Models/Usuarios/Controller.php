@@ -112,9 +112,16 @@ class Controller
     //chama lista de cargos
     public function cargos()
     {
-        $db = new db(); // Instanciar a conexão com o banco de dados
-        $db->query("SELECT * FROM cargos ORDER BY id ASC"); // Consultar todos os cargos
-        $resultados = $db->resultSet(); // Armazenar os resultados
+        $db = new db();
+        $db->query("SELECT * FROM cargos ORDER BY id ASC");
+        $resultados = $db->resultSet();
         return $resultados;
+    }
+
+    public function listarLojas()
+    {
+        $db = new db();
+        $db->query("SELECT id, nome, tipo FROM loja WHERE status = 1 ORDER BY tipo ASC, nome ASC");
+        return $db->resultSet();
     }
 }

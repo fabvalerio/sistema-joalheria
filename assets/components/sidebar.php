@@ -47,6 +47,7 @@
             <div class="bg-white py-2 collapse-inner rounded">
                 <a class="collapse-item" href="<?php echo "{$url}!/ImpressaoEtiquetas/listar" ?>">Impressão de Etiquetas</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Consignacao/listar" ?>">Consignação</a>
+                <a class="collapse-item" href="<?php echo "{$url}!/Consignacao/vendedoras" ?>">Produtos por Vendedora</a>
             </div>
         </div>
     </li>
@@ -62,7 +63,7 @@
             <i class="fas fa-fw fa-box"></i>
             <span>Produtos & Estoque</span>
         </a>
-        <div id="produtosEstoque" class="collapse <?php echo in_array($link[1], ['Produtos', 'Insumos', 'GrupoProdutos', 'SubGrupoProdutos', 'Definicoes', 'Cotacoes', 'EntradaMercadorias', 'MovimentacaoEstoque']) ? 'show' : ''; ?>" aria-labelledby="headingProdutosEstoque" data-bs-parent="#accordionSidebar">
+        <div id="produtosEstoque" class="collapse <?php echo in_array($link[1] ?? '', ['Produtos', 'Insumos', 'GrupoProdutos', 'SubGrupoProdutos', 'Definicoes', 'Cotacoes', 'EntradaMercadorias', 'MovimentacaoEstoque', 'TransferenciaEstoque']) ? 'show' : ''; ?>" aria-labelledby="headingProdutosEstoque" data-bs-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
                 <a class="collapse-item" href="<?php echo "{$url}!/Produtos/listar" ?>">Produtos</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Insumos/listar" ?>">Insumos</a>
@@ -71,6 +72,7 @@
                 <a class="collapse-item" href="<?php echo "{$url}!/Definicoes/listar" ?>">Definições</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Cotacoes/listar" ?>">Cotações</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/EntradaMercadorias/listar" ?>">Entrada de Mercadorias</a>
+                <a class="collapse-item" href="<?php echo "{$url}!/TransferenciaEstoque/listar" ?>">Transferência de Estoque</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/MovimentacaoEstoque/listar" ?>">Estoque</a>
             </div>
         </div>
@@ -149,6 +151,7 @@
                 <a class="collapse-item" href="<?php echo "{$url}!/Relatorios/vendas" ?>">Vendas</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Relatorios/financeiros" ?>">Financeiros</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Relatorios/estoque" ?>">Estoque</a>
+                <a class="collapse-item" href="<?php echo "{$url}!/Relatorios/consignacao" ?>">Consignação</a>
             </div>
         </div>
     </li>
@@ -167,6 +170,30 @@
         </div>
     </li>
     <hr class="sidebar-divider d-none d-md-block" />
+
+    <?php
+    $certStatus = verificarCertificadoDigital();
+    if ($certStatus['status'] === 'vencido' || $certStatus['status'] === 'proximo_vencimento' || $certStatus['status'] === 'ausente' || $certStatus['status'] === 'erro'):
+        $corAlerta = ($certStatus['status'] === 'vencido' || $certStatus['status'] === 'ausente') ? 'danger' : 'warning';
+        $iconeAlerta = ($certStatus['status'] === 'vencido' || $certStatus['status'] === 'ausente') ? 'fa-exclamation-triangle' : 'fa-exclamation-circle';
+    ?>
+    <li class="nav-item">
+        <a class="nav-link text-<?= $corAlerta ?>" href="#" data-bs-toggle="modal" data-bs-target="#modalCertificado" style="font-size: 0.75rem; padding: 0.5rem 1rem;">
+            <i class="fas <?= $iconeAlerta ?> fa-fw fa-beat"></i>
+            <span><?= $certStatus['mensagem'] ?></span>
+        </a>
+    </li>
+    <?php endif; ?>
+
+    <!-- Seção: Certificado Digital -->
+    <?php if ($_COOKIE['nivel_acesso'] == 'Administrador'): ?>
+    <li class="nav-item">
+        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#modalCertificado">
+            <i class="fas fa-fw fa-certificate"></i>
+            <span>Certificado Digital</span>
+        </a>
+    </li>
+    <?php endif; ?>
 
     <!-- Seção: Sair -->
     <li class="nav-item">

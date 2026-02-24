@@ -134,37 +134,41 @@ class Controller
     }
 
 
-    public function vendas($tipo = null, $inicio = null, $fim = null, $paginaAtual = 1, $itensPorPagina = 9, $url = null)
+    public function vendas($tipo = null, $inicio = null, $fim = null, $paginaAtual = 1, $itensPorPagina = 9, $url = null, $vendedor_id = null)
     {
         $where = "";
         $where2 = "";
 
         if (!empty($tipo)) {
-            $where .= " AND forma_pagamento LIKE '%{$tipo}%'";
+            $where .= " AND p.forma_pagamento LIKE '%{$tipo}%'";
         }
 
         if (!empty($inicio) && !empty($fim)) {
-            $where2 .= " AND data_pedido BETWEEN '{$inicio}' AND '{$fim}'";
+            $where2 .= " AND p.data_pedido BETWEEN '{$inicio}' AND '{$fim}'";
+        }
+
+        if (!empty($vendedor_id)) {
+            $where .= " AND p.cod_vendedor = '{$vendedor_id}'";
         }
 
         $db = new db();
 
-        // Calcular o número total de registros
-        $queryTotal = "SELECT COUNT(*) as total FROM pedidos WHERE id > 0 AND orcamento is null " . $where . " " . $where2;
+        $queryTotal = "SELECT COUNT(*) as total FROM pedidos p WHERE p.id > 0 AND p.orcamento is null " . $where . " " . $where2;
         $db->query($queryTotal);
         $totalRegistros = $db->resultSet()[0]['total'];
 
-        // Calcular o número total de páginas
         $totalPaginas = ceil($totalRegistros / $itensPorPagina);
         $paginaAtual = max(1, min($paginaAtual, $totalPaginas));
         $offset = ($paginaAtual - 1) * $itensPorPagina;
 
-        // Query paginada
-        $query = "SELECT pedidos.*, clientes.nome_pf, clientes.nome_fantasia_pj
-                    FROM pedidos 
-                    LEFT JOIN clientes 
-                    ON pedidos.cliente_id = clientes.id
-                    WHERE pedidos.id > 0 AND orcamento is null " . $where . " " . $where2 . " ORDER BY pedidos.data_pedido ASC LIMIT {$itensPorPagina} OFFSET {$offset}";
+        $query = "SELECT p.*, 
+                    c.nome_pf, 
+                    c.nome_fantasia_pj,
+                    u.nome_completo as vendedor_nome
+                    FROM pedidos p
+                    LEFT JOIN clientes c ON p.cliente_id = c.id
+                    LEFT JOIN usuarios u ON p.cod_vendedor = u.id
+                    WHERE p.id > 0 AND p.orcamento is null " . $where . " " . $where2 . " ORDER BY p.data_pedido ASC LIMIT {$itensPorPagina} OFFSET {$offset}";
         $db->query($query);
         $registros = $db->resultSet();
 
@@ -219,28 +223,103 @@ class Controller
             $where .= " AND data_pedido BETWEEN '{$inicio}' AND '{$fim}'";
         }
 
-
         $db = new db();
 
-        // Construir a query base
         $query = "SELECT *,
                     (SELECT SUM(total) FROM pedidos WHERE orcamento is null AND status_pedido = 'Pendente' {$where}) AS Pendente,
                     (SELECT SUM(total) FROM pedidos WHERE orcamento is null AND status_pedido = 'Pago' {$where}) AS Pago
                     FROM pedidos
                     ORDER BY data_pedido ASC";
 
+        $db->query($query);
 
+        return $db->resultSet();
+    }
 
+    public function somaVendasPorPagamento($inicio = null, $fim = null)
+    {
+        $where = "";
+
+        if (!empty($inicio) && !empty($fim)) {
+            $where .= " AND data_pedido BETWEEN '{$inicio}' AND '{$fim}'";
+        }
+
+        $db = new db();
+
+        $query = "SELECT 
+                    SUM(CASE WHEN forma_pagamento = 'Dinheiro' THEN total ELSE 0 END) AS dinheiro,
+                    SUM(CASE WHEN forma_pagamento LIKE '%Cartão%' OR forma_pagamento LIKE '%Crédito%' OR forma_pagamento LIKE '%Débito%' OR forma_pagamento LIKE '%Parcelado%' THEN total ELSE 0 END) AS cartao,
+                    SUM(CASE WHEN forma_pagamento = 'Cheque' THEN total ELSE 0 END) AS cheque,
+                    SUM(CASE WHEN forma_pagamento LIKE '%Carnê%' THEN total ELSE 0 END) AS carne,
+                    SUM(CASE WHEN forma_pagamento LIKE '%Pix%' OR forma_pagamento LIKE '%Depósito%' OR forma_pagamento LIKE '%Transferência%' THEN total ELSE 0 END) AS deposito,
+                    SUM(total) AS total_geral
+                FROM pedidos
+                WHERE orcamento is null {$where}";
 
         $db->query($query);
 
+        return $db->single();
+    }
 
+    public function vendasParaImprimir($tipo = null, $inicio = null, $fim = null, $vendedor_id = null)
+    {
+        $where = "";
+        $where2 = "";
+
+        if (!empty($tipo)) {
+            $where .= " AND p.forma_pagamento LIKE '%{$tipo}%'";
+        }
+
+        if (!empty($inicio) && !empty($fim)) {
+            $where2 .= " AND p.data_pedido BETWEEN '{$inicio}' AND '{$fim}'";
+        }
+
+        if (!empty($vendedor_id)) {
+            $where .= " AND p.cod_vendedor = '{$vendedor_id}'";
+        }
+
+        $db = new db();
+
+        $query = "SELECT p.*, 
+                    c.nome_pf, 
+                    c.nome_fantasia_pj,
+                    u.nome_completo as vendedor_nome,
+                    CASE WHEN p.forma_pagamento = 'Dinheiro' THEN p.total ELSE 0 END as dinheiro,
+                    CASE WHEN p.forma_pagamento = 'Cheque' THEN p.total ELSE 0 END as cheque,
+                    CASE WHEN p.forma_pagamento LIKE '%Cartão%' OR p.forma_pagamento LIKE '%Crédito%' OR p.forma_pagamento LIKE '%Débito%' OR p.forma_pagamento LIKE '%Parcelado%' THEN p.total ELSE 0 END as cartao,
+                    0 as ouro,
+                    CASE WHEN p.forma_pagamento LIKE '%Carnê%' THEN p.total ELSE 0 END as carne,
+                    CASE WHEN p.forma_pagamento LIKE '%Depósito%' OR p.forma_pagamento LIKE '%Pix%' OR p.forma_pagamento LIKE '%Transferência%' THEN p.total ELSE 0 END as deposito,
+                    COALESCE((
+                        SELECT SUM(
+                            (pi.valor_unitario * pi.quantidade * (1 - COALESCE(pi.desconto_percentual, 0) / 100)) 
+                            * COALESCE(cv.comissao_v, 0) / 100
+                        )
+                        FROM pedidos_itens pi
+                        JOIN produtos pr ON pi.produto_id = pr.id
+                        LEFT JOIN comissao_vendedor cv ON cv.grupo_produtos_id = pr.grupo_id AND cv.usuarios_id = p.cod_vendedor
+                        WHERE pi.pedido_id = p.id
+                    ), 0) as comissao
+                FROM pedidos p
+                LEFT JOIN clientes c ON p.cliente_id = c.id
+                LEFT JOIN usuarios u ON p.cod_vendedor = u.id
+                WHERE p.id > 0 AND p.orcamento is null " . $where . " " . $where2 . " 
+                ORDER BY u.nome_completo ASC, p.id ASC";
+        $db->query($query);
+        
+        return $db->resultSet();
+    }
+
+    public function listarVendedores()
+    {
+        $db = new db();
+        $db->query("SELECT id, nome_completo FROM usuarios WHERE status = 1 ORDER BY nome_completo ASC");
         return $db->resultSet();
     }
 
 
 
-    public function movimentos($tipo = null, $inicio = null, $fim = null, $paginaAtual = 1, $itensPorPagina = 9, $url = null)
+    public function movimentos($tipo = null, $inicio = null, $fim = null, $paginaAtual = 1, $itensPorPagina = 9, $url = null, $loja_id = null)
     {
         $where = "";
 
@@ -252,30 +331,32 @@ class Controller
             $where .= " AND m.data_movimentacao BETWEEN '{$inicio}' AND '{$fim}'";
         }
 
+        if (!empty($loja_id)) {
+            $where .= " AND m.loja_id = '{$loja_id}'";
+        }
+
         $db = new db();
 
-        // Calcular o número total de registros
         $queryTotal = "SELECT COUNT(*) as total FROM movimentacao_estoque as m WHERE m.id > 0 " . $where;
         $db->query($queryTotal);
         $totalRegistros = $db->resultSet()[0]['total'];
 
-        // Calcular o número total de páginas
         $totalPaginas = ceil($totalRegistros / $itensPorPagina);
         $paginaAtual = max(1, min($paginaAtual, $totalPaginas));
         $offset = ($paginaAtual - 1) * $itensPorPagina;
 
-        // Query paginada
         $query = "SELECT m.produto_id, 
                         m.descricao_produto,
                         m.tipo_movimentacao, 
-                        SUM(m.quantidade) AS quantidade ,
+                        SUM(m.quantidade) AS quantidade,
                         MAX(m.data_movimentacao),
-                        MAX(e.quantidade) AS atual
-                FROM movimentacao_estoque  AS m
-                LEFT JOIN estoque AS e 
-                ON m.produto_id = e.produtos_id
+                        MAX(e.quantidade) AS atual,
+                        l.nome AS loja_nome
+                FROM movimentacao_estoque AS m
+                LEFT JOIN estoque AS e ON m.produto_id = e.produtos_id
+                LEFT JOIN loja l ON m.loja_id = l.id
                 WHERE m.id > 0 {$where} 
-                GROUP BY m.produto_id, m.descricao_produto, m.tipo_movimentacao
+                GROUP BY m.produto_id, m.descricao_produto, m.tipo_movimentacao, l.nome
                 LIMIT {$itensPorPagina} OFFSET {$offset}";
         $db->query($query);
         $registros = $db->resultSet();
@@ -363,6 +444,40 @@ class Controller
         ";
 
         $db->query($query);
+        return $db->resultSet();
+    }
+
+    public function listarLojas()
+    {
+        $db = new db();
+        $db->query("SELECT id, nome, tipo FROM loja WHERE status = 1 ORDER BY tipo ASC, nome ASC");
+        return $db->resultSet();
+    }
+
+    public function estoquePorLoja($loja_id = null)
+    {
+        $db = new db();
+        $where = "";
+        if (!empty($loja_id)) {
+            $where = " AND el.loja_id = '{$loja_id}'";
+        }
+
+        $db->query("
+            SELECT 
+                el.loja_id,
+                l.nome AS loja_nome,
+                l.tipo AS loja_tipo,
+                el.produto_id,
+                p.descricao_etiqueta AS nome_produto,
+                p.codigo_fabricante,
+                el.quantidade,
+                el.quantidade_minima
+            FROM estoque_loja el
+            INNER JOIN loja l ON el.loja_id = l.id
+            LEFT JOIN produtos p ON el.produto_id = p.id
+            WHERE el.quantidade > 0 {$where}
+            ORDER BY l.tipo ASC, l.nome ASC, p.descricao_etiqueta ASC
+        ");
         return $db->resultSet();
     }
 

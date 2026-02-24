@@ -103,14 +103,15 @@ class Controller
     {
         $db = new db();
 
-        // Inserir o pedido na tabela "pedidos"
+        $loja_id = $dados['loja_id'] ?? null;
+
         $db->query("
             INSERT INTO pedidos (
                 cliente_id, data_pedido, forma_pagamento, acrescimo, desconto, 
-                observacoes, total, valor_pago, cod_vendedor, status_pedido, data_entrega
+                observacoes, total, valor_pago, cod_vendedor, status_pedido, data_entrega, loja_id
             ) VALUES (
                 :cliente_id, :data_pedido, :forma_pagamento, :acrescimo, :desconto, 
-                :observacoes, :total, :valor_pago, :cod_vendedor, :status_pedido, :data_entrega
+                :observacoes, :total, :valor_pago, :cod_vendedor, :status_pedido, :data_entrega, :loja_id
             )
         ");
 
@@ -125,7 +126,8 @@ class Controller
             'valor_pago',
             'cod_vendedor',
             'status_pedido',
-            'data_entrega'
+            'data_entrega',
+            'loja_id'
         ];
 
         foreach ($campos as $campo) {
@@ -134,12 +136,11 @@ class Controller
         }
 
         if ($db->execute()) {
-            $pedidoId = $db->lastInsertId(); // Recuperar o ID do pedido recém-cadastrado
+            $pedidoId = $db->lastInsertId();
 
-            // Inserir os itens do pedido
             foreach ($dados['itens'] as $item) {
                 if (!isset($item['produto_id'], $item['quantidade'], $item['valor_unitario'])) {
-                    continue; // Ignorar itens inválidos
+                    continue;
                 }
 
                 $db->query("
@@ -156,16 +157,14 @@ class Controller
                 $db->bind(":desconto_percentual", $item['desconto_percentual'] ?? 0);
 
                 if (!$db->execute()) {
-                    return false; // Retorna falso se a inserção de um item falhar
+                    return false;
                 }
 
-
-                //inserir em movimentação de estoque
                 $db->query("
                     INSERT INTO movimentacao_estoque (
-                        produto_id, descricao_produto, quantidade, tipo_movimentacao, data_movimentacao, motivo, estoque_antes, estoque_atualizado, pedido_id
+                        produto_id, descricao_produto, quantidade, tipo_movimentacao, data_movimentacao, motivo, estoque_antes, estoque_atualizado, pedido_id, loja_id
                     ) VALUES (
-                        :produto_id, :descricao_produto, :quantidade, :tipo_movimentacao, :data_movimentacao, :motivo, :estoque_antes, :estoque_atualizado, :pedido_id
+                        :produto_id, :descricao_produto, :quantidade, :tipo_movimentacao, :data_movimentacao, :motivo, :estoque_antes, :estoque_atualizado, :pedido_id, :loja_id
                     )
                 ");
 
@@ -178,12 +177,13 @@ class Controller
                 $db->bind(":estoque_antes", $item['estoque_antes']);
                 $db->bind(":estoque_atualizado", $item['quantidade']);
                 $db->bind(":pedido_id", $pedidoId);
+                $db->bind(":loja_id", $loja_id);
 
                 if (!$db->execute()) {
-                    return false; // Retorna falso se a inserção de um item falhar
+                    return false;
                 }
 
-                //update de estoque
+                // Debitar estoque global
                 $db->query("
                     UPDATE estoque
                     SET quantidade = quantidade - :quantidade
@@ -193,7 +193,20 @@ class Controller
                 $db->bind(":produto_id", $item['produto_id']);
 
                 if (!$db->execute()) {
-                    return false; // Retorna falso se a atualização de estoque falhar
+                    return false;
+                }
+
+                // Debitar estoque da loja (se loja_id informado)
+                if ($loja_id) {
+                    $db->query("
+                        UPDATE estoque_loja
+                        SET quantidade = quantidade - :quantidade
+                        WHERE produto_id = :produto_id AND loja_id = :loja_id
+                    ");
+                    $db->bind(":quantidade", $item['quantidade']);
+                    $db->bind(":produto_id", $item['produto_id']);
+                    $db->bind(":loja_id", $loja_id);
+                    $db->execute();
                 }
 
 

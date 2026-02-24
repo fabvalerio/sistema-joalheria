@@ -26,7 +26,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         'status' => $_POST['status'] ?? 'Aberta',
         'observacao' => $_POST['observacao'] ?? null,
         'desconto_percentual' => $_POST['desconto_percentual'] ?? 0,
-        'itens' => [], // Inicializa o array de itens da consignação,
+        'loja_id' => $_COOKIE['loja_id'] ?? null,
+        'itens' => [],
         'bonificacao' => floatval($_POST['bonificacao'] ?? 0)
     ];
 

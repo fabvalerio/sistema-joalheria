@@ -76,7 +76,7 @@ $totalRegistros = $resultado['totalRegistros'];
             <div class="row">
                 <div class="col-md-10">
                     <input type="text" name="filtro" id="input-filtro" class="form-control" 
-                           placeholder="Pesquisar por descrição do produto..." 
+                           placeholder="Pesquisar por código ou descrição do produto..." 
                            value="<?= htmlspecialchars($filtro) ?>">
                 </div>
                 <div class="col-md-2">

@@ -71,7 +71,7 @@ $pedidos = $controller->listar();
                     <?php } ?>
                   </li>
                   <li>
-                    <a href="<?= "{$url}pages/Orcamento/imprimir.php?id={$pedido['id']}" ?>" class="dropdown-item">Imprimir</a>
+                    <a target="_blank" href="<?= "{$url}pages/Orcamento/imprimir.php?id={$pedido['id']}" ?>" class="dropdown-item">Imprimir</a>
                   </li>
                   <li>
                     <a href="<?= "{$url}!/{$link[1]}/ver/{$pedido['id']}" ?>" class="dropdown-item">Visualizar</a>

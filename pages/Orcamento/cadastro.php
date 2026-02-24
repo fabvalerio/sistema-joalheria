@@ -22,7 +22,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         'status_pedido' => $_POST['status_pedido'] ?? 'Pendente',
         'data_entrega' => $_POST['data_entrega'] ?? null,
         // 'fabrica' => $_POST['fabrica'] ?? 0,
-        'itens' => [] // Inicializa o array de itens do pedido
+        'loja_id' => $_COOKIE['loja_id'] ?? null,
+        'itens' => []
     ];
 
     // Capturar os produtos enviados via POST

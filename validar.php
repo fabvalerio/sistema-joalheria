@@ -3,7 +3,7 @@ ob_start();
 session_start();
 
 include 'db/db.class.php';
-include 'app/php/htaccess.php';
+include 'App/php/htaccess.php';
 
 $_cpf = trim($_POST['cpf']);
 $_senha = $_POST['senha'];
@@ -14,7 +14,10 @@ echo "<script>console.log('Senha recebida: {$_senha}');</script>";
 
 // Conectar ao banco e buscar usuário
 $db = new db();
-$sql = "SELECT id, senha, nivel_acesso, nome_completo, permissoes FROM usuarios WHERE cpf = :cpf AND status = 1";
+$sql = "SELECT u.id, u.senha, u.nivel_acesso, u.nome_completo, u.permissoes, u.loja_id, l.nome AS loja_nome 
+        FROM usuarios u 
+        LEFT JOIN loja l ON u.loja_id = l.id 
+        WHERE u.cpf = :cpf AND u.status = 1";
 $db->query($sql);
 $db->bind(":cpf", $_cpf);
 $db->execute();
@@ -40,8 +43,10 @@ if (password_verify($_senha, $senha_armazenada)) {
     setcookie("id", $user['id'], time() + (3600 * 24 * 7), "/", "", false, true);
     setcookie("nome", $user['nome_completo'], time() + (3600 * 24 * 7), "/", "", false, true);
     setcookie("nivel_acesso", $user['nivel_acesso'], time() + (3600 * 24 * 7), "/", "", false, true);
-    $permissoesJson = json_encode($user['permissoes']); // Garante que é uma string JSON válida
+    $permissoesJson = json_encode($user['permissoes']);
     setcookie("permissoes", $permissoesJson, time() + (3600 * 24 * 7), "/", "", false, true);
+    setcookie("loja_id", $user['loja_id'] ?? '', time() + (3600 * 24 * 7), "/", "", false, true);
+    setcookie("loja_nome", $user['loja_nome'] ?? '', time() + (3600 * 24 * 7), "/", "", false, true);
     
 
     error_log("Login bem-sucedido para CPF: " . $_cpf);

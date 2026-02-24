@@ -103,11 +103,22 @@ function resumirTextoEtiqueta($texto) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Impressão de Etiquetas</title>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Electrolize&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
 <style>
+
+    .montserrat {
+    font-family: "Montserrat", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 800;
+    font-style: normal;
+    }
     body{
         margin: 0;
         padding: 0;
-        font-family: 'Times New Roman', Helvetica, sans-serif;
+        font-family: "Montserrat", sans-serif;
     }
     .etiqueta-preview {
         width: 8.4cm;

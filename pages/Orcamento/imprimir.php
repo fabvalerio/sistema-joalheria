@@ -77,6 +77,7 @@ $loja = [
             font-family: 'Courier New', monospace;
             background-color: #f5f5f5;
             padding: 20px;
+            font-weight: 600;
         }
 
         .receipt-container {
@@ -121,21 +122,21 @@ $loja = [
 
         .receipt-info-row {
             display: flex;
-            justify-content: space-between;
+            /* justify-content: space-between; */
             margin: 3px 0;
             line-height: 1.3;
         }
 
-        .receipt-info-label {
+        /* .receipt-info-label {
             font-weight: bold;
             text-align: left;
             flex: 0 0 45%;
-        }
+        } */
 
-        .receipt-info-value {
+        /* .receipt-info-value {
             text-align: right;
             flex: 1;
-        }
+        } */
 
         .section-title {
             font-size: 12px;
@@ -182,7 +183,7 @@ $loja = [
 
         .totals-row {
             display: flex;
-            justify-content: space-between;
+            /* justify-content: space-between; */
             margin: 2px 0;
             line-height: 1.4;
         }
@@ -385,7 +386,9 @@ $loja = [
             </p>
         </div>
 
-    <hr style="margin: 30px 0;">
+    </div>
+
+    <div class="receipt-container">
         <!-- Header -->
 
         <div class="receipt-header">

@@ -217,6 +217,148 @@ if ($_COOKIE['nivel_acesso'] != "Administrador") {
 </script>
 
 
+<!-- Modal Certificado Digital -->
+<div class="modal fade" id="modalCertificado" tabindex="-1" aria-labelledby="modalCertificadoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalCertificadoLabel">
+                    <i class="fas fa-certificate me-2"></i>Certificado Digital
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <div id="certStatusArea" class="mb-3">
+                    <?php
+                    $certInfo = $certStatus ?? verificarCertificadoDigital();
+                    $badgeClass = match($certInfo['status']) {
+                        'valido' => 'success',
+                        'proximo_vencimento' => 'warning',
+                        'vencido' => 'danger',
+                        'ausente' => 'danger',
+                        default => 'secondary'
+                    };
+                    $statusLabel = match($certInfo['status']) {
+                        'valido' => 'Válido',
+                        'proximo_vencimento' => 'Próximo do vencimento',
+                        'vencido' => 'Vencido',
+                        'ausente' => 'Não encontrado',
+                        default => 'Erro'
+                    };
+                    ?>
+                    <div class="card border-<?= $badgeClass ?>">
+                        <div class="card-body text-center">
+                            <h6 class="text-muted mb-2">Status Atual</h6>
+                            <span class="badge bg-<?= $badgeClass ?> fs-6 mb-2"><?= $statusLabel ?></span>
+                            <?php if ($certInfo['validade']): ?>
+                                <p class="mb-1"><strong>Validade:</strong> <?= $certInfo['validade'] ?></p>
+                            <?php endif; ?>
+                            <?php if ($certInfo['dias'] !== null): ?>
+                                <p class="mb-0 text-<?= $badgeClass ?>">
+                                    <?php if ($certInfo['dias'] < 0): ?>
+                                        Vencido há <?= abs($certInfo['dias']) ?> dias
+                                    <?php else: ?>
+                                        <?= $certInfo['dias'] ?> dias restantes
+                                    <?php endif; ?>
+                                </p>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+
+                <?php if ($_COOKIE['nivel_acesso'] == 'Administrador'): ?>
+                <hr>
+                <h6 class="mb-3"><i class="fas fa-upload me-1"></i> Enviar novo certificado</h6>
+                <form id="formCertificado" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="inputCertificado" class="form-label">Arquivo do certificado (.pfx ou .p12)</label>
+                        <input type="file" class="form-control" id="inputCertificado" name="certificado" accept=".pfx,.p12" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="inputSenhaCert" class="form-label">Senha do certificado</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="inputSenhaCert" name="senha" placeholder="Digite a senha do certificado" required>
+                            <button class="btn btn-outline-secondary" type="button" id="toggleSenhaCert">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="certUploadMsg" class="mb-3" style="display:none;"></div>
+                    <button type="submit" class="btn btn-primary w-100" id="btnEnviarCert">
+                        <i class="fas fa-upload me-1"></i> Enviar Certificado
+                    </button>
+                </form>
+                <?php else: ?>
+                <div class="alert alert-info mb-0">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Entre em contato com o administrador do sistema para atualizar o certificado digital.
+                </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var toggleBtn = document.getElementById('toggleSenhaCert');
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', function() {
+            var input = document.getElementById('inputSenhaCert');
+            var icon = this.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        });
+    }
+
+    var form = document.getElementById('formCertificado');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            var btn = document.getElementById('btnEnviarCert');
+            var msgDiv = document.getElementById('certUploadMsg');
+            var formData = new FormData(this);
+            formData.append('action', 'upload');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Enviando...';
+            msgDiv.style.display = 'none';
+
+            fetch('<?= $url ?>App/php/certificado_api.php?action=upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                msgDiv.style.display = 'block';
+                if (data.success) {
+                    msgDiv.className = 'mb-3 alert alert-success';
+                    msgDiv.innerHTML = '<i class="fas fa-check-circle me-1"></i> ' + data.mensagem;
+                    setTimeout(function() { location.reload(); }, 2000);
+                } else {
+                    msgDiv.className = 'mb-3 alert alert-danger';
+                    msgDiv.innerHTML = '<i class="fas fa-times-circle me-1"></i> ' + data.mensagem;
+                }
+            })
+            .catch(function() {
+                msgDiv.style.display = 'block';
+                msgDiv.className = 'mb-3 alert alert-danger';
+                msgDiv.innerHTML = '<i class="fas fa-times-circle me-1"></i> Erro de conexão com o servidor';
+            })
+            .finally(function() {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-upload me-1"></i> Enviar Certificado';
+            });
+        });
+    }
+});
+</script>
+
 </body>
 
 </html>

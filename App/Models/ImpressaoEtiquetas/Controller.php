@@ -14,7 +14,7 @@ class Controller
         // Criar cláusula WHERE para filtro
         $where = "WHERE 1=1";
         if (!empty($filtro)) {
-            $where .= " AND p.descricao_etiqueta LIKE :filtro";
+            $where .= " AND (p.descricao_etiqueta LIKE :filtro OR p.id LIKE :filtro)";
         }
         
         // Calcular o número total de registros

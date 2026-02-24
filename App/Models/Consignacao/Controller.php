@@ -100,12 +100,13 @@ class Controller
     {
         $db = new db();
 
-        // Inserir a consignação
+        $loja_id = $dados['loja_id'] ?? null;
+
         $db->query("
             INSERT INTO consignacao (
-                cliente_id, data_consignacao, valor, status, observacao, desconto_percentual, bonificacao
+                cliente_id, data_consignacao, valor, status, observacao, desconto_percentual, bonificacao, loja_id
             ) VALUES (
-                :cliente_id, :data_consignacao, :valor, :status, :observacao, :desconto_percentual, :bonificacao
+                :cliente_id, :data_consignacao, :valor, :status, :observacao, :desconto_percentual, :bonificacao, :loja_id
             )
         ");
         $db->bind(':cliente_id', $dados['cliente_id']);
@@ -115,11 +116,11 @@ class Controller
         $db->bind(':observacao', $dados['observacao']);
         $db->bind(':desconto_percentual', $dados['desconto_percentual']);
         $db->bind(':bonificacao', $dados['bonificacao']);
+        $db->bind(':loja_id', $loja_id);
 
         if ($db->execute()) {
             $consignacaoId = $db->lastInsertId();
 
-            // Inserir os itens da consignação
             foreach ($dados['itens'] as $item) {
                 if (!isset($item['produto_id'], $item['quantidade'], $item['valor'])) {
                     continue;
@@ -141,7 +142,7 @@ class Controller
                 if (!$db->execute()) {
                     return false;
                 }
-                //subtrai quantidade dos produtos selecionados do estoque
+
                 $db->query("
                     UPDATE estoque
                     SET quantidade = quantidade - :quantidade
@@ -150,6 +151,18 @@ class Controller
                 $db->bind(':quantidade', $item['quantidade']);
                 $db->bind(':produto_id', $item['produto_id']);
                 $db->execute();
+
+                if ($loja_id) {
+                    $db->query("
+                        UPDATE estoque_loja
+                        SET quantidade = quantidade - :quantidade
+                        WHERE produto_id = :produto_id AND loja_id = :loja_id
+                    ");
+                    $db->bind(':quantidade', $item['quantidade']);
+                    $db->bind(':produto_id', $item['produto_id']);
+                    $db->bind(':loja_id', $loja_id);
+                    $db->execute();
+                }
             }
 
             return true;
@@ -218,52 +231,83 @@ class Controller
             return false; // Retorna falso se a atualização do status falhar
         }
 
-        // Atualizar os itens da consignação
-        foreach ($dados['itens'] as $item) {
-            $db->query("
-                UPDATE consignacao_itens
-                SET 
-                    qtd_devolvido = :qtd_devolvido
-                WHERE id = :id
-            ");
-            $db->bind(':qtd_devolvido', $item['qtd_devolvido']);
-            $db->bind(':id', $item['id']); // Atualiza com o identificador correto do item
+        // Buscar loja_id da consignação
+        $db->query("SELECT loja_id FROM consignacao WHERE id = :id");
+        $db->bind(':id', $id);
+        $consignacaoData = $db->single();
+        $loja_id = $consignacaoData['loja_id'] ?? null;
 
-            if (!$db->execute()) {
-                echo "<pre>Erro ao atualizar item com ID {$item['id']}.</pre>";
-                return false; // Retorna falso se a atualização de um item falhar
-            }
-            //soma qtd_devolvido na quantidade do estoque
-            $db->query("
-                UPDATE estoque 
-                SET quantidade = quantidade + :quantidade
-                WHERE produtos_id = :produto_id
-            ");
-            $db->bind(':quantidade', $item['qtd_devolvido']);
-            $db->bind(':produto_id', $item['produto_id']);
-            $db->execute();
+        // Buscar quantidades devolvidas anteriores para calcular diferença
+        $db->query("SELECT id, produto_id, qtd_devolvido FROM consignacao_itens WHERE consignacao_id = :cid");
+        $db->bind(':cid', $id);
+        $itensAntigos = $db->resultSet();
+        $devolvidoAnterior = [];
+        foreach ($itensAntigos as $ia) {
+            $devolvidoAnterior[$ia['id']] = (float)$ia['qtd_devolvido'];
         }
 
-        return true; // Retorna verdadeiro se todas as atualizações forem bem-sucedidas
+        foreach ($dados['itens'] as $item) {
+            $novaDevolvida = (float)$item['qtd_devolvido'];
+            $anteriorDevolvida = $devolvidoAnterior[$item['id']] ?? 0;
+            $diferenca = $novaDevolvida - $anteriorDevolvida;
+
+            $db->query("
+                UPDATE consignacao_itens
+                SET qtd_devolvido = :qtd_devolvido
+                WHERE id = :id
+            ");
+            $db->bind(':qtd_devolvido', $novaDevolvida);
+            $db->bind(':id', $item['id']);
+
+            if (!$db->execute()) {
+                return false;
+            }
+
+            if ($diferenca > 0) {
+                $db->query("
+                    UPDATE estoque 
+                    SET quantidade = quantidade + :quantidade
+                    WHERE produtos_id = :produto_id
+                ");
+                $db->bind(':quantidade', $diferenca);
+                $db->bind(':produto_id', $item['produto_id']);
+                $db->execute();
+
+                if ($loja_id) {
+                    $db->query("
+                        UPDATE estoque_loja 
+                        SET quantidade = quantidade + :quantidade
+                        WHERE produto_id = :produto_id AND loja_id = :loja_id
+                    ");
+                    $db->bind(':quantidade', $diferenca);
+                    $db->bind(':produto_id', $item['produto_id']);
+                    $db->bind(':loja_id', $loja_id);
+                    $db->execute();
+                }
+            }
+        }
+
+        return true;
     }
 
     public function deletar($id)
     {
         $db = new db();
 
-        // Selecionar todos os itens da consignação antes de deletar
+        // Buscar loja_id da consignação
+        $db->query("SELECT loja_id FROM consignacao WHERE id = :id");
+        $db->bind(":id", $id);
+        $consig = $db->single();
+        $loja_id = $consig['loja_id'] ?? null;
+
         $db->query("
-            SELECT 
-                ci.produto_id, 
-                ci.quantidade, 
-                ci.qtd_devolvido 
+            SELECT ci.produto_id, ci.quantidade, ci.qtd_devolvido 
             FROM consignacao_itens ci 
             WHERE ci.consignacao_id = :id
         ");
         $db->bind(":id", $id);
         $itens = $db->resultSet();
 
-        // Para cada item, calcular a quantidade a ser devolvida ao estoque
         foreach ($itens as $item) {
             $quantidadeDevolvida = $item['quantidade'] - $item['qtd_devolvido'];
             if ($quantidadeDevolvida > 0) {
@@ -275,20 +319,68 @@ class Controller
                 $db->bind(":quantidade", $quantidadeDevolvida);
                 $db->bind(":produto_id", $item['produto_id']);
                 $db->execute();
+
+                if ($loja_id) {
+                    $db->query("
+                        UPDATE estoque_loja 
+                        SET quantidade = quantidade + :quantidade 
+                        WHERE produto_id = :produto_id AND loja_id = :loja_id
+                    ");
+                    $db->bind(":quantidade", $quantidadeDevolvida);
+                    $db->bind(":produto_id", $item['produto_id']);
+                    $db->bind(":loja_id", $loja_id);
+                    $db->execute();
+                }
             }
         }
 
-        // Deletar os itens associados à consignação
         $db->query("DELETE FROM consignacao_itens WHERE consignacao_id = :id");
         $db->bind(":id", $id);
         $itensDeletados = $db->execute();
 
-        // Deletar a consignação
         $db->query("DELETE FROM consignacao WHERE id = :id");
         $db->bind(":id", $id);
         $consignacaoDeletada = $db->execute();
 
-        // Verificar se ambas as operações foram realizadas com sucesso
         return $itensDeletados && $consignacaoDeletada;
+    }
+
+    /**
+     * Retorna os produtos em mãos de cada vendedora externa (consignações abertas).
+     * Agrupa por cliente/vendedora, mostrando os itens ainda não devolvidos.
+     */
+    public function produtosPorVendedora($cliente_id = null)
+    {
+        $db = new db();
+        $where = $cliente_id ? " AND c.cliente_id = '{$cliente_id}'" : "";
+
+        $db->query("
+            SELECT 
+                c.id AS consignacao_id,
+                c.data_consignacao,
+                c.status,
+                cl.id AS cliente_id,
+                cl.nome_pf,
+                cl.nome_fantasia_pj,
+                cl.telefone,
+                cl.whatsapp,
+                ci.produto_id,
+                p.descricao_etiqueta AS nome_produto,
+                p.codigo_fabricante,
+                ci.quantidade,
+                ci.qtd_devolvido,
+                (ci.quantidade - ci.qtd_devolvido) AS em_maos,
+                ci.valor
+            FROM consignacao c
+            INNER JOIN clientes cl ON c.cliente_id = cl.id
+            INNER JOIN consignacao_itens ci ON c.id = ci.consignacao_id
+            LEFT JOIN produtos p ON ci.produto_id = p.id
+            WHERE c.status = 'Aberta'
+              AND (ci.quantidade - ci.qtd_devolvido) > 0
+              {$where}
+            ORDER BY cl.nome_pf ASC, c.data_consignacao DESC, p.descricao_etiqueta ASC
+        ");
+
+        return $db->resultSet();
     }
 }

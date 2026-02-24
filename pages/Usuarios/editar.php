@@ -16,8 +16,8 @@ if (!$return) {
     exit;
 }
 
-// Obter os cargos para o select
 $cargos = $controller->cargos();
+$lojas = $controller->listarLojas();
 
 // Obter a lista de diretórios disponíveis
 $diretorios = $controller->listarDiretorios();
@@ -44,7 +44,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         'nivel_acesso' => $_POST['nivel_acesso'],
         'bairro' => $_POST['bairro'],
         'numero' => $_POST['numero'],
-        'status' => $_POST['status']
+        'status' => $_POST['status'],
+        'loja_id' => $_POST['loja_id'] ?? null
     ];
 
     // Atualizar a senha apenas se for informada no formulário
@@ -175,8 +176,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <div class="col-lg-4">
                     <label for="" class="form-label">Status</label>
                     <select class="form-select" name="status" required>
-                        <option value="1" <?= $return['status'] == 'Administrador' ? 'selected' : '' ?>>Ativo</option>
-                        <option value="0" <?= $return['status'] == 'Administrador' ? 'selected' : '' ?>>Inativo</option>
+                        <option value="1" <?= $return['status'] == 1 ? 'selected' : '' ?>>Ativo</option>
+                        <option value="0" <?= $return['status'] == 0 ? 'selected' : '' ?>>Inativo</option>
+                    </select>
+                </div>
+                <div class="col-lg-4">
+                    <label for="" class="form-label">Loja</label>
+                    <select class="form-select" name="loja_id">
+                        <option value="">Selecione a Loja</option>
+                        <?php foreach ($lojas as $loja): ?>
+                            <option value="<?= $loja['id'] ?>" <?= ($return['loja_id'] ?? '') == $loja['id'] ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($loja['nome']) ?> (<?= $loja['tipo'] ?>)
+                            </option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
                 <hr>

@@ -1,5 +1,8 @@
 <?php
 
+require_once __DIR__ . '/../../vendor/autoload.php';
+require_once __DIR__ . '/../../app/Models/Pedidos/Controller.php';
+
 require_once 'vendor/autoload.php';
 
 use NFePHP\Common\Certificate;
@@ -129,7 +132,13 @@ $nfe->tagdetPag((object)['indPag' => 0, 'tPag' => '01', 'vPag' => $val_total]);
 $nfe->montaNFe();
 $xml = $nfe->getXML();
 $xmlAssinado = $tools->signNFe($xml);
-file_put_contents(__DIR__ . '/xml/nfc-e-assinada[' . $numeroIdVenda . '].xml', $xmlAssinado);
+
+$xmlDir = __DIR__ . '/xml';
+$qrDir = __DIR__ . '/qrcode';
+if (!is_dir($xmlDir)) mkdir($xmlDir, 0755, true);
+if (!is_dir($qrDir)) mkdir($qrDir, 0755, true);
+
+file_put_contents($xmlDir . '/nfc-e-assinada[' . $numeroIdVenda . '].xml', $xmlAssinado);
 //echo "📄 XML gerado e assinado com sucesso.\n";
 
 $statusRaw = $tools->sefazStatus();
@@ -164,7 +173,7 @@ $domProt->loadXML($prot->asXML());
 $nodeProt = $xmlProc->importNode($domProt->documentElement, true);
 $proc->appendChild($nodeProt);
 $xmlProc->appendChild($proc);
-file_put_contents(__DIR__ . '/xml/nfc-e-autorizada[' . $numeroIdVenda . '].xml', $xmlProc->saveXML());
+file_put_contents($xmlDir . '/nfc-e-autorizada[' . $numeroIdVenda . '].xml', $xmlProc->saveXML());
 
 $xmlObj = simplexml_load_string($xmlProc->saveXML());
 

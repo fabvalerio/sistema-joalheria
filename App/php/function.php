@@ -407,6 +407,52 @@ function adicionarDiasUteis($data, $dias)
 }
 
 
+function verificarCertificadoDigital() {
+    $certPath = $_SERVER['DOCUMENT_ROOT'] . '/pages/Notas/certificado.pfx';
+    $senhaCert = '123456';
+
+    if (!file_exists($certPath)) {
+        return ['status' => 'ausente', 'validade' => null, 'dias' => null, 'mensagem' => 'Certificado digital não encontrado'];
+    }
+
+    $pfxContent = file_get_contents($certPath);
+    $certData = [];
+
+    if (!openssl_pkcs12_read($pfxContent, $certData, $senhaCert)) {
+        return ['status' => 'erro', 'validade' => null, 'dias' => null, 'mensagem' => 'Não foi possível ler o certificado (senha incorreta?)'];
+    }
+
+    $certInfo = openssl_x509_parse($certData['cert']);
+    $validTo = $certInfo['validTo_time_t'];
+    $now = time();
+    $diasRestantes = floor(($validTo - $now) / 86400);
+
+    if ($now > $validTo) {
+        return [
+            'status' => 'vencido',
+            'validade' => date('d/m/Y H:i:s', $validTo),
+            'dias' => $diasRestantes,
+            'mensagem' => 'Certificado digital vencido em ' . date('d/m/Y', $validTo)
+        ];
+    }
+
+    if ($diasRestantes <= 30) {
+        return [
+            'status' => 'proximo_vencimento',
+            'validade' => date('d/m/Y H:i:s', $validTo),
+            'dias' => $diasRestantes,
+            'mensagem' => "Certificado vence em {$diasRestantes} dias"
+        ];
+    }
+
+    return [
+        'status' => 'valido',
+        'validade' => date('d/m/Y H:i:s', $validTo),
+        'dias' => $diasRestantes,
+        'mensagem' => 'Certificado digital válido'
+    ];
+}
+
 function subtrairDiasUteis($data, $dias) {
   // Converte a string de data para um objeto DateTime
   $date = new DateTime($data);
