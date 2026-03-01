@@ -230,27 +230,54 @@ $loja = [
             font-size: 9px;
         }
 
+
         @media print {
-            body {
-                background-color: white;
-                padding: 0;
-                margin: 0;
+            .no-print {
+                display: none !important;
             }
 
-            .receipt-container {
-                /* width: 80mm; */
-                /* padding: 10mm; */
-                margin: 0;
-                box-shadow: none;
+            /* Força quebra de página real no local do corte */
+            hr.corte {
+                display: block;
                 border: none;
+                margin: 0;
+                padding: 0;
+                height: 0;
                 page-break-after: always;
+                break-after: page;
+            }
+
+            /* Remove sombra/borda da tela na impressão */
+            .receipt-container {
+                box-shadow: none !important;
+                border: none !important;
             }
 
             @page {
-                /* size: 80mm auto; */
                 margin: 0;
+                /* A EPSON TM-T20X deve estar configurada no driver para
+                   executar "Cut" ao final de cada página */
             }
         }
+    
+    /* Estilo para o HR de corte */
+    hr.corte {
+        border: none;
+        border-top: 2px dashed red;
+        margin: 20px 0;
+        position: relative;
+    }
+    
+    hr.corte::after {
+        content: "✂️ CORTE AUTOMÁTICO (na impressão direta)";
+        position: absolute;
+        top: -10px;
+        right: 10px;
+        background: white;
+        padding: 0 5px;
+        color: red;
+        font-size: 10px;
+    }
     </style>
 </head>
 <body>
@@ -387,6 +414,8 @@ $loja = [
         </div>
 
     </div>
+
+    <hr style="margin: 30px 0;"class="corte">
 
     <div class="receipt-container">
         <!-- Header -->

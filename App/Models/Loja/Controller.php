@@ -80,4 +80,78 @@ class Controller
         
     }
 
+    /**
+     * Deletar uma loja.
+     * O CD com id=2 não pode ser excluído (CD principal do sistema).
+     */
+    public function deletar($id)
+    {
+        $id = (int) $id;
+
+        // Proteção: CD id=2 não pode ser excluído
+        if ($id === 2) {
+            return false;
+        }
+
+        $db = new db();
+
+        // Verificar se a loja existe e obter o tipo
+        $db->query("SELECT id, tipo FROM loja WHERE id = :id");
+        $db->bind(":id", $id);
+        $loja = $db->single();
+
+        if (!$loja) {
+            return false;
+        }
+
+        try {
+            $db->beginTransaction();
+
+            // 1. Deletar estoque da loja
+            $db->query("DELETE FROM estoque_loja WHERE loja_id = :id");
+            $db->bind(":id", $id);
+            $db->execute();
+
+            // 2. Atualizar referências para NULL onde possível
+            $db->query("UPDATE movimentacao_estoque SET loja_id = NULL WHERE loja_id = :id");
+            $db->bind(":id", $id);
+            $db->execute();
+
+            $db->query("UPDATE pedidos SET loja_id = NULL WHERE loja_id = :id");
+            $db->bind(":id", $id);
+            $db->execute();
+
+            $db->query("UPDATE usuarios SET loja_id = NULL WHERE loja_id = :id");
+            $db->bind(":id", $id);
+            $db->execute();
+
+            $db->query("UPDATE consignacao SET loja_id = NULL WHERE loja_id = :id");
+            $db->bind(":id", $id);
+            $db->execute();
+
+            // 3. Verificar transferências (origem ou destino)
+            $db->query("SELECT COUNT(*) as total FROM transferencia_estoque WHERE loja_origem_id = :id OR loja_destino_id = :id");
+            $db->bind(":id", $id);
+            $count = $db->single()['total'] ?? 0;
+
+            if ($count > 0) {
+                $db->cancelTransaction();
+                return false; // Não exclui se houver transferências
+            }
+
+            // 4. Deletar a loja
+            $db->query("DELETE FROM loja WHERE id = :id");
+            $db->bind(":id", $id);
+            $result = $db->execute();
+
+            $db->endTransaction();
+            return $result;
+        } catch (\Exception $e) {
+            if (isset($db)) {
+                $db->cancelTransaction();
+            }
+            return false;
+        }
+    }
+
 }

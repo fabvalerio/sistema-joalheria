@@ -193,7 +193,6 @@ $materialController = new MaterialController();
                     <th>Material</th>
                     <th>Modelo</th>
                     <th>Preço (R$)</th>
-                    <th>Estoque</th>
                     <th>Ações</th>
                 </tr>
             </thead>
@@ -229,9 +228,6 @@ $materialController = new MaterialController();
                                     ? number_format($produto['em_reais'], 2, ',', '.')
                                     : '0,00'; ?>
                         </td>
-                        <td><span class="badge bg-<?= $produto['estoque_princ'] > $produto['estoque_min'] ? 'success' : 'danger' ?>" style="font-size: medium;"><?= isset($produto['estoque_princ']) && $produto['estoque_princ'] !== null
-                                ? $produto['estoque_princ']
-                                : 0; ?></span></td>
                         <td>
                             <div class="dropdown">
                                 <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">

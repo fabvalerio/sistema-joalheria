@@ -85,6 +85,7 @@ $return = $controller->listar();
                     $valor_status = "";
 
 
+                    $podeExcluir = ((int)$r['id'] !== 2); // CD id=2 não pode ser excluído
                     echo "<td> 
                                 <div class=\"dropdown\">
                                 <button class=\"btn btn-primary dropdown-toggle\" type=\"button\" data-bs-toggle=\"dropdown\" aria-expanded=\"false\">
@@ -92,9 +93,11 @@ $return = $controller->listar();
                                 </button>
                                 <ul class=\"dropdown-menu\">
                                     <li><a href=\"{$url}!/{$link[1]}/ver/{$r['id']}\" class=\"dropdown-item\">Ver</a></li>
-                                    <li><a href=\"{$url}!/{$link[1]}/editar/{$r['id']}\" class=\"dropdown-item\">Editar</a></li>
-                                    <li><a href=\"{$url}!/{$link[1]}/deletar/{$r['id']}\" class=\"dropdown-item text-danger\">Excluir</a></li>
-                                </ul>
+                                    <li><a href=\"{$url}!/{$link[1]}/editar/{$r['id']}\" class=\"dropdown-item\">Editar</a></li>";
+                    if ($podeExcluir) {
+                        echo "<li><a href=\"{$url}!/{$link[1]}/deletar/{$r['id']}\" class=\"dropdown-item text-danger\">Excluir</a></li>";
+                    }
+                    echo "                                </ul>
                                 </div>
                         </td>";
                     echo "</tr>";

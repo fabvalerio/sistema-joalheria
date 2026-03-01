@@ -2,6 +2,8 @@
 // Garante que não há saída antes do início da sessão
 ob_start();
 
+ini_set('memory_limit', '-1');
+
 // Inicia a sessão apenas se ainda não estiver ativa
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -31,6 +33,13 @@ ob_end_flush();
 
 ?>
 <?php
+// Módulo CD - Centro de Distribuição: apenas Administrador pode acessar
+$moduloAtual = $link[1] ?? '';
+if ($moduloAtual === 'CD' && ($_COOKIE['nivel_acesso'] ?? '') !== 'Administrador') {
+    header("Location: {$url}!/naopermitido");
+    exit;
+}
+
 if ($_COOKIE['nivel_acesso'] != "Administrador") {
 
     if (isset($link[2]) && $link[2] != "") {
@@ -63,26 +72,24 @@ if ($_COOKIE['nivel_acesso'] != "Administrador") {
         $modulo_atual = $link[1]; // O nome do módulo está sempre na posição 1
         $acao = $link[2]; // Ação está sempre na posição 2 (listar, editar, etc.)
 
-        // Verifica se o usuário tem permissão para este módulo
-        if (!isset($permissoes[$modulo_atual])) {
+        // Estoque: sempre permitido para visualizar (usuário vê estoque da sua loja ou todas se admin)
+        if ($modulo_atual === 'Estoque' && in_array($acao, ['listar', 'ver'])) {
+            $permitido = "SIM";
+        } else if (!isset($permissoes[$modulo_atual])) {
             header("Location: {$url}!/naopermitido");
             exit;
-        }
-
-        // Obtém as permissões do módulo atual
-        $modulo_permissoes = $permissoes[$modulo_atual];
-
-        $visualizar = $modulo_permissoes['visualizar'] ?? false;
-        $manipular = $modulo_permissoes['manipular'] ?? false;
-
-        // **Regra de Permissão**:
-        // ✅ Se "manipular" for true → PERMITIDO para tudo
-        if ($manipular) {
-            $permitido = "SIM";
         } else {
-            // ✅ Se "visualizar" for true → PERMITIDO apenas para "listar" e "ver"
-            $permitido = ($visualizar && in_array($acao, ["listar", "ver"]));
-            $permitido = $permitido ? "SIM" : "NÃO";
+            // Obtém as permissões do módulo atual
+            $modulo_permissoes = $permissoes[$modulo_atual];
+            $visualizar = $modulo_permissoes['visualizar'] ?? false;
+            $manipular = $modulo_permissoes['manipular'] ?? false;
+
+            // **Regra de Permissão**:
+            if ($manipular) {
+                $permitido = "SIM";
+            } else {
+                $permitido = ($visualizar && in_array($acao, ["listar", "ver"])) ? "SIM" : "NÃO";
+            }
         }
         if ($permitido != "SIM") {
             header("Location: {$url}!/naopermitido");

@@ -128,14 +128,22 @@ class Controller
           continue; // Ignorar produtos inválidos
         }
 
-        // Inserir na tabela movimentacao_estoque
+        // Obter o ID do CD (Centro de Distribuição) para estoque_loja
+        $cd_id = $dados['loja_destino_id'] ?? null;
+        if (!$cd_id) {
+          $db->query("SELECT id FROM loja WHERE status = 1 AND tipo = 'CD' ORDER BY id ASC LIMIT 1");
+          $cdRow = $db->single();
+          $cd_id = $cdRow['id'] ?? null;
+        }
+
+        // Inserir na tabela movimentacao_estoque (com loja_id quando for CD)
         $db->query("
             INSERT INTO movimentacao_estoque (
                 produto_id, descricao_produto, tipo_movimentacao, quantidade, documento, 
-                data_movimentacao, motivo, estoque_antes, estoque_atualizado
+                data_movimentacao, motivo, estoque_antes, estoque_atualizado, loja_id
             ) VALUES (
                 :produto_id, :descricao_produto, :tipo_movimentacao, :quantidade, :documento, 
-                :data_movimentacao, :motivo, :estoque_antes, :estoque_atualizado
+                :data_movimentacao, :motivo, :estoque_antes, :estoque_atualizado, :loja_id
             )
         ");
         $db->bind(":produto_id", $produto['id']);
@@ -147,9 +155,26 @@ class Controller
         $db->bind(":motivo", 'Cadastro de Entrada de Mercadoria');
         $db->bind(":estoque_antes", $produto['estoque']); // Estoque atual
         $db->bind(":estoque_atualizado", $produto['estoque'] + $produto['quantidade']); // Estoque atualizado
+        $db->bind(":loja_id", $cd_id);
 
         if (!$db->execute()) {
           return false; // Se falhar, interrompe e retorna falso
+        }
+
+        // Atualizar/adicionar estoque_loja do CD (para permitir transferência para lojas)
+        if ($cd_id) {
+          $db->query("
+            INSERT INTO estoque_loja (loja_id, produto_id, quantidade, quantidade_minima)
+            VALUES (:loja_id, :produto_id, :quantidade, 0)
+            ON DUPLICATE KEY UPDATE quantidade = quantidade + VALUES(quantidade)
+          ");
+          $db->bind(":loja_id", $cd_id);
+          $db->bind(":produto_id", $produto['id']);
+          $db->bind(":quantidade", $produto['quantidade']);
+
+          if (!$db->execute()) {
+            return false;
+          }
         }
 
         // Atualizar o estoque na tabela "estoque"
@@ -223,6 +248,14 @@ class Controller
       $db->bind(":nf_fiscal", $dados['nf_fiscal']);
       $db->execute();
 
+      // Obter CD para estoque_loja
+      $cd_id = $dados['loja_destino_id'] ?? null;
+      if (!$cd_id) {
+        $db->query("SELECT id FROM loja WHERE status = 1 AND tipo = 'CD' ORDER BY id ASC LIMIT 1");
+        $cdRow = $db->single();
+        $cd_id = $cdRow['id'] ?? null;
+      }
+
       // Inserir os produtos novamente com as alterações
       foreach ($dados['produtos'] as $produto) {
         // Validação básica para evitar erros
@@ -230,14 +263,14 @@ class Controller
           continue; // Ignorar produtos inválidos
         }
 
-        // Inserir na tabela "movimentacao_estoque"
+        // Inserir na tabela "movimentacao_estoque" (com loja_id)
         $db->query("
                 INSERT INTO movimentacao_estoque (
                     produto_id, descricao_produto, tipo_movimentacao, quantidade, documento, 
-                    data_movimentacao, motivo, estoque_antes, estoque_atualizado
+                    data_movimentacao, motivo, estoque_antes, estoque_atualizado, loja_id
                 ) VALUES (
                     :produto_id, :descricao_produto, :tipo_movimentacao, :quantidade, :documento, 
-                    :data_movimentacao, :motivo, :estoque_antes, :estoque_atualizado
+                    :data_movimentacao, :motivo, :estoque_antes, :estoque_atualizado, :loja_id
                 )
             ");
         $db->bind(":produto_id", $produto['id']);
@@ -249,9 +282,23 @@ class Controller
         $db->bind(":motivo", 'Atualização de Entrada de Mercadoria');
         $db->bind(":estoque_antes", $produto['estoque']);
         $db->bind(":estoque_atualizado", $produto['estoque'] + $produto['quantidade']);
+        $db->bind(":loja_id", $cd_id);
 
         if (!$db->execute()) {
           return false; // Se falhar, interrompe e retorna falso
+        }
+
+        // Atualizar estoque_loja do CD
+        if ($cd_id) {
+          $db->query("
+            INSERT INTO estoque_loja (loja_id, produto_id, quantidade, quantidade_minima)
+            VALUES (:loja_id, :produto_id, :quantidade, 0)
+            ON DUPLICATE KEY UPDATE quantidade = quantidade + VALUES(quantidade)
+          ");
+          $db->bind(":loja_id", $cd_id);
+          $db->bind(":produto_id", $produto['id']);
+          $db->bind(":quantidade", $produto['quantidade']);
+          $db->execute();
         }
 
         // Atualizar o estoque na tabela "estoque"
@@ -291,17 +338,18 @@ class Controller
 
     // Buscar os registros da movimentacao_estoque relacionados à `nf_fiscal`
     $db->query("
-          SELECT produto_id, quantidade 
+          SELECT produto_id, quantidade, loja_id 
           FROM movimentacao_estoque 
           WHERE documento = :nf_fiscal
       ");
     $db->bind(":nf_fiscal", $nfFiscal);
     $movimentacoes = $db->resultSet();
 
-    // Atualizar os valores de estoque na tabela `estoque`
+    // Atualizar os valores de estoque na tabela `estoque` e `estoque_loja`
     foreach ($movimentacoes as $movimentacao) {
       $produtoId = $movimentacao['produto_id'];
       $quantidadeMovimentada = $movimentacao['quantidade'];
+      $lojaId = $movimentacao['loja_id'] ?? null;
 
       $db->query("
               UPDATE estoque 
@@ -311,9 +359,21 @@ class Controller
       $db->bind(":quantidadeMovimentada", $quantidadeMovimentada);
       $db->bind(":produtoId", $produtoId);
 
-      // Executar o update no estoque
       if (!$db->execute()) {
-        return false; // Retorna falso se o update falhar
+        return false;
+      }
+
+      // Debitar também do estoque_loja do CD se houver loja_id
+      if ($lojaId) {
+        $db->query("
+          UPDATE estoque_loja 
+          SET quantidade = quantidade - :quantidadeMovimentada 
+          WHERE produto_id = :produtoId AND loja_id = :lojaId
+        ");
+        $db->bind(":quantidadeMovimentada", $quantidadeMovimentada);
+        $db->bind(":produtoId", $produtoId);
+        $db->bind(":lojaId", $lojaId);
+        $db->execute();
       }
     }
 

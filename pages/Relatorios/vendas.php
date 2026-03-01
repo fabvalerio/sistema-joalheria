@@ -142,7 +142,7 @@ $vendedores = $controller->listarVendedores();
                             <div class="fw-bold">R$ <?php echo number_format($pagamentos['carne'] ?? 0, 2, ',', '.'); ?></div>
                         </div>
                         <div class="col-4">
-                            <small class="text-muted">Pix/Depósito</small>
+                            <small class="text-muted">Pix</small>
                             <div class="fw-bold">R$ <?php echo number_format($pagamentos['deposito'] ?? 0, 2, ',', '.'); ?></div>
                         </div>
                         <div class="col-4">

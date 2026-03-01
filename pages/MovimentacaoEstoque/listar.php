@@ -3,12 +3,13 @@
 use App\Models\MovimentacaoEstoque\Controller;
 
 $produto = $_GET['produto'] ?? null;
+$tipo = $_GET['tipo'] ?? null;
 $inicio = $_GET['data_inicio'] ?? null;
 $fim = $_GET['data_final'] ?? null;
 $pagina = $_GET['pagina'] ?? 1;
 
 $controller = new Controller();
-$movimentacoes = $controller->listar($produto, $inicio, $fim, $pagina, 10, $url."/!/MovimentacaoEstoque/listar/&tipo=".$tipo."&data_inicio=".$inicio."&data_final=".$fim);
+$movimentacoes = $controller->listar($produto, $inicio, $fim, $pagina, 10, $url."!/MovimentacaoEstoque/listar&tipo=".$tipo."&data_inicio=".$inicio."&data_final=".$fim."&produto=".$produto);
 
 ?>
 
@@ -61,7 +62,8 @@ $movimentacoes = $controller->listar($produto, $inicio, $fim, $pagina, 10, $url.
                                 let dataFinal = $("#data_final").val();
 
                                 // Monta a URL com os parâmetros
-                                let url = "/sistema-joias/!/MovimentacaoEstoque/listar/&produto=" + encodeURIComponent(produto) + 
+                                let baseUrl = "<?= $url ?>!/MovimentacaoEstoque/listar";
+                                let url = baseUrl + "&produto=" + encodeURIComponent(produto) + 
                                         "&data_inicio=" + encodeURIComponent(dataInicio) + 
                                         "&data_final=" + encodeURIComponent(dataFinal);
 

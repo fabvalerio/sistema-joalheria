@@ -176,7 +176,7 @@ $totalGeral = ['valor' => 0, 'dinheiro' => 0, 'cheque' => 0, 'cartao' => 0, 'our
                         <th width="65">Cartão</th>
                         <th width="55">Ouro</th>
                         <th width="55">Carnê</th>
-                        <th width="65">Depósito</th>
+                        <th width="65">Pix</th>
                         <th width="65">Comissão</th>
                     </tr>
                 </thead>
@@ -249,7 +249,7 @@ $totalGeral = ['valor' => 0, 'dinheiro' => 0, 'cheque' => 0, 'cartao' => 0, 'our
                 <td class="numero">Cartão: R$ <?php echo number_format($totalGeral['cartao'], 2, ',', '.'); ?></td>
                 <td class="numero">Ouro: R$ <?php echo number_format($totalGeral['ouro'], 2, ',', '.'); ?></td>
                 <td class="numero">Carnê: R$ <?php echo number_format($totalGeral['carne'], 2, ',', '.'); ?></td>
-                <td class="numero">Depósito: R$ <?php echo number_format($totalGeral['deposito'], 2, ',', '.'); ?></td>
+                <td class="numero">Pix: R$ <?php echo number_format($totalGeral['deposito'], 2, ',', '.'); ?></td>
                 <td class="numero">Comissão: R$ <?php echo number_format($totalGeral['comissao'], 2, ',', '.'); ?></td>
             </tr>
         </table>

@@ -5,7 +5,6 @@ use App\Models\GrupoProdutos\Controller as GrupoController;
 
 $controller = new Controller();
 $clientes = $controller->listarClientes(); // Obter lista de clientes
-$produtos = $controller->listarProdutos(); // Obter lista de produtos para o modal
 $cartaos = $controller->listarCartoes(); // Obter lista de cartões
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -58,7 +57,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if ($return) {
         echo notify('success', "Pedido cadastrado com sucesso!");
-        echo '<meta http-equiv="refresh" content="2; url=' . $url . '!/Notas/emitir-nota/' . $return . '">';
+        $emitirNota = !empty($_POST['emitir_nota_fiscal']);
+        if ($emitirNota) {
+            echo '<meta http-equiv="refresh" content="2; url=' . $url . '!/Notas/emitir-nota/' . $return . '?vias=2">';
+        } else {
+            echo '<meta http-equiv="refresh" content="2; url=' . $url . 'pages/Pedidos/imprimir.php?id=' . $return . '">';
+        }
     } else {
         echo notify('danger', "Erro ao cadastrar o pedido.");
     }
@@ -444,9 +448,11 @@ $grupos = $grupoController->listarSelectTempo();
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                    <div class="input-group mb-3">
-                                        <input type="text" class="form-control" placeholder="Pesquisar Produto" id="productSearch">
-                                    </div>
+                                <div class="input-group mb-3">
+                                    <input type="text" class="form-control" placeholder="Pesquisar Produto..." id="productSearch" autocomplete="off">
+                                    <span class="input-group-text"><i class="fa fa-search"></i></span>
+                                </div>
+                                <div id="productSearchStatus" class="text-muted small mb-2" style="display:none;"></div>
                                 <table id="produtoTable" class="table table-bordered table-hover">
                                     <thead>
                                         <tr>
@@ -454,68 +460,111 @@ $grupos = $grupoController->listarSelectTempo();
                                             <th>Capa</th>
                                             <th>Nome</th>
                                             <th>Preço</th>
-                                            <th>Estoque Atual</th>
+                                            <th>Estoque</th>
                                             <th>Ações</th>
                                         </tr>
                                     </thead>
                                     <tbody id="modalProductList">
-                                        <?php foreach ($produtos as $produto): ?>
-                                            <?php
-                                            //conta de valor dinamica com cotação
-                                            $produto['preco'] =  cotacao($produto['preco_ql'], $produto['peso_gr'], $produto['cotacao_valor'], $produto['margem']);
-                                            ?>
-                                            <tr>
-                                                <td><?php echo $produto['id']; ?></td>
-                                                <td>
-                                                    <img src="<?= isset($produto['capa']) && !empty($produto['capa']) ? htmlspecialchars($produto['capa']) : $url . '/assets/img_padrao.webp'; ?>" alt="Capa do Produto" width="65" style="height: 65px; object-fit: cover; border: 1px solid #ddd; border-radius: 5px;">
-                                                </td>
-                                                <td><?php echo $produto['nome_produto']; ?></td>
-                                                <td>R$<?php echo $produto['preco']; ?></td>
-                                                <td><?php echo $produto['estoque']; ?></td>
-                                                <td>
+                                        <tr><td colspan="6" class="text-center text-muted">Digite para pesquisar ou aguarde o carregamento...</td></tr>
+                                    </tbody>
+                                </table>
+                                <script>
+                                (function () {
+                                    const imgPadrao = '<?= $url . '/assets/img_padrao.webp'; ?>';
+                                    const endpointUrl = '<?= $url; ?>pages/Pedidos/listar_produtos.php';
+                                    const lojaId = '<?= addslashes($_COOKIE['loja_id'] ?? '') ?>';
+                                    let searchTimeout = null;
 
+                                    function renderProdutos(produtos) {
+                                        const tbody = document.getElementById('modalProductList');
+                                        const status = document.getElementById('productSearchStatus');
+
+                                        if (!produtos || produtos.length === 0) {
+                                            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Nenhum produto encontrado.</td></tr>';
+                                            status.style.display = 'none';
+                                            return;
+                                        }
+
+                                        status.textContent = produtos.length >= 50 ? 'Exibindo os 50 primeiros resultados. Refine a busca para encontrar mais.' : `${produtos.length} produto(s) encontrado(s).`;
+                                        status.style.display = 'block';
+
+                                        tbody.innerHTML = produtos.map(p => {
+                                            const capa = p.capa ? p.capa : imgPadrao;
+                                            const preco = parseFloat(p.preco || 0).toFixed(2);
+                                            return `<tr>
+                                                <td>${p.id}</td>
+                                                <td><img src="${capa}" alt="Capa" width="65" style="height:65px;object-fit:cover;border:1px solid #ddd;border-radius:5px;"></td>
+                                                <td>${p.nome_produto}</td>
+                                                <td>R$ ${preco}</td>
+                                                <td>${p.estoque ?? 0}</td>
+                                                <td>
                                                     <button type="button" class="btn btn-primary btn-select-product"
-                                                        data-id="<?php echo $produto['id']; ?>"
-                                                        data-name="<?php echo $produto['nome_produto']; ?>"
-                                                        data-price="<?php echo $produto['preco']; ?>"
-                                                        data-estoque="<?php echo $produto['estoque']; ?>"
-                                                        data-capa="<?= isset($produto['capa']) && !empty($produto['capa']) ? htmlspecialchars($produto['capa']) : $url . '/assets/img_padrao.webp'; ?>"
+                                                        data-id="${p.id}"
+                                                        data-name="${p.nome_produto}"
+                                                        data-price="${preco}"
+                                                        data-estoque="${p.estoque ?? 0}"
+                                                        data-capa="${capa}"
                                                         data-bs-dismiss="modal">
                                                         Selecionar
                                                     </button>
                                                 </td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                </table>
-                                <script>
+                                            </tr>`;
+                                        }).join('');
+                                    }
+
+                                    async function buscarProdutos(termo) {
+                                        const tbody = document.getElementById('modalProductList');
+                                        tbody.innerHTML = '<tr><td colspan="6" class="text-center"><span class="spinner-border spinner-border-sm me-2"></span>Carregando...</td></tr>';
+                                        try {
+                                            let url = `${endpointUrl}?busca=${encodeURIComponent(termo)}`;
+                                            if (lojaId) url += `&loja_id=${encodeURIComponent(lojaId)}`;
+                                            const resp = await fetch(url);
+                                            const dados = await resp.json();
+                                            renderProdutos(dados);
+                                        } catch (err) {
+                                            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Erro ao carregar produtos.</td></tr>';
+                                        }
+                                    }
+
                                     document.addEventListener('DOMContentLoaded', function () {
-                                    const productSearch = document.getElementById('productSearch');
-                                    const produtoTable = document.getElementById('produtoTable');
-                                    const tableRows = produtoTable.querySelectorAll('tbody tr');
+                                        const productSearch = document.getElementById('productSearch');
+                                        const modalEl = document.getElementById('productModal');
 
-                                    productSearch.addEventListener('input', function () {
-                                        const searchValue = productSearch.value.toLowerCase();
-
-                                        tableRows.forEach(row => {
-                                            const rowText = row.textContent.toLowerCase();
-                                            if (rowText.includes(searchValue)) {
-                                                row.style.display = ''; // Mostra a linha
-                                            } else {
-                                                row.style.display = 'none'; // Oculta a linha
+                                        // Carrega ao abrir o modal (se lista vazia)
+                                        modalEl.addEventListener('show.bs.modal', function () {
+                                            const tbody = document.getElementById('modalProductList');
+                                            if (tbody.querySelectorAll('tr[data-loaded]').length === 0) {
+                                                buscarProdutos('');
                                             }
                                         });
-                                    });
-                                });
-                                </script>
 
+                                        // Busca com debounce ao digitar
+                                        productSearch.addEventListener('input', function () {
+                                            clearTimeout(searchTimeout);
+                                            searchTimeout = setTimeout(() => {
+                                                buscarProdutos(this.value.trim());
+                                            }, 400);
+                                        });
+                                    });
+                                })();
+                                </script>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+                <div class="col-12 mt-4 mb-2">
+                    <hr>
+                    <div class="form-check form-check-lg border rounded p-3 bg-light">
+                        <input class="form-check-input" type="checkbox" name="emitir_nota_fiscal" id="emitir_nota_fiscal" value="1">
+                        <label class="form-check-label fw-bold" for="emitir_nota_fiscal">Emitir nota fiscal (NFC-e)?</label>
+                        <div class="small text-muted mt-1">Se marcado: emite NFC-e e imprime 2 vias da nota. Se não marcado: imprime apenas o pedido de venda.</div>
+                    </div>
+                </div>
+
             <!-- Botão de Cadastro -->
-            <div class="col-lg-12 mt-4">
+            <div class="col-lg-12 mt-3">
                 <button type="submit" class="btn btn-primary float-end">Cadastrar Pedido</button>
                 <!-- <button type="button" class="btn btn-secondary" id="altera_cartao">Alterar Cartão</button> -->
             </div>
@@ -560,17 +609,10 @@ $grupos = $grupoController->listarSelectTempo();
 
                 // Evento para quando o modal é fechado (por qualquer meio)
                 modalElement.addEventListener('hidden.bs.modal', function () {
-                    // Limpa o campo de busca do modal
                     const productSearch = document.getElementById('productSearch');
                     if (productSearch) {
                         productSearch.value = '';
-                        // Reexibe todas as linhas da tabela
-                        const tableRows = document.querySelectorAll('#produtoTable tbody tr');
-                        tableRows.forEach(row => {
-                            row.style.display = '';
-                        });
                     }
-                    // Reset do índice ativo
                     activeIndex = null;
                 });
 
@@ -598,21 +640,14 @@ $grupos = $grupoController->listarSelectTempo();
                             calculateTotal();
                         }
 
-                        // Fecha o modal de forma mais robusta
+                        // Fecha o modal
                         modal.hide();
                         
-                        // Limpa o campo de busca do modal
                         const productSearch = document.getElementById('productSearch');
                         if (productSearch) {
                             productSearch.value = '';
-                            // Reexibe todas as linhas da tabela
-                            const tableRows = document.querySelectorAll('#produtoTable tbody tr');
-                            tableRows.forEach(row => {
-                                row.style.display = '';
-                            });
                         }
                         
-                        // Reset do índice ativo
                         activeIndex = null;
                     }
                 });
@@ -798,15 +833,15 @@ $grupos = $grupoController->listarSelectTempo();
                 window.initializeBaseTotal = initializeBaseTotal; // Para garantir que o baseTotal seja atualizado
             });
 
-            // Botão para alterar cartão
+            // Botão para alterar cartão (opcional, botão comentado no HTML)
             document.addEventListener('DOMContentLoaded', () => {
-                const alterarCartaoButton = document.getElementById('altera_cartao'); // Botão para alterar o cartão
-                const formaPagamentoSelect = document.getElementById('forma_pagamento'); // Select de forma de pagamento
-
-                // Evento de clique no botão
-                alterarCartaoButton.addEventListener('click', () => {
-                    formaPagamentoSelect.selectedIndex = 0; // Define o select para a primeira opção
-                });
+                const alterarCartaoButton = document.getElementById('altera_cartao');
+                const formaPagamentoSelect = document.getElementById('forma_pagamento');
+                if (alterarCartaoButton) {
+                    alterarCartaoButton.addEventListener('click', () => {
+                        formaPagamentoSelect.selectedIndex = 0;
+                    });
+                }
             });
 
             document.addEventListener('DOMContentLoaded', () => {

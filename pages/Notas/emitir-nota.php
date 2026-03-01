@@ -1,9 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../../vendor/autoload.php';
-require_once __DIR__ . '/../../app/Models/Pedidos/Controller.php';
-
-require_once 'vendor/autoload.php';
+require_once __DIR__ . '/../../App/Models/Pedidos/Controller.php';
 
 use NFePHP\Common\Certificate;
 use NFePHP\NFe\Tools;
@@ -19,6 +17,8 @@ use App\Models\Pedidos\Controller;
 
 $controller = new Controller();
 $id = $link[3] ?? null;
+$vias = (int)($_GET['vias'] ?? 1);
+if ($vias < 1) $vias = 1;
 
 $dados = $controller->ver($id);
 $pedido = $dados['pedido'];
@@ -37,6 +37,9 @@ $configData = json_decode($configJson);
 
 if (!defined('SOAP_1_2')) define('SOAP_1_2', 2);
 $cert = Certificate::readPfx(file_get_contents($certPath), $senhaCert);
+if ($cert->isExpired()) {
+    die('Certificado digital vencido. Atualize o certificado em Certificado Digital no menu.');
+}
 $tools = new Tools($configJson, $cert);
 $tools->model('65');
 
@@ -323,20 +326,24 @@ $url = ensureHttps($url ?? $baseUrl);
 </div>
 
 <div class="d-flex justify-content-center mt-3 mb-3">
-    <button onclick="imprimirNota()" class="btn btn-primary">
-        <i class="fas fa-print"></i> Imprimir Nota
+    <button onclick="imprimirNota(<?= $vias ?>)" class="btn btn-primary">
+        <i class="fas fa-print"></i> Imprimir Nota<?= $vias > 1 ? ' ('. $vias .' vias)' : '' ?>
     </button>
 </div>
 
 <script>
-function imprimirNota() {
-    // Cria um clone da div.nota
-    const conteudo = document.querySelector('.nota').cloneNode(true);
-    
-    // Cria uma nova janela
+function imprimirNota(vias) {
+    vias = parseInt(vias) || 1;
+    const nota = document.querySelector('.nota');
+    if (!nota) return;
+
+    let conteudoHtml = '';
+    for (let i = 0; i < vias; i++) {
+        conteudoHtml += nota.cloneNode(true).outerHTML;
+        if (i < vias - 1) conteudoHtml += '<div style="page-break-after: always;"></div>';
+    }
+
     const janela = window.open('', '', 'width=800,height=600');
-    
-    // Adiciona o estilo necessário
     janela.document.write('<html><head>');
     janela.document.write('<style>');
     janela.document.write(`
@@ -349,23 +356,22 @@ function imprimirNota() {
         .item-table { width: 100%; }
         .item-table th, .item-table td { text-align: left; padding: 2px; }
         .item-table th:last-child, .item-table td:last-child { text-align: right; }
+        @media print { .nota { page-break-after: avoid; } }
     `);
     janela.document.write('</style></head><body>');
-    
-    // Adiciona o conteúdo
-    janela.document.write(conteudo.outerHTML);
+    janela.document.write(conteudoHtml);
     janela.document.write('</body></html>');
-    
-    // Fecha o documento
     janela.document.close();
-    
-    // Imprime após carregar todo o conteúdo
+
     janela.onload = function() {
         janela.focus();
         janela.print();
         janela.close();
-    }
+    };
 }
+<?php if ($vias >= 2): ?>
+document.addEventListener('DOMContentLoaded', function() { imprimirNota(<?= $vias ?>); });
+<?php endif; ?>
 </script>
 
 <?php //die(); ?>

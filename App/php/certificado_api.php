@@ -14,7 +14,8 @@ if ($_COOKIE['nivel_acesso'] != 'Administrador') {
     exit;
 }
 
-$certDir = $_SERVER['DOCUMENT_ROOT'] . '/pages/Notas';
+$projectRoot = dirname(__DIR__, 2);
+$certDir = $projectRoot . '/pages/Notas';
 $certPath = $certDir . '/certificado.pfx';
 
 $action = $_GET['action'] ?? $_POST['action'] ?? 'status';

@@ -55,8 +55,11 @@ class Controller
                             p.status_pedido,
                             p.data_entrega,
                             p.observacoes,
+                            c.id as idCliente,
                             c.nome_pf,
                             c.cpf,
+                            c.telefone,
+                            c.whatsapp,
                             c.nome_fantasia_pj
                             -- f.status as status_fabrica
                         FROM 
@@ -104,6 +107,13 @@ class Controller
         $db = new db();
 
         $loja_id = $dados['loja_id'] ?? null;
+        $tipo_loja = null;
+        if ($loja_id) {
+            $db->query("SELECT tipo FROM loja WHERE id = :loja_id");
+            $db->bind(':loja_id', $loja_id);
+            $loja_row = $db->single();
+            $tipo_loja = (is_array($loja_row) && isset($loja_row['tipo'])) ? $loja_row['tipo'] : null;
+        }
 
         $db->query("
             INSERT INTO pedidos (
@@ -183,30 +193,46 @@ class Controller
                     return false;
                 }
 
-                // Debitar estoque global
-                $db->query("
-                    UPDATE estoque
-                    SET quantidade = quantidade - :quantidade
-                    WHERE produtos_id = :produto_id
-                ");
-                $db->bind(":quantidade", $item['quantidade']);
-                $db->bind(":produto_id", $item['produto_id']);
-
-                if (!$db->execute()) {
-                    return false;
-                }
-
-                // Debitar estoque da loja (se loja_id informado)
-                if ($loja_id) {
+                // Débito de estoque: Loja debita apenas estoque_loja; CD e admin debita estoque
+                if ($loja_id && $tipo_loja === 'Loja') {
+                    // Loja física: debitar apenas estoque_loja (produto já foi transferido do CD)
                     $db->query("
                         UPDATE estoque_loja
                         SET quantidade = quantidade - :quantidade
-                        WHERE produto_id = :produto_id AND loja_id = :loja_id
+                        WHERE produto_id = :produto_id AND loja_id = :loja_id AND quantidade >= :quantidade_check
                     ");
                     $db->bind(":quantidade", $item['quantidade']);
                     $db->bind(":produto_id", $item['produto_id']);
                     $db->bind(":loja_id", $loja_id);
+                    $db->bind(":quantidade_check", $item['quantidade']);
                     $db->execute();
+                    if ($db->rowCount() === 0) {
+                        return false; // Produto sem estoque na loja ou quantidade insuficiente
+                    }
+                } else {
+                    // CD ou admin (sem loja): debitar da tabela estoque
+                    $db->query("
+                        UPDATE estoque
+                        SET quantidade = quantidade - :quantidade
+                        WHERE produtos_id = :produto_id
+                    ");
+                    $db->bind(":quantidade", $item['quantidade']);
+                    $db->bind(":produto_id", $item['produto_id']);
+                    if (!$db->execute() || $db->rowCount() === 0) {
+                        return false;
+                    }
+                    // Se for CD, também debitar estoque_loja do CD (mantém consistência)
+                    if ($loja_id && $tipo_loja === 'CD') {
+                        $db->query("
+                            UPDATE estoque_loja
+                            SET quantidade = quantidade - :quantidade
+                            WHERE produto_id = :produto_id AND loja_id = :loja_id
+                        ");
+                        $db->bind(":quantidade", $item['quantidade']);
+                        $db->bind(":produto_id", $item['produto_id']);
+                        $db->bind(":loja_id", $loja_id);
+                        $db->execute(); // Pode não afetar se CD não tiver estoque_loja para esse produto
+                    }
                 }
 
 
@@ -323,16 +349,37 @@ class Controller
     {
         $db = new db();
 
-        // Pegar todos os itens do pedido para atualizar o estoque
+        // Obter loja_id e tipo da loja do pedido
+        $db->query("SELECT p.loja_id, l.tipo FROM pedidos p LEFT JOIN loja l ON p.loja_id = l.id WHERE p.id = :id");
+        $db->bind(":id", $id);
+        $pedido = $db->single();
+        $loja_id = $pedido['loja_id'] ?? null;
+        $tipo_loja = ($pedido && isset($pedido['tipo'])) ? $pedido['tipo'] : null;
+
         $db->query("SELECT * FROM pedidos_itens WHERE pedido_id = :pedido_id");
         $db->bind(":pedido_id", $id);
         $itens = $db->resultSet();
 
         foreach ($itens as $item) {
-            $db->query("UPDATE estoque SET quantidade = quantidade + :quantidade WHERE produtos_id = :produto_id");
-            $db->bind(":quantidade", $item['quantidade']);
-            $db->bind(":produto_id", $item['produto_id']);
-            $db->execute();
+            if ($loja_id && $tipo_loja === 'Loja') {
+                $db->query("UPDATE estoque_loja SET quantidade = quantidade + :quantidade WHERE produto_id = :produto_id AND loja_id = :loja_id");
+                $db->bind(":quantidade", $item['quantidade']);
+                $db->bind(":produto_id", $item['produto_id']);
+                $db->bind(":loja_id", $loja_id);
+                $db->execute();
+            } else {
+                $db->query("UPDATE estoque SET quantidade = quantidade + :quantidade WHERE produtos_id = :produto_id");
+                $db->bind(":quantidade", $item['quantidade']);
+                $db->bind(":produto_id", $item['produto_id']);
+                $db->execute();
+                if ($loja_id && $tipo_loja === 'CD') {
+                    $db->query("UPDATE estoque_loja SET quantidade = quantidade + :quantidade WHERE produto_id = :produto_id AND loja_id = :loja_id");
+                    $db->bind(":quantidade", $item['quantidade']);
+                    $db->bind(":produto_id", $item['produto_id']);
+                    $db->bind(":loja_id", $loja_id);
+                    $db->execute();
+                }
+            }
         }
 
         // Excluir os itens do pedido

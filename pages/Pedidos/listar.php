@@ -71,6 +71,9 @@ $pedidos = $controller->listar();
                   <li>
                     <a href="<?= "{$url}!/Notas/emitir-nota/{$pedido['id']}" ?>" class="dropdown-item">Emitir Nota</a>
                   </li>
+                  <li>
+                    <a href="<?= "{$url}pages/Pedidos/imprimir.php?id={$pedido['id']}&via=cliente" ?>" target="_blank" class="dropdown-item">Imprimir Pedido de Venda</a>
+                  </li>
                   <?php //} ?>
                   <li>
                     <?php if (!empty($pedido['status_fabrica'])) { ?>

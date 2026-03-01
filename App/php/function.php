@@ -408,7 +408,8 @@ function adicionarDiasUteis($data, $dias)
 
 
 function verificarCertificadoDigital() {
-    $certPath = $_SERVER['DOCUMENT_ROOT'] . '/pages/Notas/certificado.pfx';
+    $projectRoot = dirname(__DIR__, 2);
+    $certPath = $projectRoot . '/pages/Notas/certificado.pfx';
     $senhaCert = '123456';
 
     if (!file_exists($certPath)) {

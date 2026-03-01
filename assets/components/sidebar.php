@@ -53,15 +53,49 @@
     </li>
     <hr class="sidebar-divider" />
 
-    <!-- Seção: Estoque e Produtos -->
+    <!-- Seção: Estoque (Admin e usuários da loja visualizam quantidade por loja) -->
     <div class="sidebar-heading">
-        Estoque e Produtos
+        Estoque
+    </div>
+    <li class="nav-item">
+        <a class="nav-link" href="<?php echo "{$url}!/Estoque/listar" ?>">
+            <i class="fas fa-fw fa-boxes"></i>
+            <span>Estoque por Loja</span>
+        </a>
+    </li>
+    <hr class="sidebar-divider" />
+
+    <!-- Seção: CD - Centro de Distribuição (apenas Admin) -->
+    <?php if (isset($_COOKIE['nivel_acesso']) && $_COOKIE['nivel_acesso'] === 'Administrador'): ?>
+    <div class="sidebar-heading">
+        CD - Centro de Distribuição
+    </div>
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#menuCD" 
+           aria-expanded="false" aria-controls="menuCD">
+            <i class="fas fa-fw fa-warehouse"></i>
+            <span>Centro de Distribuição</span>
+        </a>
+        <div id="menuCD" class="collapse <?php echo in_array($link[1] ?? '', ['CD']) ? 'show' : ''; ?>" aria-labelledby="headingCD" data-bs-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <a class="collapse-item" href="<?php echo "{$url}!/CD/estoque" ?>">Estoque do CD</a>
+                <a class="collapse-item" href="<?php echo "{$url}!/CD/transferir" ?>">Transferir para Lojas</a>
+                <a class="collapse-item" href="<?php echo "{$url}!/CD/movimentacoes" ?>">Movimentações</a>
+            </div>
+        </div>
+    </li>
+    <hr class="sidebar-divider" />
+    <?php endif; ?>
+
+    <!-- Seção: Produtos e Cadastros -->
+    <div class="sidebar-heading">
+        Produtos e Cadastros
     </div>
     <li class="nav-item">
         <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#produtosEstoque" 
            aria-expanded="false" aria-controls="produtosEstoque">
             <i class="fas fa-fw fa-box"></i>
-            <span>Produtos & Estoque</span>
+            <span>Produtos</span>
         </a>
         <div id="produtosEstoque" class="collapse <?php echo in_array($link[1] ?? '', ['Produtos', 'Insumos', 'GrupoProdutos', 'SubGrupoProdutos', 'Definicoes', 'Cotacoes', 'EntradaMercadorias', 'MovimentacaoEstoque', 'TransferenciaEstoque']) ? 'show' : ''; ?>" aria-labelledby="headingProdutosEstoque" data-bs-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
@@ -72,8 +106,8 @@
                 <a class="collapse-item" href="<?php echo "{$url}!/Definicoes/listar" ?>">Definições</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Cotacoes/listar" ?>">Cotações</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/EntradaMercadorias/listar" ?>">Entrada de Mercadorias</a>
-                <a class="collapse-item" href="<?php echo "{$url}!/TransferenciaEstoque/listar" ?>">Transferência de Estoque</a>
-                <a class="collapse-item" href="<?php echo "{$url}!/MovimentacaoEstoque/listar" ?>">Estoque</a>
+                <a class="collapse-item" href="<?php echo "{$url}!/TransferenciaEstoque/listar" ?>">Transferência entre Lojas</a>
+                <a class="collapse-item" href="<?php echo "{$url}!/MovimentacaoEstoque/listar" ?>">Movimentações</a>
             </div>
         </div>
     </li>
@@ -186,14 +220,12 @@
     <?php endif; ?>
 
     <!-- Seção: Certificado Digital -->
-    <?php if ($_COOKIE['nivel_acesso'] == 'Administrador'): ?>
     <li class="nav-item">
         <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#modalCertificado">
             <i class="fas fa-fw fa-certificate"></i>
             <span>Certificado Digital</span>
         </a>
     </li>
-    <?php endif; ?>
 
     <!-- Seção: Sair -->
     <li class="nav-item">

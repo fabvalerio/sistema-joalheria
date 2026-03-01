@@ -69,15 +69,37 @@ class Controller
 
         $transferencia_id = $db->lastInsertId();
 
-        // Debitar do estoque da origem
-        $db->query("
-            UPDATE estoque_loja 
-            SET quantidade = quantidade - :quantidade 
-            WHERE produto_id = :produto_id AND loja_id = :loja_id
-        ");
-        $db->bind(':quantidade', $dados['quantidade']);
-        $db->bind(':produto_id', $dados['produto_id']);
+        // Verificar se origem é CD (usa tabela estoque) ou loja (usa estoque_loja)
+        $db->query("SELECT tipo FROM loja WHERE id = :loja_id");
         $db->bind(':loja_id', $dados['loja_origem_id']);
+        $lojaOrigem = $db->single();
+        $tipoOrigem = $lojaOrigem['tipo'] ?? '';
+
+        if ($tipoOrigem === 'CD') {
+            // Debitar da tabela estoque (produtos_id) - pega uma linha com saldo suficiente
+            $db->query("
+                UPDATE estoque e
+                INNER JOIN (
+                    SELECT id FROM estoque
+                    WHERE produtos_id = :produto_id AND quantidade >= :quantidade
+                    ORDER BY id LIMIT 1
+                ) t ON e.id = t.id
+                SET e.quantidade = e.quantidade - :quantidade2
+            ");
+            $db->bind(':produto_id', $dados['produto_id']);
+            $db->bind(':quantidade', $dados['quantidade']);
+            $db->bind(':quantidade2', $dados['quantidade']);
+        } else {
+            // Debitar do estoque_loja
+            $db->query("
+                UPDATE estoque_loja 
+                SET quantidade = quantidade - :quantidade 
+                WHERE produto_id = :produto_id AND loja_id = :loja_id
+            ");
+            $db->bind(':quantidade', $dados['quantidade']);
+            $db->bind(':produto_id', $dados['produto_id']);
+            $db->bind(':loja_id', $dados['loja_origem_id']);
+        }
 
         if (!$db->execute()) {
             return false;
