@@ -113,16 +113,16 @@ class Controller
     {
         $db = new db();
 
-        // Inserir o produto na tabela "produtos"
+        // Inserir o produto na tabela "produtos" (sem estoque_princ - estoque gerenciado via Entrada de Mercadorias)
         $db->query("
         INSERT INTO produtos (
             descricao_etiqueta, fornecedor_id, modelo, macica_ou_oca, numeros, pedra, 
             nat_ou_sint, peso, aros, cm, pontos, mm, grupo_id, subgrupo_id, unidade, 
-                estoque_princ, cotacao, preco_ql, peso_gr, custo, margem, em_reais, capa, formato, observacoes, codigo_fabricante, material_id, categoria_id, insumos, descricao_etiqueta_manual
+            cotacao, preco_ql, peso_gr, custo, margem, em_reais, capa, formato, observacoes, codigo_fabricante, material_id, categoria_id, insumos, descricao_etiqueta_manual
         ) VALUES (
             :descricao_etiqueta, :fornecedor_id, :modelo, :macica_ou_oca, :numeros, :pedra, 
             :nat_ou_sint, :peso, :aros, :cm, :pontos, :mm, :grupo_id, :subgrupo_id, :unidade, 
-            :estoque_princ, :cotacao, :preco_ql, :peso_gr, :custo, :margem, :em_reais, :capa, :formato, :observacoes, :codigo_fabricante, :material_id, :categoria_id, :insumos, :descricao_etiqueta_manual
+            :cotacao, :preco_ql, :peso_gr, :custo, :margem, :em_reais, :capa, :formato, :observacoes, :codigo_fabricante, :material_id, :categoria_id, :insumos, :descricao_etiqueta_manual
         )
     ");
 
@@ -143,7 +143,6 @@ class Controller
             'grupo_id',
             'subgrupo_id',
             'unidade',
-            'estoque_princ',
             'cotacao',
             'preco_ql',
             'peso_gr',
@@ -191,45 +190,20 @@ class Controller
             // Recuperar o ID do produto recém-cadastrado
             $produto_id = $db->lastInsertId();
 
-            // Inserir movimentação de estoque como "Entrada"
+            // Inserir registro em estoque com quantidade 0 (estoque será gerenciado via Entrada de Mercadorias)
             $db->query("
-            INSERT INTO movimentacao_estoque (
-                produto_id, descricao_produto, tipo_movimentacao, quantidade, documento, 
-                data_movimentacao, motivo, estoque_antes, estoque_atualizado
-            ) VALUES (
-                :produto_id, :descricao_produto, :tipo_movimentacao, :quantidade, :documento, 
-                :data_movimentacao, :motivo, :estoque_antes, :estoque_atualizado
-            )
-        ");
-
-            $db->bind(":produto_id", $produto_id);
-            $db->bind(":descricao_produto", $dados['descricao_etiqueta'] ?? '');
-            $db->bind(":tipo_movimentacao", "Entrada");
-            $db->bind(":quantidade", $dados['estoque_princ'] ?? 0);
-            $db->bind(":documento", null); // Ajuste conforme necessário
-            $db->bind(":data_movimentacao", date("Y-m-d"));
-            $db->bind(":motivo", "Cadastro de produto");
-            $db->bind(":estoque_antes", 0); // Estoque inicial é 0 para novo produto
-            $db->bind(":estoque_atualizado", $dados['estoque_princ'] ?? 0);
-
-            if ($db->execute()) {
-                // Inserir dados na tabela "estoque"
-                $db->query("
                 INSERT INTO estoque (
                     produtos_id, entrada_mercadorias_id, quantidade_minima, quantidade
                 ) VALUES (
-                    :produtos_id, :entrada_mercadorias_id, :quantidade_minima, :quantidade
+                    :produtos_id, :entrada_mercadorias_id, :quantidade_minima, 0
                 )
             ");
+            $db->bind(":produtos_id", $produto_id);
+            $db->bind(":entrada_mercadorias_id", null);
+            $db->bind(":quantidade_minima", $dados['quantidade_minima'] ?? 0);
 
-                $db->bind(":produtos_id", $produto_id);
-                $db->bind(":entrada_mercadorias_id", null); // Ajuste conforme necessário
-                $db->bind(":quantidade_minima", $dados['quantidade_minima'] ?? 0);
-                $db->bind(":quantidade", $dados['estoque_princ'] ?? 0);
-
-                if ($db->execute()) {
-                    return $produto_id; // Retorna o ID do produto cadastrado
-                }
+            if ($db->execute()) {
+                return $produto_id; // Retorna o ID do produto cadastrado
             }
         }
 

@@ -185,10 +185,8 @@ $grupos = $grupoController->listarSelectTempo();
                         <div class="row g-3 align-items-end product-item mb-2">
                             <div class="col-lg-1">
                                 <img name="produtos[0][capa]" src="<?= $url . '/assets/img_padrao.webp'; ?>" alt="Capa do Produto"
-                                    style="height: 100px; object-fit: cover; border: 1px solid #ddd; border-radius: 5px; transition: transform 0.3s; z-index: 999;" 
-                                    class="capa img-fluid"
-                                    onmouseover="this.style.transform='scale(2)'; this.style.zIndex='999'; this.style.position='relative';"
-                                    onmouseout="this.style.transform='scale(1)'; this.style.zIndex='auto'; this.style.position='static';">
+                                    style="height: 100px; object-fit: cover; border: 1px solid #ddd; border-radius: 5px;"
+                                    class="capa img-fluid img-capa-produto image-capa">
                             </div>
                             <div class="col-lg-3">
                                 <label class="form-label">Produto</label>
@@ -439,6 +437,8 @@ $grupos = $grupoController->listarSelectTempo();
                 </div>
 
 
+                <?php include dirname(__DIR__, 2) . '/assets/components/lightbox_capa.php'; ?>
+
                 <!-- Modal para Seleção de Produtos -->
                 <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-lg">
@@ -493,7 +493,7 @@ $grupos = $grupoController->listarSelectTempo();
                                             const preco = parseFloat(p.preco || 0).toFixed(2);
                                             return `<tr>
                                                 <td>${p.id}</td>
-                                                <td><img src="${capa}" alt="Capa" width="65" style="height:65px;object-fit:cover;border:1px solid #ddd;border-radius:5px;"></td>
+                                                <td><img src="${capa}" alt="Capa" class="image-capa" width="65" style="height:65px;object-fit:cover;border:1px solid #ddd;border-radius:5px;cursor:pointer;"></td>
                                                 <td>${p.nome_produto}</td>
                                                 <td>R$ ${preco}</td>
                                                 <td>${p.estoque ?? 0}</td>
@@ -662,7 +662,8 @@ $grupos = $grupoController->listarSelectTempo();
                         productItem.innerHTML = `
                         <div class="col-lg-1">
                                 <img name="produtos[${productIndex}][capa]" src="<?= $url . '/assets/img_padrao.webp'; ?>" alt="Capa do Produto"
-                                    width="100" style="height: 100px; object-fit: cover; border: 1px solid #ddd; border-radius: 5px;">
+                                    style="height: 100px; object-fit: cover; border: 1px solid #ddd; border-radius: 5px;"
+                                    class="capa img-fluid img-capa-produto image-capa">
                             </div>
                             <div class="col-lg-3">
                     <input type="text" class="form-control product-input" placeholder="Clique para selecionar um produto" name="produtos[${productIndex}][descricao_produto]" readonly data-index="${productIndex}">

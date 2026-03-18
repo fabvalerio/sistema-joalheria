@@ -76,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
   if ($return) {
     echo notify('success', "Consignação atualizada com sucesso!");
-    echo '<meta http-equiv="refresh" content="2; url=' . $url . '!/' . $link[1] . '/listar">';
+    echo '<meta http-equiv="refresh" content="2; url=' . $url . '!/' . $link[1] . '/imprimir/' . (int) $id . '">';
   } else {
     echo notify('danger', "Erro ao atualizar a consignação.");
   }

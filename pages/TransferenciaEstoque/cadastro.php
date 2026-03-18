@@ -170,6 +170,7 @@ $(document).ready(function() {
             tableProdutos = null;
         }
         tableProdutos = $('#tabelaProdutos').DataTable({
+            searching: false,
             ajax: {
                 url: endpointUrl,
                 dataSrc: 'data',

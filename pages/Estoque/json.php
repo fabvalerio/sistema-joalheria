@@ -19,13 +19,13 @@ $controller = new Controller();
 $isAdmin = isset($_COOKIE['nivel_acesso']) && $_COOKIE['nivel_acesso'] === 'Administrador';
 $usuario_loja_id = $_COOKIE['loja_id'] ?? null;
 
-$loja_id = $_GET['loja_id'] ?? null;
+$loja_id = $_POST['loja_id'] ?? $_GET['loja_id'] ?? null;
 if (!$isAdmin && $usuario_loja_id) {
     $loja_id = $usuario_loja_id;
 }
 
-// Estoque/listar usa tabela estoque_loja
-$estoque = $controller->estoquePorLoja($loja_id);
+// Estoque/listar: loja vazia = Estoque Principal + todas lojas; loja específica = só essa loja
+$estoque = $controller->estoqueUnificado($loja_id);
 
 $data = [];
 foreach ($estoque as $item) {
@@ -33,6 +33,7 @@ foreach ($estoque as $item) {
     $status = ($qtdMin > 0 && (float)$item['quantidade'] <= $qtdMin) ? 'Baixo' : 'OK';
 
     $data[] = [
+        'loja_id' => isset($item['loja_id']) ? (int)$item['loja_id'] : 0,
         'loja_nome' => $item['loja_nome'] ?? '-',
         'produto_id' => $item['produto_id'],
         'codigo_formatado' => str_pad($item['produto_id'], 6, '0', STR_PAD_LEFT),

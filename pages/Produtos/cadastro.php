@@ -78,7 +78,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     'pontos' => $_POST['pontos'] ?? null,
     'mm' => $_POST['mm'] ?? null,
     'unidade' => $_POST['unidade'] ?? null,
-    'estoque_princ' => $_POST['estoque_princ'] ?? null,
     'cotacao' => $_POST['cotacao'] ?? null,
     'preco_ql' => $_POST['preco_ql'] ?? null,
     'peso_gr' => $_POST['peso_gr'] ?? null,
@@ -179,10 +178,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="row g-3">
                         <div class="col-lg-12">
                             <div id="preview-container" style="text-align: center;">
-                                <a href="#" data-bs-toggle="modal" data-bs-target="#modalImagemProduto" style="cursor: pointer;">
-                                    <img id="preview-thumb" src="" alt="Preview da Imagem"
-                                        style="max-width: 100%; max-height: 108px; display: none; border: 1px solid #ddd; padding: 5px; border-radius: 5px;">
-                                </a>
+                                <img id="preview-thumb" class="image-capa" src="" alt="Preview da Imagem"
+                                    style="max-width: 100%; max-height: 108px; display: none; border: 1px solid #ddd; padding: 5px; border-radius: 5px; cursor: pointer;">
                             </div>
                         </div>
                         <div class="col-lg-12">
@@ -496,13 +493,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
                         <div class="col-lg-2">
-                            <label class="form-label">Quantidade</label>
-                            <input type="number" step="0.001" class="form-control" name="estoque_princ"
-                                id="estoque_princ" value="1">
-                        </div>
-
-
-                        <div class="col-lg-2">
                             <label class="form-label">Código do Fabricante</label>
                             <input type="text" class="form-control" name="codigo_fabricante" id="codigo_fabricante"
                                 value="">
@@ -740,20 +730,7 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         </div>
 
-        <!-- Modal para visualizar imagem ampliada -->
-        <div class="modal fade" id="modalImagemProduto" tabindex="-1" aria-labelledby="modalImagemProdutoLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="modalImagemProdutoLabel">Imagem do Produto</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-                    </div>
-                    <div class="modal-body text-center">
-                        <img id="imagem-ampliada" src="" alt="Imagem Ampliada" style="max-width: 100%; height: auto;">
-                    </div>
-                </div>
-            </div>
-        </div>
+<?php include dirname(__DIR__, 2) . '/assets/components/lightbox_capa.php'; ?>
 
     </div>
 </div>
@@ -1014,19 +991,6 @@ document.getElementById('capa').addEventListener('change', function(event) {
         };
 
         reader.readAsDataURL(file); // Lê o arquivo como Base64
-    }
-});
-
-// Atualizar imagem no modal lightbox
-document.addEventListener('DOMContentLoaded', function() {
-    const modalImagemProduto = document.getElementById('modalImagemProduto');
-    const imagemAmpliada = document.getElementById('imagem-ampliada');
-    const previewThumb = document.getElementById('preview-thumb');
-    
-    if (modalImagemProduto) {
-        modalImagemProduto.addEventListener('show.bs.modal', function() {
-            imagemAmpliada.src = previewThumb.src;
-        });
     }
 });
 

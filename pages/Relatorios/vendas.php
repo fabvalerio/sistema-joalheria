@@ -84,7 +84,7 @@ $vendedores = $controller->listarVendedores();
                                 let dataInicio = $("#data_inicio").val();
                                 let dataFinal = $("#data_final").val();
 
-                                let url = "/sistema-joias/!/Relatorios/vendas/&tipo=" + encodeURIComponent(tipo) + 
+                                let url = "/!/Relatorios/vendas/&tipo=" + encodeURIComponent(tipo) + 
                                         "&vendedor_id=" + encodeURIComponent(vendedorId) +
                                         "&data_inicio=" + encodeURIComponent(dataInicio) + 
                                         "&data_final=" + encodeURIComponent(dataFinal);

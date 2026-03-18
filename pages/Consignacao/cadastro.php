@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if ($return) {
         echo notify('success', "Consignação cadastrada com sucesso!");
-        echo '<meta http-equiv="refresh" content="2; url=' . $url . '!/' . $link[1] . '/listar">';
+        echo '<meta http-equiv="refresh" content="2; url=' . $url . '!/' . $link[1] . '/imprimir/' . (int) $return . '">';
     } else {
         echo notify('danger', "Erro ao cadastrar a consignação.");
     }

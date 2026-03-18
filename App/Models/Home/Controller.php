@@ -155,8 +155,36 @@ public function kpisFabrica()
     return $db->resultSet();
 }
 
+/**
+ * Conta produtos com estoque baixo na loja (estoque_loja).
+ * Estoque baixo = quantidade <= quantidade_minima AND quantidade_minima > 0.
+ */
+public function countEstoqueBaixoLoja($loja_id)
+{
+    if (empty($loja_id)) {
+        return 0;
+    }
+    $db = new db();
+    $db->query("SELECT COUNT(*) as total FROM estoque_loja 
+        WHERE loja_id = :loja_id 
+        AND quantidade_minima > 0 
+        AND quantidade <= quantidade_minima");
+    $db->bind(':loja_id', (int)$loja_id);
+    $row = $db->single();
+    return (int)($row['total'] ?? 0);
+}
 
-
-
-    
+/**
+ * Conta produtos com estoque baixo no CD (tabela estoque principal).
+ * Estoque baixo = quantidade <= quantidade_minima AND quantidade_minima > 0.
+ */
+public function countEstoqueBaixoCD()
+{
+    $db = new db();
+    $db->query("SELECT COUNT(*) as total FROM estoque 
+        WHERE quantidade_minima > 0 
+        AND quantidade <= quantidade_minima");
+    $row = $db->single();
+    return (int)($row['total'] ?? 0);
+}
 }

@@ -259,7 +259,7 @@ class Controller
                 }
             }
 
-            return true; // Cadastro bem-sucedido
+            return $pedidoId; // Retorna o ID real do pedido inserido
         }
 
         return false; // Falha no cadastro do pedido

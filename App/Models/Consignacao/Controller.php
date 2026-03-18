@@ -2,10 +2,16 @@
 
 namespace App\Models\Consignacao;
 
-use db; // Classe de conexão com o banco
+use db;
+use App\Models\Estoque\Controller as EstoqueController;
 
 class Controller
 {
+    private function getCDLojaId()
+    {
+        return (new EstoqueController())->getCDLojaId();
+    }
+
     // Listar todas as consignações
     public function listar()
     {
@@ -95,36 +101,45 @@ class Controller
         ];
     }
 
-    // Cadastrar uma nova consignação
+    // Cadastrar uma nova consignação (saída do CD)
     public function cadastro($dados)
     {
         $db = new db();
+        $cd_id = $this->getCDLojaId();
 
-        $loja_id = $dados['loja_id'] ?? null;
+        try {
+            $db->beginTransaction();
 
-        $db->query("
-            INSERT INTO consignacao (
-                cliente_id, data_consignacao, valor, status, observacao, desconto_percentual, bonificacao, loja_id
-            ) VALUES (
-                :cliente_id, :data_consignacao, :valor, :status, :observacao, :desconto_percentual, :bonificacao, :loja_id
-            )
-        ");
-        $db->bind(':cliente_id', $dados['cliente_id']);
-        $db->bind(':data_consignacao', $dados['data_consignacao']);
-        $db->bind(':valor', $dados['valor']);
-        $db->bind(':status', $dados['status']);
-        $db->bind(':observacao', $dados['observacao']);
-        $db->bind(':desconto_percentual', $dados['desconto_percentual']);
-        $db->bind(':bonificacao', $dados['bonificacao']);
-        $db->bind(':loja_id', $loja_id);
+            $db->query("
+                INSERT INTO consignacao (
+                    cliente_id, data_consignacao, valor, status, observacao, desconto_percentual, bonificacao, loja_id
+                ) VALUES (
+                    :cliente_id, :data_consignacao, :valor, :status, :observacao, :desconto_percentual, :bonificacao, :loja_id
+                )
+            ");
+            $db->bind(':cliente_id', $dados['cliente_id']);
+            $db->bind(':data_consignacao', $dados['data_consignacao']);
+            $db->bind(':valor', $dados['valor']);
+            $db->bind(':status', $dados['status']);
+            $db->bind(':observacao', $dados['observacao']);
+            $db->bind(':desconto_percentual', $dados['desconto_percentual']);
+            $db->bind(':bonificacao', $dados['bonificacao']);
+            $db->bind(':loja_id', $cd_id);
 
-        if ($db->execute()) {
+            if (!$db->execute()) {
+                $db->cancelTransaction();
+                return false;
+            }
+
             $consignacaoId = $db->lastInsertId();
 
             foreach ($dados['itens'] as $item) {
                 if (!isset($item['produto_id'], $item['quantidade'], $item['valor'])) {
                     continue;
                 }
+
+                $qtd = (float)$item['quantidade'];
+                $produto_id = (int)$item['produto_id'];
 
                 $db->query("
                     INSERT INTO consignacao_itens (
@@ -134,41 +149,82 @@ class Controller
                     )
                 ");
                 $db->bind(':consignacao_id', $consignacaoId);
-                $db->bind(':produto_id', $item['produto_id']);
-                $db->bind(':quantidade', $item['quantidade']);
+                $db->bind(':produto_id', $produto_id);
+                $db->bind(':quantidade', $qtd);
                 $db->bind(':valor', $item['valor']);
                 $db->bind(':qtd_devolvido', $item['qtd_devolvido'] ?? 0);
 
                 if (!$db->execute()) {
+                    $db->cancelTransaction();
                     return false;
                 }
+
+                $db->query("SELECT COALESCE(SUM(quantidade), 0) as total FROM estoque WHERE produtos_id = :pid");
+                $db->bind(':pid', $produto_id);
+                $r = $db->single();
+                $estoqueAntes = $r ? (float)($r['total'] ?? 0) : 0;
+                $estoqueAtualizado = $estoqueAntes - $qtd;
+
+                $db->query("SELECT descricao_etiqueta FROM produtos WHERE id = :id LIMIT 1");
+                $db->bind(':id', $produto_id);
+                $p = $db->single();
+                $descricaoProduto = $p ? ($p['descricao_etiqueta'] ?? '') : '';
 
                 $db->query("
                     UPDATE estoque
                     SET quantidade = quantidade - :quantidade
                     WHERE produtos_id = :produto_id
                 ");
-                $db->bind(':quantidade', $item['quantidade']);
-                $db->bind(':produto_id', $item['produto_id']);
+                $db->bind(':quantidade', $qtd);
+                $db->bind(':produto_id', $produto_id);
                 $db->execute();
 
-                if ($loja_id) {
+                if ($cd_id) {
                     $db->query("
                         UPDATE estoque_loja
                         SET quantidade = quantidade - :quantidade
                         WHERE produto_id = :produto_id AND loja_id = :loja_id
                     ");
-                    $db->bind(':quantidade', $item['quantidade']);
-                    $db->bind(':produto_id', $item['produto_id']);
-                    $db->bind(':loja_id', $loja_id);
+                    $db->bind(':quantidade', $qtd);
+                    $db->bind(':produto_id', $produto_id);
+                    $db->bind(':loja_id', $cd_id);
                     $db->execute();
+                }
+
+                $db->query("
+                    INSERT INTO movimentacao_estoque (
+                        produto_id, descricao_produto, tipo_movimentacao, quantidade, documento,
+                        data_movimentacao, motivo, estoque_antes, estoque_atualizado, loja_id
+                    ) VALUES (
+                        :produto_id, :descricao_produto, :tipo_movimentacao, :quantidade, :documento,
+                        :data_movimentacao, :motivo, :estoque_antes, :estoque_atualizado, :loja_id
+                    )
+                ");
+                $db->bind(':produto_id', $produto_id);
+                $db->bind(':descricao_produto', $descricaoProduto);
+                $db->bind(':tipo_movimentacao', 'Saida');
+                $db->bind(':quantidade', $qtd);
+                $db->bind(':documento', 'Consignação #' . $consignacaoId);
+                $db->bind(':data_movimentacao', date('Y-m-d H:i:s'));
+                $db->bind(':motivo', 'Consignação #' . $consignacaoId);
+                $db->bind(':estoque_antes', $estoqueAntes);
+                $db->bind(':estoque_atualizado', $estoqueAtualizado);
+                $db->bind(':loja_id', $cd_id);
+
+                if (!$db->execute()) {
+                    $db->cancelTransaction();
+                    return false;
                 }
             }
 
-            return true;
+            $db->endTransaction();
+            return (int) $consignacaoId;
+        } catch (\Exception $e) {
+            if (isset($db)) {
+                $db->cancelTransaction();
+            }
+            return false;
         }
-
-        return false;
     }
 
     // Listar clientes para o select
@@ -205,12 +261,12 @@ class Controller
         ");
         return $db->resultSet();
     }
-    // Editar uma consignação existente
+    // Editar uma consignação existente (entrada/devolução no CD)
     public function editar($id, $dados)
     {
         $db = new db();
+        $cd_id = $this->getCDLojaId();
 
-        // Atualizar o status da consignação
         $db->query("
             UPDATE consignacao
             SET 
@@ -227,17 +283,9 @@ class Controller
         $db->bind(':id', $id);
 
         if (!$db->execute()) {
-            echo "<pre>Erro ao atualizar status da consignação.</pre>";
-            return false; // Retorna falso se a atualização do status falhar
+            return false;
         }
 
-        // Buscar loja_id da consignação
-        $db->query("SELECT loja_id FROM consignacao WHERE id = :id");
-        $db->bind(':id', $id);
-        $consignacaoData = $db->single();
-        $loja_id = $consignacaoData['loja_id'] ?? null;
-
-        // Buscar quantidades devolvidas anteriores para calcular diferença
         $db->query("SELECT id, produto_id, qtd_devolvido FROM consignacao_itens WHERE consignacao_id = :cid");
         $db->bind(':cid', $id);
         $itensAntigos = $db->resultSet();
@@ -264,26 +312,60 @@ class Controller
             }
 
             if ($diferenca > 0) {
+                $produto_id = (int)$item['produto_id'];
+
+                $db->query("SELECT COALESCE(SUM(quantidade), 0) as total FROM estoque WHERE produtos_id = :pid");
+                $db->bind(':pid', $produto_id);
+                $r = $db->single();
+                $estoqueAntes = $r ? (float)($r['total'] ?? 0) : 0;
+                $estoqueAtualizado = $estoqueAntes + $diferenca;
+
                 $db->query("
                     UPDATE estoque 
                     SET quantidade = quantidade + :quantidade
                     WHERE produtos_id = :produto_id
                 ");
                 $db->bind(':quantidade', $diferenca);
-                $db->bind(':produto_id', $item['produto_id']);
+                $db->bind(':produto_id', $produto_id);
                 $db->execute();
 
-                if ($loja_id) {
+                if ($cd_id) {
                     $db->query("
-                        UPDATE estoque_loja 
-                        SET quantidade = quantidade + :quantidade
-                        WHERE produto_id = :produto_id AND loja_id = :loja_id
+                        INSERT INTO estoque_loja (loja_id, produto_id, quantidade, quantidade_minima)
+                        VALUES (:loja_id, :produto_id, :quantidade, 0)
+                        ON DUPLICATE KEY UPDATE quantidade = quantidade + VALUES(quantidade)
                     ");
+                    $db->bind(':loja_id', $cd_id);
+                    $db->bind(':produto_id', $produto_id);
                     $db->bind(':quantidade', $diferenca);
-                    $db->bind(':produto_id', $item['produto_id']);
-                    $db->bind(':loja_id', $loja_id);
                     $db->execute();
                 }
+
+                $db->query("SELECT descricao_etiqueta FROM produtos WHERE id = :id LIMIT 1");
+                $db->bind(':id', $produto_id);
+                $p = $db->single();
+                $descricaoProduto = $p ? ($p['descricao_etiqueta'] ?? '') : '';
+
+                $db->query("
+                    INSERT INTO movimentacao_estoque (
+                        produto_id, descricao_produto, tipo_movimentacao, quantidade, documento,
+                        data_movimentacao, motivo, estoque_antes, estoque_atualizado, loja_id
+                    ) VALUES (
+                        :produto_id, :descricao_produto, :tipo_movimentacao, :quantidade, :documento,
+                        :data_movimentacao, :motivo, :estoque_antes, :estoque_atualizado, :loja_id
+                    )
+                ");
+                $db->bind(':produto_id', $produto_id);
+                $db->bind(':descricao_produto', $descricaoProduto);
+                $db->bind(':tipo_movimentacao', 'Entrada');
+                $db->bind(':quantidade', $diferenca);
+                $db->bind(':documento', 'Consignação #' . $id);
+                $db->bind(':data_movimentacao', date('Y-m-d H:i:s'));
+                $db->bind(':motivo', 'Devolução Consignação #' . $id);
+                $db->bind(':estoque_antes', $estoqueAntes);
+                $db->bind(':estoque_atualizado', $estoqueAtualizado);
+                $db->bind(':loja_id', $cd_id);
+                $db->execute();
             }
         }
 
@@ -293,12 +375,7 @@ class Controller
     public function deletar($id)
     {
         $db = new db();
-
-        // Buscar loja_id da consignação
-        $db->query("SELECT loja_id FROM consignacao WHERE id = :id");
-        $db->bind(":id", $id);
-        $consig = $db->single();
-        $loja_id = $consig['loja_id'] ?? null;
+        $cd_id = $this->getCDLojaId();
 
         $db->query("
             SELECT ci.produto_id, ci.quantidade, ci.qtd_devolvido 
@@ -309,26 +386,28 @@ class Controller
         $itens = $db->resultSet();
 
         foreach ($itens as $item) {
-            $quantidadeDevolvida = $item['quantidade'] - $item['qtd_devolvido'];
+            $quantidadeDevolvida = (float)($item['quantidade'] ?? 0) - (float)($item['qtd_devolvido'] ?? 0);
             if ($quantidadeDevolvida > 0) {
+                $produto_id = (int)$item['produto_id'];
+
                 $db->query("
                     UPDATE estoque 
                     SET quantidade = quantidade + :quantidade 
                     WHERE produtos_id = :produto_id
                 ");
                 $db->bind(":quantidade", $quantidadeDevolvida);
-                $db->bind(":produto_id", $item['produto_id']);
+                $db->bind(":produto_id", $produto_id);
                 $db->execute();
 
-                if ($loja_id) {
+                if ($cd_id) {
                     $db->query("
-                        UPDATE estoque_loja 
-                        SET quantidade = quantidade + :quantidade 
-                        WHERE produto_id = :produto_id AND loja_id = :loja_id
+                        INSERT INTO estoque_loja (loja_id, produto_id, quantidade, quantidade_minima)
+                        VALUES (:loja_id, :produto_id, :quantidade, 0)
+                        ON DUPLICATE KEY UPDATE quantidade = quantidade + VALUES(quantidade)
                     ");
+                    $db->bind(":loja_id", $cd_id);
+                    $db->bind(":produto_id", $produto_id);
                     $db->bind(":quantidade", $quantidadeDevolvida);
-                    $db->bind(":produto_id", $item['produto_id']);
-                    $db->bind(":loja_id", $loja_id);
                     $db->execute();
                 }
             }

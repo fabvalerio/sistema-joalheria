@@ -13,7 +13,7 @@ if (session_status() === PHP_SESSION_NONE) {
 // Verifica se o usuário está autenticado
 if (!isset($_COOKIE['id']) || empty($_COOKIE['id'])) {
     // Redireciona para a página de login se não estiver autenticado
-    $url = "https://" . $_SERVER['HTTP_HOST'] . "/sistema-joias/";
+    $url = "https://" . $_SERVER['HTTP_HOST'] . "/";
     header("Location: " . $url . "login.php");
     exit();
 }

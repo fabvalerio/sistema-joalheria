@@ -132,7 +132,7 @@ foreach ($produtos as $produto) {
     );
 
     $resultado[] = [
-        'id'           => $produto['id'],
+        'id'           => str_pad($produto['id'], 5, '0', STR_PAD_LEFT),
         'nome_produto' => $produto['nome_produto'],
         'preco'        => $preco > 0 ? $preco : ($produto['preco'] ?? 0),
         'estoque'      => $produto['estoque'] ?? 0,

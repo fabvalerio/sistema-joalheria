@@ -158,6 +158,12 @@ class db
         return $this->dbh->rollBack();
     }
 
+    /** Verifica se há transação ativa (evita erro ao chamar rollBack/commit sem transação). */
+    public function inTransaction()
+    {
+        return $this->dbh->inTransaction();
+    }
+
     //depurar params de despejo
     public function debugDumpParams()
     {

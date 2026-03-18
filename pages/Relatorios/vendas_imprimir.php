@@ -9,7 +9,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 if (!isset($_COOKIE['id']) || empty($_COOKIE['id'])) {
-    $url = "https://" . $_SERVER['HTTP_HOST'] . "/sistema-joias/";
+    $url = "https://" . $_SERVER['HTTP_HOST'] . "/";
     header("Location: " . $url . "login.php");
     exit();
 }

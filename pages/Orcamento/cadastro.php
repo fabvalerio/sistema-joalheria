@@ -63,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $pedido_id = is_array($return) && isset($return['id']) ? $return['id'] : $return;
 
         if ($pedido_id) {
-            $imprimir_url = "https://web4br.com/sistema-joias/pages/Orcamento/imprimir.php?id=" . urlencode($pedido_id);
+            $imprimir_url = "https://sistema.goncalvesjoias.com.br//pages/Orcamento/imprimir.php?id=" . urlencode($pedido_id);
             echo "<script>window.open('{$imprimir_url}', '_blank');</script>";
         }
     } else {

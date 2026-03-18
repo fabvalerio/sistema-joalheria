@@ -9,7 +9,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 if (!isset($_COOKIE['id']) || empty($_COOKIE['id'])) {
-    $url = "https://" . $_SERVER['HTTP_HOST'] . "/sistema-joias/";
+    $url = "https://" . $_SERVER['HTTP_HOST'] . "/";
     header("Location: " . $url . "login.php");
     exit();
 }
@@ -151,6 +151,15 @@ $soloCliente = ($via === 'cliente');
             </div>
         </div>
 
+        <div style="margin-top: 10px; font-size: 9px; line-height: 1.35;">
+            <div style="text-align: left;">_______________________</div>
+            <div style="text-align: left; font-weight: 900; text-decoration: underline; margin-top: 2px;">ASSINATURA DO CLIENTE</div>
+            <div style="margin-top: 4px;">
+                <div>- NÃO ENTREGAMOS AS JOIAS SEM ESTE COMPROVANTE.</div>
+                <div>- NÃO RESPONSABILIZAMOS POR ELE APÓS 90 DIAS DA DATA DE CONCLUSÃO DOS SERVIÇOS (FAVOR CONFERIR AS PEÇAS NO ATO DA ENTREGA. NÃO ACEITAMOS RECLAMAÇÕES POSTERIORES)</div>
+            </div>
+        </div>
+
         <div class="footer">
             <p>PEDIDO DE VENDA - NÃO É DOCUMENTO FISCAL</p>
         </div>
@@ -212,6 +221,15 @@ $soloCliente = ($via === 'cliente');
             <div class="totals-row"><span class="totals-label">SUB-TOTAL:</span><span class="totals-value">R$<?= number_format($pedido['total'], 2, ',', '.') ?></span></div>
             <div class="total-final">
                 <div class="totals-row"><span>TOTAL:</span><span>R$<?= number_format($pedido['total'], 2, ',', '.') ?></span></div>
+            </div>
+        </div>
+
+        <div style="margin-top: 10px; font-size: 9px; line-height: 1.35;">
+            <div style="text-align: left;">_______________________</div>
+            <div style="text-align: left; font-weight: 900; text-decoration: underline; margin-top: 2px;">ASSINATURA DO CLIENTE</div>
+            <div style="margin-top: 4px;">
+                <div>- NÃO ENTREGAMOS AS JOIAS SEM ESTE COMPROVANTE.</div>
+                <div>- NÃO RESPONSABILIZAMOS POR ELE APÓS 90 DIAS DA DATA DE CONCLUSÃO DOS SERVIÇOS (FAVOR CONFERIR AS PEÇAS NO ATO DA ENTREGA. NÃO ACEITAMOS RECLAMAÇÕES POSTERIORES)</div>
             </div>
         </div>
 

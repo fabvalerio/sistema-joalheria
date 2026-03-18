@@ -95,7 +95,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <?php for ($i = 1; $i <= 12; $i++): ?>
           <div class="col-lg-3">
             <label class="form-label">Juros Parcela <?= $i ?> (%)</label>
-            <input type="number" step="0.01" class="form-control" name="juros_parcela_<?= $i ?>" value="<?= htmlspecialchars($cartao["juros_parcela_$i"]) ?>">
+            <input type="number" step="0.01" class="form-control" required name="juros_parcela_<?= $i ?>" value="<?= htmlspecialchars($cartao["juros_parcela_$i"]) ?>">
           </div>
         <?php endfor; ?>
         <div class="col-lg-12">

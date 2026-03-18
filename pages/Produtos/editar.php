@@ -182,9 +182,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
           <div class="row g-3">
             <div class="col-lg-12">
               <div id="preview-container" style="text-align: center;">
-                <a href="#" data-bs-toggle="modal" data-bs-target="#modalImagemProduto" style="cursor: pointer;">
-                  <img id="preview-thumb" src="<?= isset($produto['capa']) && !empty($produto['capa']) ? $produto['capa'] : $url . '/assets/img_padrao.webp'; ?>" alt="Preview da Imagem" style="max-width: 100%; max-height: 108px; display: block; border: 1px solid #ddd; padding: 5px; border-radius: 5px;">
-                </a>
+                <img id="preview-thumb" class="image-capa" src="<?= isset($produto['capa']) && !empty($produto['capa']) ? $produto['capa'] : $url . '/assets/img_padrao.webp'; ?>" alt="Preview da Imagem" style="max-width: 100%; max-height: 108px; display: block; border: 1px solid #ddd; padding: 5px; border-radius: 5px;">
               </div>
             </div>
             <div class="col-lg-12">
@@ -754,20 +752,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       </div>
     </div>
 
-    <!-- Modal para visualizar imagem ampliada -->
-    <div class="modal fade" id="modalImagemProduto" tabindex="-1" aria-labelledby="modalImagemProdutoLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="modalImagemProdutoLabel">Imagem do Produto</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-          </div>
-          <div class="modal-body text-center">
-            <img id="imagem-ampliada" src="" alt="Imagem Ampliada" style="max-width: 100%; height: auto;">
-          </div>
-        </div>
-      </div>
-    </div>
+<?php include dirname(__DIR__, 2) . '/assets/components/lightbox_capa.php'; ?>
   </div>
 </div>
 
@@ -828,18 +813,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     emReaisInput.value = '';
   }
 
-  // Atualizar imagem no modal lightbox
-  document.addEventListener('DOMContentLoaded', function() {
-    const modalImagemProduto = document.getElementById('modalImagemProduto');
-    const imagemAmpliada = document.getElementById('imagem-ampliada');
-    const previewThumb = document.getElementById('preview-thumb');
-    
-    if (modalImagemProduto) {
-      modalImagemProduto.addEventListener('show.bs.modal', function() {
-        imagemAmpliada.src = previewThumb.src;
-      });
-    }
-  });
 </script>
 <script>
   // Mostrar campos adicionais ao selecionar fornecedor, grupo e subgrupo

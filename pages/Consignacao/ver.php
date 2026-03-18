@@ -36,6 +36,7 @@ $itens = $dados['itens'];
         <h3 class="card-title text-dark">
             Detalhes da Consignação
         </h3>
+        <a href="<?php echo "{$url}!/Consignacao/imprimir/{$consignacao['id']}"; ?>" class="btn btn-success text-primary mb-5">Imprimir</a>
         <a href="<?php echo "{$url}!/{$link[1]}/listar"; ?>" class="btn btn-warning text-primary mb-5">Voltar</a>
     </div>
 
