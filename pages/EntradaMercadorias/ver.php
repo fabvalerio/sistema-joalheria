@@ -34,7 +34,7 @@ if (!$entrada) {
             </div>
             <div class="col-lg-6">
                 <label for="" class="form-label d-block fw-bold">Fornecedor</label>
-                <?php echo htmlspecialchars($entrada['fornecedor_nome']); ?>
+                <?php echo htmlspecialchars($entrada['fornecedor_nome'] ?? ''); ?>
             </div>
             <div class="col-lg-6">
                 <label for="" class="form-label d-block fw-bold">Data Prevista de Entrega</label>
@@ -46,7 +46,7 @@ if (!$entrada) {
             </div>
             <div class="col-lg-6">
                 <label for="" class="form-label d-block fw-bold">Transportadora</label>
-                <?php echo htmlspecialchars($entrada['transportadora']); ?>
+                <?php echo htmlspecialchars($entrada['transportadora'] ?? ''); ?>
             </div>
             <div class="col-lg-6">
                 <label for="" class="form-label d-block fw-bold">Valor</label>
@@ -54,7 +54,7 @@ if (!$entrada) {
             </div>
             <div class="col-lg-6">
                 <label for="" class="form-label d-block fw-bold">Observações</label>
-                <?php echo htmlspecialchars($entrada['observacoes']); ?>
+                <?php echo htmlspecialchars($entrada['observacoes'] ?? ''); ?>
             </div>
         </div>
 
@@ -73,7 +73,7 @@ if (!$entrada) {
                     <?php if (!empty($entrada['produtos'])): ?>
                         <?php foreach ($entrada['produtos'] as $produto): ?>
                             <tr>
-                                <td><?php echo htmlspecialchars($produto['nome_produto']); ?></td>
+                                <td><?php echo htmlspecialchars($produto['nome_produto'] ?? ''); ?></td>
                                 <td><?php echo $produto['quantidade']; ?></td>
                                 <td><?php echo $produto['estoque']; ?></td>
                             </tr>

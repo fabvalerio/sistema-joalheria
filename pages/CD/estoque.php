@@ -1,6 +1,9 @@
 <?php
-
 // CD/estoque usa tabela estoque (estoque principal do CD)
+use App\Models\EntradaMercadorias\Controller as EntradaMercadoriasController;
+
+$entradaMercadoriasController = new EntradaMercadoriasController();
+$notasEntradas = $entradaMercadoriasController->listar();
 
 ?>
 
@@ -56,6 +59,27 @@
                 <p class="mb-2"><strong>Produto:</strong> <span id="modalProdutoNome"></span></p>
                 <p class="mb-2"><strong>Código:</strong> <code id="modalProdutoCodigo"></code></p>
                 <p class="mb-3" id="modalQtdAtualWrap"><strong>Quantidade atual:</strong> <span id="modalQtdAtual"></span></p>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold" for="modalEntradaMercadoriasId">Nota de Entrada</label>
+                    <select id="modalEntradaMercadoriasId" class="form-select">
+                        <option value="">Sem nota</option>
+                        <?php foreach ($notasEntradas as $nota): ?>
+                            <?php
+                                $nf = $nota['nf_fiscal'] ?? '-';
+                                $fornecedorNome = $nota['fornecedor_nome'] ?? 'Não informado';
+                                $dataPedido = $nota['data_pedido'] ?? null;
+                                $dataPedidoFmt = $dataPedido ? date('d/m/Y', strtotime($dataPedido)) : '-';
+                                $idNota = (int)($nota['id'] ?? 0);
+                            ?>
+                            <option value="<?= $idNota ?>">
+                                <?= htmlspecialchars($nf) ?> - <?= htmlspecialchars($fornecedorNome) ?> (<?= htmlspecialchars($dataPedidoFmt) ?>)
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <div class="form-text">Opcional: vincula essa entrada à nota fiscal selecionada.</div>
+                </div>
+
                 <div class="mb-3">
                     <label class="form-label fw-bold" id="modalLabelQuantidade">Nova quantidade</label>
                     <input type="number" id="modalQuantidade" value="0" class="form-control" min="0" step="1">
@@ -137,6 +161,7 @@ $(document).ready(function() {
         $('#modalProdutoCodigo').text(codigo || '');
         $('#modalQtdAtual').text(qtdAtual || '0');
         $('#modalQuantidade').val('').attr('min', 1);
+        $('#modalEntradaMercadoriasId').val('');
         $('#modalQuantidadeMinima').val(qtdMinima !== '' && qtdMinima !== undefined && qtdMinima !== null ? qtdMinima : '');
         if (acao === 'editar') {
             $('#modalEstoqueTitulo').text('Editar Quantidade');
@@ -172,13 +197,16 @@ $(document).ready(function() {
         var qtdMin = $('#modalQuantidadeMinima').val();
         qtdMin = qtdMin !== '' ? (parseFloat(String(qtdMin).replace(',', '.')) || 0) : null;
 
+        var entradaMercadoriasId = $('#modalEntradaMercadoriasId').val();
+
         var $btn = $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Salvando...');
         $.post(baseUrlSave, {
             acao: acao,
             produto_id: produtoId,
             quantidade: qtd,
             quantidade_minima: qtdMin,
-            descricao_produto: $('#modalProdutoNome').text()
+            descricao_produto: $('#modalProdutoNome').text(),
+            entrada_mercadorias_id: entradaMercadoriasId
         })
         .done(function(r) {
             try { r = typeof r === 'string' ? JSON.parse(r) : r; } catch(e) { r = { ok: false, msg: 'Resposta inválida' }; }

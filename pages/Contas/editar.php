@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\FinanceiroContas\Controller;
+use App\Models\Caixa\Controller as CaixaController;
 
 // Instanciar o Controller
 $controller = new Controller();
@@ -26,6 +27,12 @@ $clientes = $controller->listarClientes();
 $fornecedores = $controller->listarFornecedores();
 $categorias = $controller->listarCategorias();
 
+// Gaveta/cash drawer (Caixa) para lançar ao marcar Pago
+$loja_id = $_COOKIE['loja_id'] ?? 1;
+$caixaController = new CaixaController();
+$caixas = $caixaController->listarCaixasPorLoja($loja_id);
+$caixa_drawer_id_padrao = !empty($caixas) ? (int)$caixas[0]['id'] : 0;
+
 // Atualizar conta se o formulário for enviado
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $dados = [
@@ -40,6 +47,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         'recorrente' => $_POST['recorrente'],
         'tipo' => $_POST['tipo'],
         'num_parcelas' => $_POST['num_parcelas'] ?? null,
+        'loja_id' => (int)($_POST['loja_id'] ?? $loja_id),
+        'caixa_drawer_id' => isset($_POST['caixa_drawer_id']) ? (int)$_POST['caixa_drawer_id'] : null,
         'val_par1' => $_POST['val_par1'] ?? null,
         'dt_par1' => $_POST['dt_par1'] ?? null,
         'val_par2' => $_POST['val_par2'] ?? null,
@@ -87,6 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
   <div class="card-body">
     <form method="POST" action="" class="needs-validation" novalidate>
+      <input type="hidden" name="loja_id" value="<?= (int)$loja_id ?>">
       <div class="row g-3">
         <!-- Tipo da Conta -->
         <div class="col-lg-6">
@@ -182,7 +192,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <option value="Pago" <?= $conta['status'] === 'Pago' ? 'selected' : '' ?>>Pago</option>
           </select>
         </div>
-        <div class="col-lg-6" id="recorrente-field" >
+        <div class="col-lg-6" id="caixa-field">
+          <label class="form-label">Gaveta (Caixa #) para lançamento</label>
+          <select class="form-select" name="caixa_drawer_id" id="caixa_drawer_id">
+            <?php if (empty($caixas)): ?>
+              <option value="">Nenhuma gaveta cadastrada</option>
+            <?php else: ?>
+              <?php foreach ($caixas as $caixa): ?>
+                <option value="<?= (int)$caixa['id'] ?>" <?= ((int)$caixa['id'] === (int)$caixa_drawer_id_padrao) ? 'selected' : '' ?>>
+                  Caixa #<?= htmlspecialchars($caixa['numero']) ?>
+                </option>
+              <?php endforeach; ?>
+            <?php endif; ?>
+          </select>
+        </div>
+        <div class="col-lg-12" id="recorrente-field" >
         <label class="form-label">Recorrente</label>
         <select class="form-select" name="recorrente" id="recorrente">
           <option value="S" <?= $conta['recorrente'] === 'S' ? 'selected' : '' ?>>Sim</option>

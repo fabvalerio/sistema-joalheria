@@ -64,13 +64,20 @@ class Controller
         SELECT 
             me.produto_id,
             p.descricao_etiqueta AS nome_produto,
-            me.quantidade, 
-            e.quantidade as estoque
+            SUM(me.quantidade) AS quantidade,
+            -- Compatibilidade com ONLY_FULL_GROUP_BY: e.estoque_atual é constante por produto (vem de subquery agregada)
+            COALESCE(MAX(e.estoque_atual), 0) AS estoque
         FROM movimentacao_estoque me
         INNER JOIN produtos p ON p.id = me.produto_id
-        INNER JOIN estoque e ON e.produtos_id = me.produto_id
+        LEFT JOIN (
+            SELECT produtos_id, SUM(quantidade) AS estoque_atual
+            FROM estoque
+            GROUP BY produtos_id
+        ) e ON e.produtos_id = me.produto_id
         WHERE me.documento = :nf_fiscal
           AND me.tipo_movimentacao = 'Entrada'
+        GROUP BY me.produto_id, p.descricao_etiqueta
+        ORDER BY p.descricao_etiqueta ASC
     ");
     $db->bind(":nf_fiscal", $entrada['nf_fiscal']);
     $produtos = $db->resultSet();

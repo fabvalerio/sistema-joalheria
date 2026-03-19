@@ -56,13 +56,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $return = $controller->cadastro($dados);
 
     if ($return) {
-        echo notify('success', "Pedido cadastrado com sucesso!");
-        $emitirNota = !empty($_POST['emitir_nota_fiscal']);
-        if ($emitirNota) {
-            echo '<meta http-equiv="refresh" content="2; url=' . $url . '!/Notas/emitir-nota/' . $return . '?vias=2">';
-        } else {
-            echo '<meta http-equiv="refresh" content="2; url=' . $url . 'pages/Pedidos/imprimir.php?id=' . $return . '">';
+        $data_pedido = $dados['data_pedido'] ?? date('Y-m-d');
+        $ehPagoComValor = ($dados['status_pedido'] ?? '') === 'Pago' && (float)($dados['valor_pago'] ?? 0) > 0;
+        $caixaUrl = $url . '!/Caixa/lista/' . $data_pedido . '/' . $data_pedido;
+        if ($ehPagoComValor) {
+            $caixaUrl .= '?pedido_lancar=' . (int)$return . '&data_pedido=' . $data_pedido;
         }
+        $emitirNota = !empty($_POST['emitir_nota_fiscal']);
+        $printUrl = $emitirNota
+            ? ($url . '!/Notas/emitir-nota/' . $return . '?vias=2')
+            : ($url . 'pages/Pedidos/imprimir.php?id=' . $return);
+        echo notify('success', "Pedido cadastrado com sucesso! Escolha uma opção abaixo.");
+        echo '<div class="card mt-3"><div class="card-body">';
+        echo '<p class="mb-3">Para imprimir, use o botão (o navegador não bloqueia ao clicar):</p>';
+        echo '<div class="d-flex flex-wrap gap-2">';
+        echo '<a href="' . htmlspecialchars($printUrl) . '" target="_blank" rel="noopener" class="btn btn-primary"><i class="fas fa-print me-1"></i>Abrir impressão em nova aba</a>';
+        echo '<a href="' . htmlspecialchars($caixaUrl) . '" class="btn btn-success"><i class="fas fa-cash-register me-1"></i>Ir para o Caixa</a>';
+        echo '</div>';
+        echo '<p class="text-muted small mt-3 mb-0">Você será redirecionado ao Caixa em 10 segundos.</p>';
+        echo '</div></div>';
+        echo '<meta http-equiv="refresh" content="10; url=' . htmlspecialchars($caixaUrl) . '">';
     } else {
         echo notify('danger', "Erro ao cadastrar o pedido.");
     }

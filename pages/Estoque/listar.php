@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Estoque\Controller;
+use App\Models\EntradaMercadorias\Controller as EntradaMercadoriasController;
 
 $controller = new Controller();
 
@@ -8,11 +9,36 @@ $isAdmin = isset($_COOKIE['nivel_acesso']) && $_COOKIE['nivel_acesso'] === 'Admi
 $usuario_loja_id = $_COOKIE['loja_id'] ?? null;
 
 $lojas = $controller->listarLojas($isAdmin ? null : $usuario_loja_id);
+// Remove a loja do tipo CD do filtro desta tela (a tela de CD fica em outra rota).
+$lojas = array_values(array_filter($lojas, function ($l) {
+    return ($l['tipo'] ?? null) !== 'CD';
+}));
+
+$notasEntradas = [];
+if ($isAdmin) {
+    $entradaMercadoriasController = new EntradaMercadoriasController();
+    $notasEntradas = $entradaMercadoriasController->listar();
+}
 
 $loja_id_filtro = $_GET['loja_id'] ?? null;
 if (!$isAdmin && $usuario_loja_id) {
     $loja_id_filtro = $usuario_loja_id;
 }
+
+// Para Admin: sem parametro de filtro => assume a primeira loja física (sem CD).
+// Isso evita cair no modo "todas as lojas" do backend (quando loja_id fica vazio).
+if ($isAdmin && ($loja_id_filtro === null || $loja_id_filtro === '')) {
+    $loja_id_filtro = !empty($lojas) ? ($lojas[0]['id'] ?? null) : null;
+}
+
+// Se Admin passar manualmente um id que não está na lista (ex: CD), força um valor válido.
+if ($isAdmin && ($loja_id_filtro !== null && $loja_id_filtro !== '')) {
+    $idsValidos = array_map(static fn($l) => (string)($l['id'] ?? ''), $lojas);
+    if (!in_array((string)$loja_id_filtro, $idsValidos, true)) {
+        $loja_id_filtro = !empty($lojas) ? ($lojas[0]['id'] ?? null) : $loja_id_filtro;
+    }
+}
+
 $mostrarColunaLoja = ($loja_id_filtro === null || $loja_id_filtro === '');
 ?>
 
@@ -25,11 +51,10 @@ $mostrarColunaLoja = ($loja_id_filtro === null || $loja_id_filtro === '');
         <h3 class="card-title">
             <i class="fas fa-boxes me-2"></i>Estoque por Loja
         </h3>
-        <?php if ($isAdmin && count($lojas) > 1): ?>
+        <?php if ($isAdmin && count($lojas) >= 2): ?>
         <div class="d-flex align-items-center gap-2">
             <label class="text-white mb-0">Filtrar loja:</label>
             <select id="filtroLoja" class="form-select form-select-sm" style="width:auto">
-                <option value="">Todas as lojas</option>
                 <?php foreach ($lojas as $l): ?>
                     <option value="<?= $l['id'] ?>" <?= (string)$loja_id_filtro === (string)$l['id'] ? 'selected' : '' ?>>
                         <?= htmlspecialchars($l['nome']) ?> (<?= $l['tipo'] ?>)
@@ -83,6 +108,27 @@ $mostrarColunaLoja = ($loja_id_filtro === null || $loja_id_filtro === '');
                 <p class="mb-2"><strong>Produto:</strong> <span id="modalProdutoNome"></span></p>
                 <p class="mb-2"><strong>Código:</strong> <code id="modalProdutoCodigo"></code></p>
                 <p class="mb-3" id="modalQtdAtualWrap"><strong>Quantidade atual:</strong> <span id="modalQtdAtual"></span></p>
+
+                <div class="mb-3" id="modalEntradaMercadoriasWrap" style="display:none;">
+                    <label class="form-label fw-bold" for="modalEntradaMercadoriasId">Nota de Entrada</label>
+                    <select id="modalEntradaMercadoriasId" class="form-select">
+                        <option value="">Sem nota</option>
+                        <?php foreach ($notasEntradas as $nota): ?>
+                            <?php
+                                $nf = $nota['nf_fiscal'] ?? '-';
+                                $fornecedorNome = $nota['fornecedor_nome'] ?? 'Não informado';
+                                $dataPedido = $nota['data_pedido'] ?? null;
+                                $dataPedidoFmt = $dataPedido ? date('d/m/Y', strtotime($dataPedido)) : '-';
+                                $idNota = (int)($nota['id'] ?? 0);
+                            ?>
+                            <option value="<?= $idNota ?>">
+                                <?= htmlspecialchars($nf) ?> - <?= htmlspecialchars($fornecedorNome) ?> (<?= htmlspecialchars($dataPedidoFmt) ?>)
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <div class="form-text">Opcional: vincula essa entrada à nota fiscal selecionada (CD).</div>
+                </div>
+
                 <div class="mb-3">
                     <label class="form-label fw-bold" id="modalLabelQuantidade">Quantidade a adicionar</label>
                     <input type="number" id="modalQuantidade" value="0" class="form-control" min="0" step="1">
@@ -173,6 +219,7 @@ $(document).ready(function() {
         table.ajax.reload();
         var params = new URLSearchParams(window.location.search);
         params.set('page', '!/Estoque/listar');
+        params.set('loja_id', val);
         if (history.replaceState) {
             history.replaceState(null, '', window.location.pathname + '?' + params.toString());
         }
@@ -190,6 +237,12 @@ $(document).ready(function() {
         $('#modalProdutoCodigo').text(codigo || '');
         $('#modalQtdAtual').text(qtdAtual || '0');
         $('#modalQuantidade').val('').attr('min', 1);
+        $('#modalEntradaMercadoriasId').val('');
+        if (parseInt(lojaId, 10) === 0) {
+            $('#modalEntradaMercadoriasWrap').show();
+        } else {
+            $('#modalEntradaMercadoriasWrap').hide();
+        }
         $('#modalQuantidadeMinima').val(qtdMinima !== '' && qtdMinima !== undefined && qtdMinima !== null ? qtdMinima : '');
         if (acao === 'editar') {
             $('#modalEstoqueTitulo').text('Editar Quantidade');
@@ -225,13 +278,15 @@ $(document).ready(function() {
         qtdMin = qtdMin !== '' ? (parseFloat(String(qtdMin).replace(',', '.')) || 0) : null;
 
         var $btn = $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Salvando...');
+        var entradaMercadoriasId = $('#modalEntradaMercadoriasId').val();
         $.post(baseUrlSave, {
             acao: acao,
             produto_id: produtoId,
             loja_id: lojaId,
             quantidade: qtd,
             quantidade_minima: qtdMin,
-            descricao_produto: $('#modalProdutoNome').text()
+            descricao_produto: $('#modalProdutoNome').text(),
+            entrada_mercadorias_id: entradaMercadoriasId
         })
         .done(function(r) {
             try { r = typeof r === 'string' ? JSON.parse(r) : r; } catch(e) { r = { ok: false, msg: 'Resposta inválida' }; }

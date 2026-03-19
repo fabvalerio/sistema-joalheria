@@ -113,9 +113,10 @@ class Controller
      * @param float $quantidade
      * @param string $descricao_produto
      * @param float|null $quantidade_minima Opcional - atualiza em todos os registros do produto
+     * @param int|null $entrada_mercadorias_id Opcional - vincula movimentacao_estoque.documento com a NF fiscal
      * @return array ['ok' => bool, 'msg' => string]
      */
-    public function adicionarEstoqueCD($produto_id, $quantidade, $descricao_produto = '', $quantidade_minima = null)
+    public function adicionarEstoqueCD($produto_id, $quantidade, $descricao_produto = '', $quantidade_minima = null, $entrada_mercadorias_id = null)
     {
         $quantidade = (float)$quantidade;
         if ($quantidade <= 0) {
@@ -162,14 +163,21 @@ class Controller
 
             $totalDepois = $totalAntes + $quantidade;
             $lojaId = $this->getCDLojaId($db);
+            $documento = null;
+            if ($entrada_mercadorias_id !== null) {
+                $db->query("SELECT nf_fiscal FROM entrada_mercadorias WHERE id = :eid LIMIT 1");
+                $db->bind(':eid', (int)$entrada_mercadorias_id);
+                $rowDocumento = $db->single();
+                $documento = $rowDocumento && !empty($rowDocumento['nf_fiscal']) ? $rowDocumento['nf_fiscal'] : null;
+            }
 
             $db->query("
                 INSERT INTO movimentacao_estoque (
                     produto_id, descricao_produto, tipo_movimentacao, quantidade,
-                    data_movimentacao, motivo, estoque_antes, estoque_atualizado, loja_id
+                    data_movimentacao, motivo, estoque_antes, estoque_atualizado, loja_id, documento
                 ) VALUES (
                     :pid, :desc, 'Entrada', :qtd,
-                    :data, :motivo, :antes, :depois, :loja_id
+                    :data, :motivo, :antes, :depois, :loja_id, :documento
                 )
             ");
             $db->bind(':pid', (int)$produto_id);
@@ -180,6 +188,7 @@ class Controller
             $db->bind(':antes', $totalAntes);
             $db->bind(':depois', $totalDepois);
             $db->bind(':loja_id', $lojaId);
+            $db->bind(':documento', $documento);
             $db->execute();
 
             $db->endTransaction();

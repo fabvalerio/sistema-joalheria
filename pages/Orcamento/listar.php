@@ -1,9 +1,19 @@
 <?php
 
 use App\Models\Orcamento\Controller;
+use App\Models\Caixa\Controller as CaixaController;
 
 $controller = new Controller();
 $pedidos = $controller->listar();
+
+$loja_id = $_COOKIE['loja_id'] ?? 1;
+$caixaController = new CaixaController();
+$caixas = $caixaController->listarCaixasPorLoja($loja_id);
+
+$caixa_drawer_id = isset($_GET['caixa_drawer_id']) && $_GET['caixa_drawer_id'] !== ''
+    ? (int)$_GET['caixa_drawer_id']
+    : ((!empty($caixas)) ? (int)$caixas[0]['id'] : 0);
+$drawerSegment = $caixa_drawer_id ? '/' . $caixa_drawer_id : '';
 
 ?>
 
@@ -14,6 +24,25 @@ $pedidos = $controller->listar();
   </div>
 
   <div class="card-body">
+    <?php if (!empty($caixas)): ?>
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label text-dark">Gaveta (Caixa #)</label>
+          <select class="form-select" onchange="window.location.href='<?= $url ?? '' ?>!/Orcamento/listar?caixa_drawer_id='+this.value">
+            <?php foreach ($caixas as $caixa): ?>
+              <option value="<?= (int)$caixa['id'] ?>" <?= ((int)$caixa['id'] === (int)($caixa_drawer_id ?? 0)) ? 'selected' : '' ?>>
+                Caixa #<?= htmlspecialchars($caixa['numero']) ?>
+              </option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+        <div class="col-md-6 d-flex align-items-end">
+          <div class="text-muted">
+            Ao alterar para <strong>Pago</strong>, o movimento será lançado na gaveta selecionada.
+          </div>
+        </div>
+      </div>
+    <?php endif; ?>
     <table id="example1" class="table table-striped table-hover">
       <thead class="bg-light">
         <tr>
@@ -56,7 +85,7 @@ $pedidos = $controller->listar();
                 <ul class="dropdown-menu">
                   <li>
                     <?php if ($pedido['status_pedido'] === 'Pendente') { ?>
-                      <a href="<?= "{$url}!/{$link[1]}/mudarStatus/{$pedido['id']}/Pago" ?>"
+                      <a href="<?= "{$url}!/{$link[1]}/mudarStatus/{$pedido['id']}/Pago" . $drawerSegment ?>"
                         class="dropdown-item">
                         Alterar para PAGO
                       </a>

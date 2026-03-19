@@ -124,7 +124,82 @@ class Controller
     {
         $db = new db();
 
-        // Lista de campos esperados na tabela
+        // Captura estado atual para detectar transição Pago <-> Pendente
+        $db->query("
+            SELECT 
+                id,
+                status,
+                tipo,
+                data_pagamento,
+                data_vencimento,
+                valor
+            FROM financeiro_contas
+            WHERE id = :id
+            LIMIT 1
+        ");
+        $db->bind(':id', $id);
+        $atual = $db->single();
+
+        if (!$atual) {
+            return false;
+        }
+
+        $statusAtual = $atual['status'];
+        $tipoConta = $atual['tipo'];
+
+        $novoStatus = $dados['status'] ?? null;
+        $novoTipoConta = $dados['tipo'] ?? $tipoConta;
+        $loja_id = (int)($dados['loja_id'] ?? 0);
+        $caixa_drawer_id = isset($dados['caixa_drawer_id']) ? (int)$dados['caixa_drawer_id'] : 0;
+
+        // Integrações com Caixa (somente ao mudar status)
+        if ($novoStatus === 'Pago' && $statusAtual !== 'Pago') {
+            if (!$loja_id || !$caixa_drawer_id) {
+                return false;
+            }
+
+            // Preferir data_pagamento; se vazia, usar data_vencimento
+            $data_caixa = !empty($dados['data_pagamento']) ? $dados['data_pagamento'] : $dados['data_vencimento'];
+            if (empty($data_caixa)) {
+                return false;
+            }
+
+            $caixaSessao = (new \App\Models\Caixa\Controller())->obterSessaoAberta($loja_id, $caixa_drawer_id, $data_caixa);
+            if (!$caixaSessao) {
+                return false;
+            }
+
+            $valor = (float)($dados['valor'] ?? 0);
+            if ($valor == 0.0) {
+                return false;
+            }
+
+            // Contas a receber/contas a pagar: a operação de P reduz o saldo esperado
+            $tipoMov = $novoTipoConta === 'R' ? 'RecebimentoConta' : 'PagamentoConta';
+            $valorMov = $novoTipoConta === 'P' ? (-1 * $valor) : $valor;
+
+            $movId = (new \App\Models\Caixa\Controller())->registrarMovimento(
+                (int)$caixaSessao['id'],
+                $loja_id,
+                $caixa_drawer_id,
+                $tipoMov,
+                $valorMov,
+                'Conta',
+                (int)$id,
+                null
+            );
+
+            if (!$movId) {
+                return false;
+            }
+        }
+
+        if ($novoStatus === 'Pendente' && $statusAtual === 'Pago') {
+            // Reverte em qualquer sessão (evita erro caso a gaveta selecionada mude)
+            (new \App\Models\Caixa\Controller())->reverterMovimentosPorOrigemGlobal('Conta', (int)$id);
+        }
+
+        // Lista de campos esperados na tabela (financeiro_contas)
         $campos = [
             'fornecedor_id',
             'cliente_id',
@@ -163,11 +238,10 @@ class Controller
             'dt_par12'
         ];
 
-        // Garantir que todos os campos tenham valor (ou NULL)
+        // Monta apenas os parâmetros que existem na query (evita binds extras)
+        $dadosAtualizacao = [];
         foreach ($campos as $campo) {
-            if (!isset($dados[$campo]) || $dados[$campo] === '') {
-                $dados[$campo] = null; // Valores vazios tratados como NULL
-            }
+            $dadosAtualizacao[$campo] = (!isset($dados[$campo]) || $dados[$campo] === '') ? null : $dados[$campo];
         }
 
         // Query de atualização
@@ -184,13 +258,11 @@ class Controller
                     dt_par11 = :dt_par11, val_par11 = :val_par11, dt_par12 = :dt_par12, val_par12 = :val_par12
                 WHERE id = :id");
 
-        // Vincular parâmetros
-        foreach ($dados as $key => $value) {
+        foreach ($dadosAtualizacao as $key => $value) {
             $db->bind(":$key", $value);
         }
         $db->bind(":id", $id);
 
-        // Executar a query
         return $db->execute();
     }
 

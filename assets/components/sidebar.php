@@ -105,7 +105,7 @@
                 <a class="collapse-item" href="<?php echo "{$url}!/SubGrupoProdutos/listar" ?>">Subgrupo de Produtos</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Definicoes/listar" ?>">Definições</a>
                 <a class="collapse-item" href="<?php echo "{$url}!/Cotacoes/listar" ?>">Cotações</a>
-                <!-- <a class="collapse-item" href="<?php echo "{$url}!/EntradaMercadorias/listar" ?>">Entrada de Mercadorias</a> -->
+                <a class="collapse-item" href="<?php echo "{$url}!/EntradaMercadorias/listar" ?>">Entrada de Mercadorias</a>
                 <!-- <a class="collapse-item" href="<?php echo "{$url}!/TransferenciaEstoque/listar" ?>">Transferência entre Lojas</a> -->
                 <!-- <a class="collapse-item" href="<?php echo "{$url}!/MovimentacaoEstoque/listar" ?>">Movimentações</a> -->
             </div>

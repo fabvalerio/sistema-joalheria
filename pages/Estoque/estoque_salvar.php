@@ -22,6 +22,7 @@ try {
     $quantidade = $_POST['quantidade'] ?? '';
     $quantidade_minima_raw = $_POST['quantidade_minima'] ?? '';
     $descricao_produto = $_POST['descricao_produto'] ?? '';
+    $entrada_mercadorias_id_raw = $_POST['entrada_mercadorias_id'] ?? '';
 
     $quantidade_minima = null;
     if ($quantidade_minima_raw !== '' && $quantidade_minima_raw !== null) {
@@ -30,6 +31,14 @@ try {
             $val = 0;
         }
         $quantidade_minima = $val;
+    }
+
+    $entrada_mercadorias_id = null;
+    if ($entrada_mercadorias_id_raw !== '' && $entrada_mercadorias_id_raw !== null) {
+        $entrada_mercadorias_id = (int)$entrada_mercadorias_id_raw;
+        if ($entrada_mercadorias_id <= 0) {
+            $entrada_mercadorias_id = null;
+        }
     }
 
     if (!$produto_id) {
@@ -61,7 +70,7 @@ try {
         }
 
         if ($loja_id === 0) {
-            $result = $controller->adicionarEstoqueCD($produto_id, $qtd, $descricao_produto, $quantidade_minima);
+            $result = $controller->adicionarEstoqueCD($produto_id, $qtd, $descricao_produto, $quantidade_minima, $entrada_mercadorias_id);
         } else {
             $result = $controller->adicionarEstoqueLoja($loja_id, $produto_id, $qtd, $descricao_produto, $quantidade_minima);
         }

@@ -149,6 +149,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
+        <div class="mb-3">
+            <label for="modalProductSearch" class="form-label fw-bold">Filtrar Produto (ID ou Nome)</label>
+            <input id="modalProductSearch" type="text" class="form-control" placeholder="Digite o ID ou o nome do produto...">
+        </div>
                 <table class="table table-bordered table-hover">
                     <thead>
                         <tr>
@@ -159,21 +163,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         </tr>
                     </thead>
                     <tbody id="modalProductList">
-                        <?php foreach ($controller->listarProdutos() as $produto): ?>
-                            <tr>
-                                <td><?= $produto['id'] ?></td>
-                                <td><?= $produto['nome_produto'] ?></td>
-                                <td><?= $produto['estoque'] ?></td>
-                                <td>
-                                    <button type="button" class="btn btn-primary btn-select-product"
-                                        data-id="<?= $produto['id'] ?>"
-                                        data-name="<?= $produto['nome_produto'] ?>"
-                                        data-estoque="<?= $produto['estoque'] ?>">
-                                        Selecionar
-                                    </button>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
+            <tr>
+                <td colspan="4" class="text-center text-muted">Digite para buscar produtos...</td>
+            </tr>
                     </tbody>
                 </table>
             </div>
@@ -186,10 +178,101 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalElement = document.getElementById('productModal');
     const modal = new bootstrap.Modal(modalElement);
     const productList = document.getElementById('product-list');
+    const modalProductSearch = document.getElementById('modalProductSearch');
+    let activeInput = null;
     let productIndex = <?= count($return['produtos']) ?>;
+    const baseUrlProdutos = '<?= $url ?>pages/EntradaMercadorias/produtos_json.php';
+
+    async function buscarProdutos(q) {
+        if (!modalProductSearch) return;
+
+        const tbody = document.getElementById('modalProductList');
+        if (!tbody) return;
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="4" class="text-center text-muted">Carregando...</td>
+            </tr>
+        `;
+
+        const params = new URLSearchParams();
+        params.set('q', q || '');
+        params.set('limit', '50');
+
+        try {
+            const resp = await fetch(baseUrlProdutos, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                body: params.toString()
+            });
+
+            const json = await resp.json();
+            if (!json || !json.ok) throw new Error(json?.msg || 'Erro ao buscar produtos');
+
+            const rows = json.data || [];
+            if (!rows.length) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center text-muted">Nenhum produto encontrado.</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = '';
+            rows.forEach(prod => {
+                const tr = document.createElement('tr');
+
+                const tdId = document.createElement('td');
+                tdId.textContent = prod.id ?? '';
+
+                const tdNome = document.createElement('td');
+                tdNome.textContent = prod.nome_produto ?? '';
+
+                const tdEstoque = document.createElement('td');
+                tdEstoque.textContent = prod.estoque ?? 0;
+
+                const tdAcoes = document.createElement('td');
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'btn btn-primary btn-select-product';
+                btn.textContent = 'Selecionar';
+                btn.dataset.id = prod.id ?? '';
+                btn.dataset.name = prod.nome_produto ?? '';
+                btn.dataset.estoque = prod.estoque ?? 0;
+
+                tdAcoes.appendChild(btn);
+                tr.appendChild(tdId);
+                tr.appendChild(tdNome);
+                tr.appendChild(tdEstoque);
+                tr.appendChild(tdAcoes);
+                tbody.appendChild(tr);
+            });
+        } catch (e) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="4" class="text-center text-danger">Erro ao carregar produtos.</td>
+                </tr>
+            `;
+        }
+    }
+
+    if (modalProductSearch) {
+        let timer = null;
+        modalProductSearch.addEventListener('input', () => {
+            const q = (modalProductSearch.value || '').trim();
+            clearTimeout(timer);
+            timer = setTimeout(() => buscarProdutos(q), 250);
+        });
+    }
 
     document.addEventListener('click', (e) => {
         if (e.target.classList.contains('product-input')) {
+            activeInput = e.target;
+            if (modalProductSearch) {
+                modalProductSearch.value = '';
+                modalProductSearch.dispatchEvent(new Event('input'));
+            }
             modal.show();
         }
 
@@ -224,11 +307,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const productId = e.target.getAttribute('data-id');
             const productStock = e.target.getAttribute('data-estoque');
 
-            const activeInput = document.querySelector('.product-input[data-index="' + productIndex + '"]');
             if (activeInput) {
                 activeInput.value = productName;
-                activeInput.closest('.product-item').querySelector('.product-id').value = productId;
-                activeInput.closest('.product-item').querySelector('.product-stock').value = productStock;
+                const item = activeInput.closest('.product-item');
+                if (item) {
+                    item.querySelector('.product-id').value = productId;
+                    item.querySelector('.product-stock').value = productStock;
+                }
             }
             modal.hide();
         }

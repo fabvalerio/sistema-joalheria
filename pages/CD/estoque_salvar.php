@@ -24,6 +24,7 @@ try {
     $quantidade = $_POST['quantidade'] ?? '';
     $quantidade_minima_raw = $_POST['quantidade_minima'] ?? '';
     $descricao_produto = $_POST['descricao_produto'] ?? '';
+    $entrada_mercadorias_id_raw = $_POST['entrada_mercadorias_id'] ?? '';
 
     $quantidade_minima = null;
     if ($quantidade_minima_raw !== '' && $quantidade_minima_raw !== null) {
@@ -32,6 +33,14 @@ try {
             $val = 0;
         }
         $quantidade_minima = $val;
+    }
+
+    $entrada_mercadorias_id = null;
+    if ($entrada_mercadorias_id_raw !== '' && $entrada_mercadorias_id_raw !== null) {
+        $entrada_mercadorias_id = (int)$entrada_mercadorias_id_raw;
+        if ($entrada_mercadorias_id <= 0) {
+            $entrada_mercadorias_id = null;
+        }
     }
 
     if (!$produto_id) {
@@ -46,7 +55,7 @@ try {
             echo json_encode(['ok' => false, 'msg' => 'Informe uma quantidade válida.']);
             exit;
         }
-        $result = $controller->adicionarEstoqueCD($produto_id, $qtd, $descricao_produto, $quantidade_minima);
+        $result = $controller->adicionarEstoqueCD($produto_id, $qtd, $descricao_produto, $quantidade_minima, $entrada_mercadorias_id);
     } elseif ($acao === 'editar') {
         $quantidade = str_replace(',', '.', $quantidade);
         $qtd = (float)$quantidade;
@@ -55,7 +64,7 @@ try {
             exit;
         }
         // Editar = adicionar quantidade ao estoque atual (soma)
-        $result = $controller->adicionarEstoqueCD($produto_id, $qtd, $descricao_produto, $quantidade_minima);
+        $result = $controller->adicionarEstoqueCD($produto_id, $qtd, $descricao_produto, $quantidade_minima, $entrada_mercadorias_id);
     } else {
         echo json_encode(['ok' => false, 'msg' => 'Ação inválida.']);
         exit;

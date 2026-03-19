@@ -4,34 +4,75 @@ use App\Models\EntradaMercadorias\Controller;
 
 $controller = new Controller();
 $fornecedores = $controller->listarFornecedores();
-$produtos = $controller->listarProdutos(); // Obtemos os produtos para o modal
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+  $erros = [];
+
+  $nfFiscal = trim((string)($_POST['nf_fiscal'] ?? ''));
+  $dataPedido = trim((string)($_POST['data_pedido'] ?? ''));
+  $fornecedorIdRaw = $_POST['fornecedor_id'] ?? null;
+  $fornecedorId = $fornecedorIdRaw !== null && $fornecedorIdRaw !== '' ? (int)$fornecedorIdRaw : 0;
+  $dataPrevistaEntrega = trim((string)($_POST['data_prevista_entrega'] ?? ''));
+  $valorRaw = $_POST['valor'] ?? null;
+
+  if ($nfFiscal === '') $erros[] = 'Nota Fiscal é obrigatória.';
+  if ($dataPedido === '') $erros[] = 'Data do Pedido é obrigatória.';
+  if ($fornecedorId <= 0) $erros[] = 'Fornecedor é obrigatório.';
+  if ($dataPrevistaEntrega === '') $erros[] = 'Data de Entrega é obrigatória.';
+  if ($valorRaw === null || $valorRaw === '') $erros[] = 'Valor é obrigatório.';
+  if ($valorRaw !== null && $valorRaw !== '' && (float)$valorRaw <= 0) $erros[] = 'Valor deve ser maior que zero.';
+
   $dados = [
-    'nf_fiscal' => $_POST['nf_fiscal'] ?? null,
-    'data_pedido' => $_POST['data_pedido'] ?? null,
-    'fornecedor_id' => $_POST['fornecedor_id'] ?? null,
-    'data_prevista_entrega' => $_POST['data_prevista_entrega'] ?? null,
+    'nf_fiscal' => $nfFiscal !== '' ? $nfFiscal : null,
+    'data_pedido' => $dataPedido !== '' ? $dataPedido : null,
+    'fornecedor_id' => $fornecedorId > 0 ? $fornecedorId : null,
+    'data_prevista_entrega' => $dataPrevistaEntrega !== '' ? $dataPrevistaEntrega : null,
     'data_entregue' => !empty($_POST['data_entregue']) ? $_POST['data_entregue'] : null,
     'transportadora' => !empty($_POST['transportadora']) ? $_POST['transportadora'] : null,
-    'valor' => !empty($_POST['valor']) ? $_POST['valor'] : null,
+    'valor' => ($valorRaw !== null && $valorRaw !== '') ? $valorRaw : null,
     'observacoes' => !empty($_POST['observacoes']) ? $_POST['observacoes'] : null,
     'produtos' => [] // Inicializa o array de produtos
   ];
 
   // Capturar os produtos enviados via POST
-  if (!empty($_POST['produtos'])) {
-    foreach ($_POST['produtos'] as $produto) {
-      // Certifique-se de que cada campo essencial esteja presente
-      if (!empty($produto['id']) && !empty($produto['nome']) && !empty($produto['quantidade'])) {
-        $dados['produtos'][] = [
-          'id' => (int) $produto['id'], // Garante que o ID seja um número inteiro
-          'nome_produto' => $produto['nome'], // Nome do produto
-          'quantidade' => (int) $produto['quantidade'], // Quantidade como inteiro
-          'estoque' => (int) $produto['estoque']
-        ];
+  $produtosPost = $_POST['produtos'] ?? [];
+  if (empty($produtosPost) || !is_array($produtosPost)) {
+    $erros[] = 'Produtos e Quantidades são obrigatórios.';
+  } else {
+    foreach ($produtosPost as $produto) {
+      $id = $produto['id'] ?? null;
+      $nomeProduto = $produto['nome'] ?? null;
+      $qtd = $produto['quantidade'] ?? null;
+      $estoque = $produto['estoque'] ?? 0;
+
+      if (empty($id) || empty($nomeProduto) || $qtd === null || $qtd === '') {
+        $erros[] = 'Produtos e Quantidades não podem ficar em branco.';
+        continue;
       }
+
+      $idInt = (int)$id;
+      $qtdInt = (int)$qtd;
+      if ($idInt <= 0) {
+        $erros[] = 'ID do produto inválido.';
+        continue;
+      }
+      if ($qtdInt <= 0) {
+        $erros[] = 'Quantidade deve ser maior que zero.';
+        continue;
+      }
+
+      $dados['produtos'][] = [
+        'id' => $idInt,
+        'nome_produto' => (string)$nomeProduto,
+        'quantidade' => $qtdInt,
+        'estoque' => (int)$estoque
+      ];
     }
+  }
+
+  if (!empty($erros)) {
+    echo notify('danger', implode('<br>', array_unique($erros)));
+    exit;
   }
 
   // Debug para verificar o conteúdo do array
@@ -87,7 +128,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <!-- valor -->
         <div class="col-lg-4">
           <label for="valor" class="form-label">Valor</label>
-          <input type="number" step="0.01" class="form-control" id="valor" name="valor" required>
+          <input
+            type="hidden"
+            id="valor_raw"
+            name="valor"
+            value="0.00"
+          >
+          <input
+            type="text"
+            class="form-control"
+            id="valor_display"
+            value="R$ 0,00"
+            required
+            autocomplete="off"
+          >
+          <div class="form-text">Digite o valor da compra. O sistema salva no formato decimal (SQL).</div>
         </div>
         <!-- trsnaportadora -->
         <div class="col-lg-4">
@@ -145,6 +200,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
+        <div class="mb-3">
+          <label for="modalProductSearch" class="form-label fw-bold">Filtrar Produto (ID ou Nome)</label>
+          <input id="modalProductSearch" type="text" class="form-control" placeholder="Digite o ID ou o nome do produto...">
+        </div>
         <table class="table table-bordered table-hover">
           <thead>
             <tr>
@@ -155,23 +214,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </tr>
           </thead>
           <tbody id="modalProductList">
-            <?php foreach ($produtos as $produto): ?>
-              <tr>
-                <td><?php echo $produto['id']; ?></td>
-                <td><?php echo $produto['nome_produto']; ?></td>
-                <td><?php echo $produto['estoque']; ?></td>
-                <td>
-                  <button
-                    type="button"
-                    class="btn btn-primary btn-select-product"
-                    data-id="<?php echo $produto['id']; ?>"
-                    data-name="<?php echo $produto['nome_produto']; ?>"
-                    data-estoque="<?php echo $produto['estoque']; ?>">
-                    Selecionar
-                  </button>
-                </td>
-              </tr>
-            <?php endforeach; ?>
+            <tr>
+              <td colspan="4" class="text-center text-muted">Digite para buscar produtos...</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -181,19 +226,150 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
+    // Mantém o campo "valor" em formato exibido (R$ 0,00) e envia ao backend
+    // um decimal com 2 casas usando "." (ex.: 1234.56), compatível com SQL DECIMAL(10,2).
+    const valorDisplay = document.getElementById('valor_display');
+    const valorRaw = document.getElementById('valor_raw');
+
+    function syncValorFromDisplay() {
+      if (!valorDisplay || !valorRaw) return;
+
+      const raw = (valorDisplay.value || '').toString();
+      // Remove "R$", espaços e separadores de milhar comuns
+      let s = raw.replace(/R\$/gi, '').replace(/\s/g, '');
+      s = s.replace(/\.(?=\d{3}(\D|$))/g, ''); // remove pontos de milhar (se houver)
+      s = s.replace(',', '.'); // "," vira decimal
+      s = s.replace(/[^0-9.]/g, ''); // só números e ponto decimal
+
+      // Se houver mais de um ponto, mantém só o último como decimal
+      const firstDot = s.indexOf('.');
+      if (firstDot !== -1) {
+        const parts = s.split('.');
+        const decimals = parts.pop();
+        s = parts.join('') + '.' + decimals;
+      }
+
+      let num = parseFloat(s);
+      if (!Number.isFinite(num)) num = 0;
+
+      valorRaw.value = num.toFixed(2);
+      // Reaplica formatação na tela
+      const formatted = num.toFixed(2).replace('.', ',');
+      valorDisplay.value = `R$ ${formatted}`;
+    }
+
+    if (valorDisplay && valorRaw) {
+      // Inicializa raw coerente com o valor exibido
+      syncValorFromDisplay();
+      valorDisplay.addEventListener('input', () => {
+        // Evita loops: ajusta raw e normaliza texto
+        syncValorFromDisplay();
+      });
+    }
+
     const productList = document.getElementById('product-list');
     const modalElement = document.getElementById('productModal');
     const modal = new bootstrap.Modal(modalElement);
+    const modalProductSearch = document.getElementById('modalProductSearch');
     let activeInput = null;
     let productIndex = 0;
+    const baseUrlProdutos = '<?= $url ?>pages/EntradaMercadorias/produtos_json.php';
 
     // Abrir modal ao clicar no input de produto
     document.addEventListener('click', function(e) {
       if (e.target && e.target.classList.contains('product-input')) {
         activeInput = e.target; // Define qual campo foi clicado
+        if (modalProductSearch) {
+          modalProductSearch.value = '';
+          modalProductSearch.dispatchEvent(new Event('input'));
+        }
         modal.show(); // Abre o modal
       }
     });
+
+    async function buscarProdutos(q) {
+      if (!modalProductSearch) return;
+
+      const tbody = document.getElementById('modalProductList');
+      if (!tbody) return;
+
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="4" class="text-center text-muted">Carregando...</td>
+        </tr>
+      `;
+
+      const params = new URLSearchParams();
+      params.set('q', q || '');
+      params.set('limit', '50');
+
+      try {
+        const resp = await fetch(baseUrlProdutos, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+          body: params.toString()
+        });
+
+        const json = await resp.json();
+        if (!json || !json.ok) throw new Error(json?.msg || 'Erro ao buscar produtos');
+
+        const rows = json.data || [];
+        if (!rows.length) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="4" class="text-center text-muted">Nenhum produto encontrado.</td>
+            </tr>
+          `;
+          return;
+        }
+
+        tbody.innerHTML = '';
+        rows.forEach(prod => {
+          const tr = document.createElement('tr');
+
+          const tdId = document.createElement('td');
+          tdId.textContent = prod.id ?? '';
+
+          const tdNome = document.createElement('td');
+          tdNome.textContent = prod.nome_produto ?? '';
+
+          const tdEstoque = document.createElement('td');
+          tdEstoque.textContent = prod.estoque ?? 0;
+
+          const tdAcoes = document.createElement('td');
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'btn btn-primary btn-select-product';
+          btn.textContent = 'Selecionar';
+          btn.dataset.id = prod.id ?? '';
+          btn.dataset.name = prod.nome_produto ?? '';
+          btn.dataset.estoque = prod.estoque ?? 0;
+
+          tdAcoes.appendChild(btn);
+          tr.appendChild(tdId);
+          tr.appendChild(tdNome);
+          tr.appendChild(tdEstoque);
+          tr.appendChild(tdAcoes);
+          tbody.appendChild(tr);
+        });
+      } catch (e) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="4" class="text-center text-danger">Erro ao carregar produtos.</td>
+          </tr>
+        `;
+      }
+    }
+
+    // Busca por digitação (debounce) - pesquisa por ID ou nome
+    if (modalProductSearch) {
+      let timer = null;
+      modalProductSearch.addEventListener('input', function() {
+        const q = (this.value || '').trim();
+        clearTimeout(timer);
+        timer = setTimeout(() => buscarProdutos(q), 250);
+      });
+    }
 
     // Selecionar produto no modal
     document.addEventListener('click', function(e) {
