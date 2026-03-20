@@ -13,6 +13,12 @@
 
 <?php
 
+//erro de php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+//fim erro de php
+
 use App\Models\Produtos\Controller;
 use App\Models\Material\Controller as MaterialController;
 use App\Models\Categoria\Controller as CategoriaController;

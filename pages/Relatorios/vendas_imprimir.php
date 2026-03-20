@@ -46,7 +46,7 @@ if (!empty($contas) && is_array($contas)) {
     }
 }
 
-$totalGeral = ['valor' => 0, 'dinheiro' => 0, 'cheque' => 0, 'cartao' => 0, 'ouro' => 0, 'carne' => 0, 'deposito' => 0, 'comissao' => 0];
+$totalGeral = ['valor' => 0, 'dinheiro' => 0, 'cheque' => 0, 'cartao' => 0, 'material' => 0, 'ouro' => 0, 'carne' => 0, 'deposito' => 0, 'comissao' => 0];
 ?>
 
 <!DOCTYPE html>
@@ -161,7 +161,7 @@ $totalGeral = ['valor' => 0, 'dinheiro' => 0, 'cheque' => 0, 'cartao' => 0, 'our
     <?php if (!empty($porVendedor)): ?>
         <?php foreach ($porVendedor as $nomeVendedor => $vendas): ?>
             <?php
-                $subValor = 0; $subDinheiro = 0; $subCheque = 0; $subCartao = 0;
+                $subValor = 0; $subDinheiro = 0; $subCheque = 0; $subCartao = 0; $subMaterial = 0;
                 $subOuro = 0; $subCarne = 0; $subDeposito = 0; $subComissao = 0;
             ?>
             <div class="vendedor-nome"><?php echo strtoupper($nomeVendedor); ?></div>
@@ -174,6 +174,7 @@ $totalGeral = ['valor' => 0, 'dinheiro' => 0, 'cheque' => 0, 'cartao' => 0, 'our
                         <th width="65">Dinheiro</th>
                         <th width="60">Cheque</th>
                         <th width="65">Cartão</th>
+                        <th width="65">Material</th>
                         <th width="55">Ouro</th>
                         <th width="55">Carnê</th>
                         <th width="65">Pix</th>
@@ -187,6 +188,7 @@ $totalGeral = ['valor' => 0, 'dinheiro' => 0, 'cheque' => 0, 'cartao' => 0, 'our
                             $din = (float)($venda['dinheiro'] ?? 0);
                             $chq = (float)($venda['cheque'] ?? 0);
                             $crt = (float)($venda['cartao'] ?? 0);
+                            $mat = (float)($venda['material'] ?? 0);
                             $our = (float)($venda['ouro'] ?? 0);
                             $crn = (float)($venda['carne'] ?? 0);
                             $dep = (float)($venda['deposito'] ?? 0);
@@ -196,6 +198,7 @@ $totalGeral = ['valor' => 0, 'dinheiro' => 0, 'cheque' => 0, 'cartao' => 0, 'our
                             $subDinheiro += $din;
                             $subCheque += $chq;
                             $subCartao += $crt;
+                            $subMaterial += $mat;
                             $subOuro += $our;
                             $subCarne += $crn;
                             $subDeposito += $dep;
@@ -208,6 +211,7 @@ $totalGeral = ['valor' => 0, 'dinheiro' => 0, 'cheque' => 0, 'cartao' => 0, 'our
                             <td class="numero"><?php echo number_format($din, 2, ',', '.'); ?></td>
                             <td class="numero"><?php echo number_format($chq, 2, ',', '.'); ?></td>
                             <td class="numero"><?php echo number_format($crt, 2, ',', '.'); ?></td>
+                            <td class="numero"><?php echo number_format($mat, 2, ',', '.'); ?></td>
                             <td class="numero"><?php echo number_format($our, 2, ',', '.'); ?></td>
                             <td class="numero"><?php echo number_format($crn, 2, ',', '.'); ?></td>
                             <td class="numero"><?php echo number_format($dep, 2, ',', '.'); ?></td>
@@ -220,6 +224,7 @@ $totalGeral = ['valor' => 0, 'dinheiro' => 0, 'cheque' => 0, 'cartao' => 0, 'our
                         <td class="numero"><?php echo number_format($subDinheiro, 2, ',', '.'); ?></td>
                         <td class="numero"><?php echo number_format($subCheque, 2, ',', '.'); ?></td>
                         <td class="numero"><?php echo number_format($subCartao, 2, ',', '.'); ?></td>
+                        <td class="numero"><?php echo number_format($subMaterial, 2, ',', '.'); ?></td>
                         <td class="numero"><?php echo number_format($subOuro, 2, ',', '.'); ?></td>
                         <td class="numero"><?php echo number_format($subCarne, 2, ',', '.'); ?></td>
                         <td class="numero"><?php echo number_format($subDeposito, 2, ',', '.'); ?></td>
@@ -232,6 +237,7 @@ $totalGeral = ['valor' => 0, 'dinheiro' => 0, 'cheque' => 0, 'cartao' => 0, 'our
                 $totalGeral['dinheiro'] += $subDinheiro;
                 $totalGeral['cheque'] += $subCheque;
                 $totalGeral['cartao'] += $subCartao;
+                $totalGeral['material'] += $subMaterial;
                 $totalGeral['ouro'] += $subOuro;
                 $totalGeral['carne'] += $subCarne;
                 $totalGeral['deposito'] += $subDeposito;
@@ -247,6 +253,7 @@ $totalGeral = ['valor' => 0, 'dinheiro' => 0, 'cheque' => 0, 'cartao' => 0, 'our
                 <td class="numero">Dinheiro: R$ <?php echo number_format($totalGeral['dinheiro'], 2, ',', '.'); ?></td>
                 <td class="numero">Cheque: R$ <?php echo number_format($totalGeral['cheque'], 2, ',', '.'); ?></td>
                 <td class="numero">Cartão: R$ <?php echo number_format($totalGeral['cartao'], 2, ',', '.'); ?></td>
+                <td class="numero">Material: R$ <?php echo number_format($totalGeral['material'], 2, ',', '.'); ?></td>
                 <td class="numero">Ouro: R$ <?php echo number_format($totalGeral['ouro'], 2, ',', '.'); ?></td>
                 <td class="numero">Carnê: R$ <?php echo number_format($totalGeral['carne'], 2, ',', '.'); ?></td>
                 <td class="numero">Pix: R$ <?php echo number_format($totalGeral['deposito'], 2, ',', '.'); ?></td>

@@ -21,6 +21,7 @@ if (!isset($_COOKIE['id']) || empty($_COOKIE['id'])) {
 include 'db/db.class.php';
 include 'App/php/htaccess.php';
 include 'App/php/function.php';
+include 'App/php/permissoes.php';
 include 'App/php/notify.php';
 
 // Controlador e ação padrão
@@ -33,27 +34,35 @@ ob_end_flush();
 
 ?>
 <?php
-// Módulo CD - Centro de Distribuição: apenas Administrador pode acessar
+// Módulo CD - Centro de Distribuição: Administrador ou quem tem permissão CD
 $moduloAtual = $link[1] ?? '';
-if ($moduloAtual === 'CD' && ($_COOKIE['nivel_acesso'] ?? '') !== 'Administrador') {
-    header("Location: {$url}!/naopermitido");
-    exit;
+if ($moduloAtual === 'CD') {
+    $ehAdmin = ($_COOKIE['nivel_acesso'] ?? '') === 'Administrador';
+    if (!$ehAdmin) {
+        $permJson = $_COOKIE['permissoes'] ?? '{}';
+        $perm = json_decode($permJson, true);
+        if (is_string($perm)) $perm = json_decode($perm, true) ?: [];
+        $v = $perm['CD']['visualizar'] ?? false;
+        $m = $perm['CD']['manipular'] ?? false;
+        $temCD = ($v === true || $v === '1' || $v === 1) || ($m === true || $m === '1' || $m === 1);
+        if (!$temCD) {
+            header("Location: {$url}!/naopermitido");
+            exit;
+        }
+    }
 }
 
 if ($_COOKIE['nivel_acesso'] != "Administrador") {
 
     if (isset($link[2]) && $link[2] != "") {
 
-        // Obtém o JSON de permissões do cookie (ou usa um JSON vazio se não existir)
-        $permissoes_json = $_COOKIE['permissoes'] ?? '{}';
+        // Obtém permissões do cookie (suporta cookie simples ou antigo double-encoded)
+        $permJson = $_COOKIE['permissoes'] ?? '{}';
+        $permissoes = json_decode($permJson, true);
+        if (is_string($permissoes)) {
+            $permissoes = json_decode($permissoes, true) ?: [];
+        }
 
-        // Primeiro `json_decode()` para remover a barra invertida (\)
-        $permissoes_json = json_decode($permissoes_json, true);
-
-        // Segundo `json_decode()` para converter a string JSON em array associativo
-        $permissoes = json_decode($permissoes_json, true);
-
-        // Debug: Verifica se o JSON foi realmente convertido para um array
         if (!is_array($permissoes) || empty($permissoes)) {
             echo "NÃO PERMITIDO (Permissões não encontradas).";
             exit();
@@ -79,12 +88,12 @@ if ($_COOKIE['nivel_acesso'] != "Administrador") {
             header("Location: {$url}!/naopermitido");
             exit;
         } else {
-            // Obtém as permissões do módulo atual
             $modulo_permissoes = $permissoes[$modulo_atual];
-            $visualizar = $modulo_permissoes['visualizar'] ?? false;
-            $manipular = $modulo_permissoes['manipular'] ?? false;
+            $v = $modulo_permissoes['visualizar'] ?? false;
+            $m = $modulo_permissoes['manipular'] ?? false;
+            $visualizar = ($v === true || $v === '1' || $v === 1);
+            $manipular = ($m === true || $m === '1' || $m === 1);
 
-            // **Regra de Permissão**:
             if ($manipular) {
                 $permitido = "SIM";
             } else {
@@ -99,7 +108,34 @@ if ($_COOKIE['nivel_acesso'] != "Administrador") {
 
 }
 
-
+// Redirecionamento antecipado: Caixa/lista com pedido_lancar (auto-lançamento)
+// Executa antes do HTML para evitar "headers already sent"
+$isCaixaLista = (isset($paginaExibi) && $paginaExibi === 'pages/Caixa/lista.php');
+$pedidoLancarId = isset($_GET['pedido_lancar']) ? (int)$_GET['pedido_lancar'] : 0;
+if ($isCaixaLista && $pedidoLancarId > 0 && $_SERVER['REQUEST_METHOD'] !== 'POST') {
+    $pageParts = !empty($_GET['page']) ? explode('/', trim((string)$_GET['page'], '/')) : [];
+    $lojaId = $_COOKIE['loja_id'] ?? 1;
+    $dataInicio = $pageParts[3] ?? date('Y-m-d');
+    $dataFim = $pageParts[4] ?? $dataInicio;
+    $pedidoData = isset($_GET['data_pedido']) ? $_GET['data_pedido'] : $dataInicio;
+    $caixaCtrl = new \App\Models\Caixa\Controller();
+    $pedidoInfo = $caixaCtrl->obterPedidoParaCaixa($pedidoLancarId);
+    if ($pedidoInfo && ($pedidoInfo['status_pedido'] ?? '') === 'Pago' && (float)($pedidoInfo['valor_pago'] ?? 0) > 0) {
+        $lojaIdPedido = (int)($pedidoInfo['loja_id'] ?? $lojaId);
+        $sessoesAbertas = $caixaCtrl->listarSessoesAbertasPorLojaData($lojaIdPedido, $pedidoData) ?: [];
+        $n = count($sessoesAbertas);
+        $ehDinheiro = (stripos((string)($pedidoInfo['forma_pagamento'] ?? ''), 'dinheiro') !== false);
+        if ($n === 1 && !$ehDinheiro) {
+            $sessao = $sessoesAbertas[0];
+            $valor = (float)($pedidoInfo['valor_pago'] ?? 0) ?: (float)($pedidoInfo['total'] ?? 0);
+            $tipo = $caixaCtrl->mapearTipoPedidoParaCaixa($pedidoInfo['forma_pagamento']);
+            $caixaCtrl->registrarMovimento((int)$sessao['id'], $lojaIdPedido, (int)$sessao['caixa_drawer_id'], $tipo, $valor, 'Pedido', $pedidoLancarId, null);
+            $redir = ($url ?? '') . '!/Caixa/lista/' . $dataInicio . '/' . $dataFim . '?caixa_drawer_id=' . (int)$sessao['caixa_drawer_id'];
+            header('Location: ' . $redir);
+            exit;
+        }
+    }
+}
 ?>
 
 

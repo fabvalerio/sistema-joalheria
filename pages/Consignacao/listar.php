@@ -47,7 +47,7 @@ $consignacoes = $controller->listar();
 <div class="card">
   <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
     <h3 class="card-title">Lista de Consignações</h3>
-    <a href="<?php echo "{$url}!/{$link[1]}/cadastro"; ?>" class="btn btn-white text-primary">Adicionar Consignação</a>
+    <?php if (isset($podeManipular) && $podeManipular($link[1])): ?><a href="<?php echo "{$url}!/{$link[1]}/cadastro"; ?>" class="btn btn-white text-primary">Adicionar Consignação</a><?php endif; ?>
   </div>
 
   <div class="card-body">
@@ -75,11 +75,13 @@ $consignacoes = $controller->listar();
                 </button>
                 <ul class="dropdown-menu">
                   <li><a href="<?= "{$url}!/{$link[1]}/ver/{$consignacao['id']}" ?>" class="dropdown-item">Ver</a></li>
-                  <?php if ($consignacao['status'] == 'Aberta'): ?>
+                  <?php if ((isset($podeManipular) && $podeManipular($link[1])) && $consignacao['status'] == 'Aberta'): ?>
                     <li><a href="<?= "{$url}!/{$link[1]}/editar/{$consignacao['id']}" ?>" class="dropdown-item">Editar</a></li>
                   <?php endif; ?>
                   <li><a href="<?= "{$url}!/{$link[1]}/imprimir/{$consignacao['id']}" ?>" class="dropdown-item">Imprimir</a></li>
+                  <?php if (isset($podeManipular) && $podeManipular($link[1])): ?>
                   <li><a href="<?= "{$url}!/{$link[1]}/deletar/{$consignacao['id']}" ?>" class="dropdown-item text-danger">Excluir</a></li>
+                  <?php endif; ?>
                 </ul>
               </div>
             </td>

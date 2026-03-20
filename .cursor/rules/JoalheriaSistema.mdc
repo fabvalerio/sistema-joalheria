@@ -1,0 +1,63 @@
+---
+alwaysApply: true
+---
+
+---
+description: "Diretrizes para desenvolvimento e arquitetura do sistema"
+alwaysApply: false
+globs:
+  - "**/*.css"
+  - "**/*.js"
+  - "**/*.php"
+  - "**/*.html"
+---
+
+# Padrões de Arquitetura do Sistema
+
+## 1. Organização do Código
+
+### Estrutura de Diretórios
+- `/App/api` - Aplicações de API Externas
+- `/App/Modals` - Controller e regras de negócio / SQL
+- `/App/php` - Configuração do Htaccess, Permissões, Validadores, Exec
+- `/assets/components` - Componentes
+- `/assets/css` - Styles
+- `/assets/js` - Scripts
+- `/db` - registro do sql completo para leitura
+- `/migration` - Sqls alterados
+- `/pages` - páginas
+
+# Regras
+- Nunca exponha detalhes internos de implementação nas mensagens de erro para o cliente
+- Log erros com contexto apropriado (níveis: error, warn, info, debug)
+- Sempre trate erros em promises com .catch() ou blocos try/catch
+- Para fluxos assíncronos, use mecanismos de retry com backoff exponencial
+
+# Padrões
+- Use logs estruturados (JSON) em produção
+- Inclua requestId em todas as operações de um mesmo fluxo
+- Evite logs em loops; use agregação quando necessário
+- Logs de entrada/saída de métodos críticos: info
+- Logs de falhas de negócio esperadas: warn
+- Logs de exceções não tratadas: error
+
+# Entrada de Dados
+- Valide todas as entradas externas antes de processamento
+- Defina tipos estritos e evite any
+
+# Acesso a Dados
+- Repositórios
+- Sempre use interfaces/repositórios para abstrair acesso a dados
+- Nunca acesse banco de dados diretamente de controllers
+- Use transações para operações que modificam múltiplas entidades
+
+# Variáveis de Ambiente
+- Use arquivos .env apenas para desenvolvimento
+- Em produção, use secrets manager ou variáveis de ambiente seguras
+- Prefixe variáveis com o nome do serviço (ex: SERVICE_DB_PASSWORD)
+
+# Cobertura Mínima
+- Testes unitários para regras de negócio (alvo: 80% coverage)
+- Testes de integração para fluxos principais
+- Testes de contrato para APIs públicas
+- Testes de mutação para código crítico

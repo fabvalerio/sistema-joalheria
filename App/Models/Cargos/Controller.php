@@ -27,8 +27,9 @@ class Controller
     public function cadastro($dados)
     {
         $db = new db();
-        $db->query("INSERT INTO cargos (cargo) VALUES (:cargo)");
+        $db->query("INSERT INTO cargos (cargo, fabrica) VALUES (:cargo, :fabrica)");
         $db->bind(":cargo", $dados['cargo']);
+        $db->bind(":fabrica", $dados['fabrica'] ?? 0);
         return $db->execute();
     }
 
@@ -36,8 +37,9 @@ class Controller
     public function editar($id, $dados)
     {
         $db = new db();
-        $db->query("UPDATE cargos SET cargo = :cargo WHERE id = :id");
+        $db->query("UPDATE cargos SET cargo = :cargo, fabrica = :fabrica WHERE id = :id");
         $db->bind(":cargo", $dados['cargo']);
+        $db->bind(":fabrica", $dados['fabrica'] ?? 0);
         $db->bind(":id", $id);
         return $db->execute();
     }

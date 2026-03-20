@@ -14,6 +14,8 @@ foreach ($diretorios as $dir) {
 
 // Verificar se o formulário foi enviado
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $ehColaboradorFabrica = isset($_POST['colaborador_fabrica']) && $_POST['colaborador_fabrica'] === '1';
+
     $dados = [
         'nome_completo' => $_POST['nome_completo'],
         'email' => $_POST['email'],
@@ -29,23 +31,32 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         'estado' => $_POST['estado'],
         'login' => $_POST['login'],
         'senha' => password_hash($_POST['senha'], PASSWORD_DEFAULT),
-        'nivel_acesso' => $_POST['nivel_acesso'],
+        'nivel_acesso' => $ehColaboradorFabrica ? 'Operador' : $_POST['nivel_acesso'],
         'bairro' => $_POST['bairro'],
         'numero' => $_POST['numero'],
         'status' => $_POST['status'],
-        'loja_id' => $_POST['loja_id'] ?? null,
+        'loja_id' => $ehColaboradorFabrica ? null : (!empty($_POST['loja_id']) ? (int) $_POST['loja_id'] : null),
         'permissoes' => null
     ];
-    // Verifica se há permissões enviadas
-    if (isset($_POST['permissoes'])) {
+    if ($ehColaboradorFabrica) {
         $permissoesUsuario = [];
-        foreach ($_POST['permissoes'] as $dir => $perms) {
+        foreach ($diretorios as $dir) {
+            $permissoesUsuario[$dir] = $dir === 'Fabrica'
+                ? ['visualizar' => true, 'manipular' => true]
+                : ['visualizar' => false, 'manipular' => false];
+        }
+        $dados['permissoes'] = json_encode($permissoesUsuario);
+    } elseif (isset($_POST['permissoes'])) {
+        // Verifica se há permissões enviadas - iterar sobre TODOS os diretórios
+        // (checkboxes desmarcados não são enviados no POST)
+        $permissoesUsuario = [];
+        foreach ($diretorios as $dir) {
+            $perms = $_POST['permissoes'][$dir] ?? [];
             $permissoesUsuario[$dir] = [
-                "visualizar" => isset($perms['visualizar']),
-                "manipular" => isset($perms['manipular'])
+                "visualizar" => !empty($perms['visualizar']),
+                "manipular" => !empty($perms['manipular'])
             ];
         }
-        // Converte as permissões para JSON e adiciona no array de dados
         $dados['permissoes'] = json_encode($permissoesUsuario);
     }
     // Debug para verificar o conteúdo do array
@@ -78,6 +89,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <form method="POST" action="<?php echo "{$url}!/{$link[1]}/{$link[2]}" ?>" class="needs-validation" novalidate>
 
             <div class="row g-3">
+                <div class="col-lg-4">
+                    <label for="colaborador_fabrica" class="form-label">Colaborador da Fábrica</label>
+                    <select class="form-select" name="colaborador_fabrica" id="colaborador_fabrica" required>
+                        <option value="0" selected>Não</option>
+                        <option value="1">Sim</option>
+                    </select>
+                </div>
                 <div class="col-lg-4">
                     <label for="" class="form-label">Nome Completo</label>
                     <input type="text" class="form-control" name="nome_completo" required>
@@ -148,9 +166,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <label for="" class="form-label">Senha</label>
                     <input type="password" class="form-control" name="senha" required>
                 </div>
-                <div class="col-lg-4">
-                    <label for="" class="form-label">Nível de Acesso</label>
-                    <select class="form-select" name="nivel_acesso" required>
+                <div class="col-lg-4" id="wrap-nivel-acesso">
+                    <label for="nivel_acesso" class="form-label">Nível de Acesso</label>
+                    <select class="form-select" name="nivel_acesso" id="nivel_acesso" required>
                         <option value="">Selecione o Nível de Acesso</option>
                         <option value="Administrador">Administrador</option>
                         <option value="Operador">Operador</option>
@@ -165,9 +183,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <option value="0">Inativo</option>
                     </select>
                 </div>
-                <div class="col-lg-4">
-                    <label for="" class="form-label">Loja</label>
-                    <select class="form-select" name="loja_id">
+                <div class="col-lg-4" id="wrap-loja">
+                    <label for="loja_id" class="form-label">Loja</label>
+                    <select class="form-select" name="loja_id" id="loja_id">
                         <option value="">Selecione a Loja</option>
                         <?php foreach ($lojas as $loja): ?>
                             <option value="<?= $loja['id'] ?>"><?= htmlspecialchars($loja['nome']) ?> (<?= $loja['tipo'] ?>)</option>
@@ -176,18 +194,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
                 <hr>
                 <h2>Permissões</h2>
+                <p class="text-muted small">Cada permissão controla o módulo correspondente no menu. Visualizar: exibe o menu e permite listar/ver. Manipular: permite cadastrar, editar e excluir.</p>
                 <?php
                 foreach ($diretorios as $dir) {
-                    echo "<div class='col-lg-4 mb-3'>";
-                    echo "<label class='form-label fw-bold d-block'>$dir:</label>";
+                    echo "<div class='col-lg-4 mb-3' data-modulo='" . htmlspecialchars($dir) . "'>";
+                    echo "<label class='form-label fw-bold d-block'>" . htmlspecialchars($dir) . " <small class='text-muted'>(menu)</small></label>";
 
                     echo "<div class='form-check form-check-inline'>";
-                    echo "<input class='form-check-input' type='checkbox' name='permissoes[$dir][visualizar]' value='1' id='visualizar_$dir'>";
+                    echo "<input class='form-check-input permissao-visualizar' type='checkbox' name='permissoes[$dir][visualizar]' value='1' id='visualizar_$dir'>";
                     echo "<label class='form-check-label' for='visualizar_$dir'>Visualizar</label>";
                     echo "</div>";
 
                     echo "<div class='form-check form-check-inline'>";
-                    echo "<input class='form-check-input' type='checkbox' name='permissoes[$dir][manipular]' value='1' id='manipular_$dir'>";
+                    echo "<input class='form-check-input permissao-manipular' type='checkbox' name='permissoes[$dir][manipular]' value='1' id='manipular_$dir' data-modulo='$dir'>";
                     echo "<label class='form-check-label' for='manipular_$dir'>Manipular</label>";
                     echo "</div>";
 
@@ -207,15 +226,89 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <script>
     (() => {
         'use strict'
+        const MODULO_FABRICA = 'Fabrica'
+        const selFabrica = document.getElementById('colaborador_fabrica')
+        const wrapNivel = document.getElementById('wrap-nivel-acesso')
+        const wrapLoja = document.getElementById('wrap-loja')
+        const nivelAcesso = document.getElementById('nivel_acesso')
+        const lojaId = document.getElementById('loja_id')
+
+        function aplicarModoColaboradorFabrica(ativo) {
+            if (ativo) {
+                wrapNivel.classList.add('d-none')
+                nivelAcesso.value = 'Operador'
+                nivelAcesso.removeAttribute('required')
+                nivelAcesso.setAttribute('disabled', 'disabled')
+
+                wrapLoja.classList.add('d-none')
+                lojaId.value = ''
+                lojaId.setAttribute('disabled', 'disabled')
+
+                document.querySelectorAll('[data-modulo]').forEach(el => {
+                    const mod = el.getAttribute('data-modulo')
+                    const vis = el.querySelector('.permissao-visualizar')
+                    const man = el.querySelector('.permissao-manipular')
+                    if (mod === MODULO_FABRICA) {
+                        el.classList.remove('d-none')
+                        if (vis) { vis.checked = true; vis.disabled = true }
+                        if (man) { man.checked = true; man.disabled = true }
+                    } else {
+                        el.classList.add('d-none')
+                        if (vis) { vis.checked = false; vis.disabled = true }
+                        if (man) { man.checked = false; man.disabled = true }
+                    }
+                })
+            } else {
+                wrapNivel.classList.remove('d-none')
+                nivelAcesso.setAttribute('required', 'required')
+                nivelAcesso.removeAttribute('disabled')
+
+                wrapLoja.classList.remove('d-none')
+                lojaId.removeAttribute('disabled')
+
+                document.querySelectorAll('[data-modulo]').forEach(el => {
+                    el.classList.remove('d-none')
+                    el.querySelectorAll('.permissao-visualizar, .permissao-manipular').forEach(cb => {
+                        cb.disabled = false
+                    })
+                })
+            }
+        }
+
+        if (selFabrica) {
+            aplicarModoColaboradorFabrica(selFabrica.value === '1')
+            selFabrica.addEventListener('change', () => {
+                aplicarModoColaboradorFabrica(selFabrica.value === '1')
+            })
+        }
+
         const forms = document.querySelectorAll('.needs-validation')
         Array.from(forms).forEach(form => {
             form.addEventListener('submit', event => {
+                if (selFabrica && selFabrica.value === '1') {
+                    nivelAcesso.removeAttribute('disabled')
+                    lojaId.removeAttribute('disabled')
+                }
                 if (!form.checkValidity()) {
                     event.preventDefault()
                     event.stopPropagation()
                 }
+                if (selFabrica && selFabrica.value === '1') {
+                    nivelAcesso.setAttribute('disabled', 'disabled')
+                    lojaId.setAttribute('disabled', 'disabled')
+                }
                 form.classList.add('was-validated')
             }, false)
+        })
+        // Ao marcar Manipular, marcar também Visualizar (obrigatório para uso)
+        document.querySelectorAll('.permissao-manipular').forEach(cb => {
+            cb.addEventListener('change', function() {
+                if (this.checked) {
+                    const mod = this.dataset.modulo;
+                    const vis = document.getElementById('visualizar_' + mod);
+                    if (vis) vis.checked = true;
+                }
+            })
         })
     })()
 </script>

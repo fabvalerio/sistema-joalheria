@@ -55,7 +55,7 @@ if (!empty($tipoFiltro)) {
 <div class="card">
     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
         <h3 class="card-title">Produto Definições</h3>
-        <a href="<?= "{$url}!/{$link[1]}/cadastro" ?>" class="btn btn-white text-primary">Adicionar</a>
+        <?php if (isset($podeManipular) && $podeManipular($link[1])): ?><a href="<?= "{$url}!/{$link[1]}/cadastro" ?>" class="btn btn-white text-primary">Adicionar</a><?php endif; ?>
 
     </div>
 
@@ -91,18 +91,10 @@ if (!empty($tipoFiltro)) {
                                     Ação
                                 </button>
                                 <ul class="dropdown-menu">
-
-                                    <li>
-                                        <a href="<?= "{$url}!/{$link[1]}/editar/{$definicao['id']}" ?>" class="dropdown-item text-dark">
-                                            Editar
-                                        </a>
-                                    </li>
-
-                                    <li>
-                                        <a href="<?= "{$url}!/{$link[1]}/deletar/{$definicao['id']}" ?>" class="dropdown-item text-danger">
-                                            Excluir
-                                        </a>
-                                    </li>
+                                    <?php if (isset($podeManipular) && $podeManipular($link[1])): ?>
+                                    <li><a href="<?= "{$url}!/{$link[1]}/editar/{$definicao['id']}" ?>" class="dropdown-item text-dark">Editar</a></li>
+                                    <li><a href="<?= "{$url}!/{$link[1]}/deletar/{$definicao['id']}" ?>" class="dropdown-item text-danger">Excluir</a></li>
+                                    <?php endif; ?>
                                 </ul>
                             </div>
                         </td>

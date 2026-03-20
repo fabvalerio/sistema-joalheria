@@ -23,6 +23,10 @@ function notify($alert, $msg = NULL)
       break;
   }
 
+  if ($msg !== null && trim((string)$msg) !== '') {
+    $msg_notify = htmlspecialchars($msg);
+  }
+
   $msgs =  '<div class="alert text-white bg-' . $alert . ' alert-dismissible fade show notify" role="alert">
   ' . $msg_notify . '
   </div>

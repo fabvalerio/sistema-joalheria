@@ -217,10 +217,11 @@ class Controller
     {
         $db = new db();
 
-        // Recuperar o estoque atual antes de atualizar
+        // Recuperar o estoque atual antes de atualizar (PDO/form podem vir como string; PHP 8 exige número na aritmética)
         $db->query("SELECT estoque_princ FROM produtos WHERE id = :id");
         $db->bind(":id", $id);
-        $estoqueAntes = $db->single()['estoque_princ'] ?? 0; // Estoque atual ou 0 se não encontrado
+        $estoqueAntesRaw = $db->single()['estoque_princ'] ?? null;
+        $estoqueAntes = ($estoqueAntesRaw === null || $estoqueAntesRaw === '') ? 0.0 : (float) $estoqueAntesRaw;
 
         // Atualizar o produto na tabela "produtos"
         $db->query("
@@ -304,8 +305,11 @@ class Controller
 
         // Executar a atualização do produto
         if ($db->execute()) {
-            // Verificar se houve alteração no estoque
-            $estoqueAtualizado = $dados['estoque_princ'] ?? $estoqueAntes;
+            // Verificar se houve alteração no estoque (normalizar para float; POST sempre string)
+            $postEstoque = $dados['estoque_princ'] ?? null;
+            $estoqueAtualizado = ($postEstoque === null || $postEstoque === '')
+                ? $estoqueAntes
+                : (float) $postEstoque;
 
             if ($estoqueAtualizado != $estoqueAntes) {
                 // Inserir movimentação de estoque como "Ajuste"

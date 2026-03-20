@@ -45,6 +45,7 @@ $vendedores = $controller->listarVendedores();
                                     <option value="Débito" <?php echo ($tipo == 'Débito') ? 'selected' : ''; ?>>Cartão de Débito</option>
                                     <option value="Dinheiro" <?php echo ($tipo == 'Dinheiro') ? 'selected' : ''; ?>>Dinheiro</option>
                                     <option value="Cheque" <?php echo ($tipo == 'Cheque') ? 'selected' : ''; ?>>Cheque</option>
+                                    <option value="Material" <?php echo ($tipo == 'Material') ? 'selected' : ''; ?>>Material</option>
                                     <option value="Carnê" <?php echo ($tipo == 'Carnê') ? 'selected' : ''; ?>>Carnê</option>
                                     <option value="Pix" <?php echo ($tipo == 'Pix') ? 'selected' : ''; ?>>Pix</option>
                                 </select>
@@ -136,6 +137,10 @@ $vendedores = $controller->listarVendedores();
                         <div class="col-4">
                             <small class="text-muted">Cheque</small>
                             <div class="fw-bold">R$ <?php echo number_format($pagamentos['cheque'] ?? 0, 2, ',', '.'); ?></div>
+                        </div>
+                        <div class="col-4">
+                            <small class="text-muted">Material</small>
+                            <div class="fw-bold">R$ <?php echo number_format($pagamentos['material'] ?? 0, 2, ',', '.'); ?></div>
                         </div>
                         <div class="col-4">
                             <small class="text-muted">Carnê</small>

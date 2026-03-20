@@ -411,6 +411,171 @@ class Controller
     }
 
     /**
+     * Remove quantidade do estoque do CD e registra movimentação (Saída).
+     * @param int $produto_id
+     * @param float $quantidade
+     * @param string $descricao_produto
+     * @param string $motivo
+     * @return array ['ok' => bool, 'msg' => string]
+     */
+    public function removerEstoqueCD($produto_id, $quantidade, $descricao_produto = '', $motivo = 'Inventário - Saída')
+    {
+        $quantidade = (float)$quantidade;
+        if ($quantidade <= 0) {
+            return ['ok' => false, 'msg' => 'Quantidade inválida.'];
+        }
+
+        $db = new db();
+        try {
+            $db->beginTransaction();
+
+            $db->query("SELECT COALESCE(SUM(quantidade), 0) as total FROM estoque WHERE produtos_id = :pid");
+            $db->bind(':pid', (int)$produto_id);
+            $r = $db->single();
+            $totalAntes = $r ? (float)($r['total'] ?? 0) : 0;
+
+            if ($totalAntes < $quantidade) {
+                $db->cancelTransaction();
+                return ['ok' => false, 'msg' => 'Quantidade insuficiente no estoque (disponível: ' . $totalAntes . ').'];
+            }
+
+            $toRemove = $quantidade;
+            $db->query("SELECT id, quantidade FROM estoque WHERE produtos_id = :pid AND quantidade > 0 ORDER BY id ASC");
+            $db->bind(':pid', (int)$produto_id);
+            $rows = $db->resultSet();
+            foreach ($rows as $row) {
+                if ($toRemove <= 0) break;
+                $qtd = (float)$row['quantidade'];
+                $id = $row['id'];
+                if ($qtd >= $toRemove) {
+                    $db->query("UPDATE estoque SET quantidade = quantidade - :rem WHERE id = :id");
+                    $db->bind(':rem', $toRemove);
+                    $db->bind(':id', $id);
+                    $db->execute();
+                    $toRemove = 0;
+                } else {
+                    $db->query("UPDATE estoque SET quantidade = 0 WHERE id = :id");
+                    $db->bind(':id', $id);
+                    $db->execute();
+                    $toRemove -= $qtd;
+                }
+            }
+
+            $totalDepois = $totalAntes - $quantidade;
+            $lojaId = $this->getCDLojaId($db);
+
+            $db->query("
+                INSERT INTO movimentacao_estoque (
+                    produto_id, descricao_produto, tipo_movimentacao, quantidade,
+                    data_movimentacao, motivo, estoque_antes, estoque_atualizado, loja_id
+                ) VALUES (
+                    :pid, :desc, 'Saida', :qtd,
+                    :data, :motivo, :antes, :depois, :loja_id
+                )
+            ");
+            $db->bind(':pid', (int)$produto_id);
+            $db->bind(':desc', $descricao_produto);
+            $db->bind(':qtd', $quantidade);
+            $db->bind(':data', date('Y-m-d'));
+            $db->bind(':motivo', $motivo);
+            $db->bind(':antes', $totalAntes);
+            $db->bind(':depois', $totalDepois);
+            $db->bind(':loja_id', $lojaId);
+            $db->execute();
+
+            $db->endTransaction();
+            return ['ok' => true, 'msg' => 'Estoque removido com sucesso.'];
+        } catch (\Throwable $e) {
+            try {
+                if ($db->inTransaction()) {
+                    $db->cancelTransaction();
+                }
+            } catch (\Throwable $ignored) {}
+            return ['ok' => false, 'msg' => 'Erro: ' . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Remove quantidade do estoque de uma loja (estoque_loja) e registra movimentação.
+     * @param int $loja_id
+     * @param int $produto_id
+     * @param float $quantidade
+     * @param string $descricao_produto
+     * @param string $motivo
+     * @return array ['ok' => bool, 'msg' => string]
+     */
+    public function removerEstoqueLoja($loja_id, $produto_id, $quantidade, $descricao_produto = '', $motivo = 'Inventário - Saída')
+    {
+        $loja_id = (int)$loja_id;
+        $produto_id = (int)$produto_id;
+        $quantidade = (float)$quantidade;
+
+        if ($loja_id <= 0) {
+            return ['ok' => false, 'msg' => 'Loja inválida.'];
+        }
+        if ($quantidade <= 0) {
+            return ['ok' => false, 'msg' => 'Quantidade inválida.'];
+        }
+
+        $db = new db();
+        try {
+            $db->beginTransaction();
+
+            $db->query("SELECT COALESCE(quantidade, 0) as total FROM estoque_loja WHERE produto_id = :pid AND loja_id = :lid");
+            $db->bind(':pid', $produto_id);
+            $db->bind(':lid', $loja_id);
+            $r = $db->single();
+            $totalAntes = $r ? (float)($r['total'] ?? 0) : 0;
+
+            if ($totalAntes < $quantidade) {
+                $db->cancelTransaction();
+                return ['ok' => false, 'msg' => 'Quantidade insuficiente no estoque (disponível: ' . $totalAntes . ').'];
+            }
+
+            $db->query("
+                UPDATE estoque_loja
+                SET quantidade = quantidade - :qtd
+                WHERE produto_id = :pid AND loja_id = :lid
+            ");
+            $db->bind(':qtd', $quantidade);
+            $db->bind(':pid', $produto_id);
+            $db->bind(':lid', $loja_id);
+            $db->execute();
+
+            $totalDepois = $totalAntes - $quantidade;
+
+            $db->query("
+                INSERT INTO movimentacao_estoque (
+                    produto_id, descricao_produto, tipo_movimentacao, quantidade,
+                    data_movimentacao, motivo, estoque_antes, estoque_atualizado, loja_id
+                ) VALUES (
+                    :pid, :desc, 'Saida', :qtd,
+                    :data, :motivo, :antes, :depois, :lid
+                )
+            ");
+            $db->bind(':pid', $produto_id);
+            $db->bind(':desc', $descricao_produto);
+            $db->bind(':qtd', $quantidade);
+            $db->bind(':data', date('Y-m-d'));
+            $db->bind(':motivo', $motivo);
+            $db->bind(':antes', $totalAntes);
+            $db->bind(':depois', $totalDepois);
+            $db->bind(':lid', $loja_id);
+            $db->execute();
+
+            $db->endTransaction();
+            return ['ok' => true, 'msg' => 'Estoque removido com sucesso.'];
+        } catch (\Throwable $e) {
+            try {
+                if ($db->inTransaction()) {
+                    $db->cancelTransaction();
+                }
+            } catch (\Throwable $ignored) {}
+            return ['ok' => false, 'msg' => 'Erro: ' . $e->getMessage()];
+        }
+    }
+
+    /**
      * Retorna estoque unificado: tabela 'estoque' + estoque_loja.
      * - loja_id=null ou '': Todas (Estoque Principal + estoque_loja)
      * - loja_id='0' ou loja CD: Estoque Principal (tabela estoque)

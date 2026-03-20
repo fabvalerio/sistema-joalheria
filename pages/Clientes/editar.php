@@ -19,38 +19,45 @@ if (!$cliente) {
 // Atualizar o cliente se o formulário foi enviado
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $dados = [
-        'tipo_cliente' => $_POST['tipo_cliente'] ?? '0',
-        'nome_pf' => $_POST['nome_pf'] ?? '0',
-        'razao_social_pj' => $_POST['razao_social_pj'] ?? '0',
-        'nome_fantasia_pj' => $_POST['nome_fantasia_pj'] ?? '0',
-        'perfil' => $_POST['perfil'] ?? '0',
-        'telefone' => $_POST['telefone'] ?? '0',
-        'whatsapp' => $_POST['whatsapp'] ?? '0',
-        'email' => $_POST['email'] ?? '0',
-        'rg' => $_POST['rg'] ?? '0',
-        'cpf' => $_POST['cpf'] ?? '0',
-        'ie_pj' => $_POST['ie_pj'] ?? '0',
-        'cnpj_pj' => $_POST['cnpj_pj'] ?? '0',
-        'cep' => $_POST['cep'] ?? '0',
-        'endereco' => $_POST['endereco'] ?? '0',
-        'bairro' => $_POST['bairro'] ?? '0',
-        'cidade' => $_POST['cidade'] ?? '0',
-        'estado' => $_POST['estado'] ?? '0',
-        'data_nascimento' => $_POST['data_nascimento'] ?? '0',
-        'tags' => $_POST['tags'] ?? '0',
-        'origem_contato' => $_POST['origem_contato'] ?? '0',
-        'estado_civil' => $_POST['estado_civil'] ?? '0',
-        'corporativo' => $_POST['corporativo'] ?? '0',
-        'grupo' => $_POST['grupo'] ?? '0',
+        'tipo_cliente' => $_POST['tipo_cliente'] ?? '',
+        'nome_pf' => $_POST['nome_pf'] ?? '',
+        'razao_social_pj' => $_POST['razao_social_pj'] ?? '',
+        'nome_fantasia_pj' => $_POST['nome_fantasia_pj'] ?? '',
+        'perfil' => $_POST['perfil'] ?? '',
+        'telefone' => $_POST['telefone'] ?? '',
+        'whatsapp' => $_POST['whatsapp'] ?? '',
+        'email' => $_POST['email'] ?? '',
+        'rg' => $_POST['rg'] ?? '',
+        'cpf' => $_POST['cpf'] ?? '',
+        'ie_pj' => $_POST['ie_pj'] ?? '',
+        'cnpj_pj' => $_POST['cnpj_pj'] ?? '',
+        'cep' => $_POST['cep'] ?? '',
+        'endereco' => $_POST['endereco'] ?? '',
+        'bairro' => $_POST['bairro'] ?? '',
+        'cidade' => $_POST['cidade'] ?? '',
+        'estado' => $_POST['estado'] ?? '',
+        'data_nascimento' => $_POST['data_nascimento'] ?? '',
+        'tags' => $_POST['tags'] ?? '',
+        'origem_contato' => $_POST['origem_contato'] ?? '',
+        'estado_civil' => $_POST['estado_civil'] ?? '',
+        'corporativo' => $_POST['corporativo'] ?? '',
+        'grupo' => $_POST['grupo'] ?? '',
     ];
 
-    $return = $controller->editar($id, $dados);
-
-    if ($return) {
-        echo notify('success', "Cliente atualizado com sucesso!");
-        echo '<meta http-equiv="refresh" content="2; url=' . $url . '!/' . $link[1] . '/listar">';
+    $erros = $controller->validarDados($dados);
+    if (!empty($erros)) {
+        foreach ($erros as $erro) {
+            echo notify('danger', $erro);
+        }
     } else {
-        echo notify('danger', "Erro ao atualizar o cliente.");
+        $return = $controller->editar($id, $dados);
+
+        if ($return) {
+            echo notify('success', "Cliente atualizado com sucesso!");
+            echo '<meta http-equiv="refresh" content="2; url=' . $url . '!/' . $link[1] . '/listar">';
+        } else {
+            echo notify('danger', "Erro ao atualizar o cliente.");
+        }
     }
 }
 
@@ -161,8 +168,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <div class="col-lg-6">
                     <label for="" class="form-label">Corporativo</label>
                     <select class="form-select" name="corporativo">
-                        <option value="S" <?= $cliente['corporativo'] == 'S' ? 'selected' : '' ?>>Sim</option>
-                        <option value="N" <?= $cliente['corporativo'] == 'N' ? 'selected' : '' ?>>Não</option>
+                        <option value="" <?= empty($cliente['corporativo']) ? 'selected' : '' ?>>Não informado</option>
+                        <option value="S" <?= ($cliente['corporativo'] ?? '') == 'S' ? 'selected' : '' ?>>Sim</option>
+                        <option value="N" <?= ($cliente['corporativo'] ?? '') == 'N' ? 'selected' : '' ?>>Não</option>
                     </select>
                 </div>
                 <div class="col-lg-6">

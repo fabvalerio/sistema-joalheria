@@ -47,7 +47,7 @@ $cartoes = $controller->listar();
 <div class="card">
     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
         <h3 class="card-title">Cartões</h3>
-        <a href="<?php echo "{$url}!/{$link[1]}/cadastro" ?>" class="btn btn-white text-primary">Adicionar</a>
+        <?php if (isset($podeManipular) && $podeManipular($link[1])): ?><a href="<?php echo "{$url}!/{$link[1]}/cadastro" ?>" class="btn btn-white text-primary">Adicionar</a><?php endif; ?>
     </div>
 
     <div class="card-body">
@@ -77,8 +77,10 @@ $cartoes = $controller->listar();
                                 </button>
                                 <ul class="dropdown-menu">
                                     <li><a href="<?= "{$url}!/{$link[1]}/ver/{$cartao['id']}" ?>" class="dropdown-item">Ver</a></li>
+                                    <?php if (isset($podeManipular) && $podeManipular($link[1])): ?>
                                     <li><a href="<?= "{$url}!/{$link[1]}/editar/{$cartao['id']}" ?>" class="dropdown-item">Editar</a></li>
                                     <li><a href="<?= "{$url}!/{$link[1]}/deletar/{$cartao['id']}" ?>" class="dropdown-item text-danger">Excluir</a></li>
+                                    <?php endif; ?>
                                 </ul>
                             </div>
                         </td>

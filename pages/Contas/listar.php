@@ -20,7 +20,7 @@ $contas = $controller->listar($tipo);
 <div class="card">
     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
         <h3 class="card-title">Contas Financeiras (<?php echo $tipo == 'R' ? 'Contas a Receber' : 'Contas a Pagar' ?>)</h3>
-        <a href="<?php echo "{$url}!/{$link[1]}/cadastro/{$link[3]}" ?>" class="btn btn-white text-primary">Adicionar</a>
+        <?php if (isset($podeManipular) && $podeManipular($link[1])): ?><a href="<?php echo "{$url}!/{$link[1]}/cadastro/{$link[3]}" ?>" class="btn btn-white text-primary">Adicionar</a><?php endif; ?>
     </div>
 
     <div class="card-body">
@@ -48,8 +48,10 @@ $contas = $controller->listar($tipo);
                                 </button>
                                 <ul class="dropdown-menu">
                                     <li><a href="<?= "{$url}!/{$link[1]}/ver/{$conta['id']}/$link[3]" ?>" class="dropdown-item">Ver</a></li>
+                                    <?php if (isset($podeManipular) && $podeManipular($link[1])): ?>
                                     <li><a href="<?= "{$url}!/{$link[1]}/editar/{$conta['id']}/$link[3]" ?>" class="dropdown-item">Editar</a></li>
                                     <li><a href="<?= "{$url}!/{$link[1]}/deletar/{$conta['id']}/$link[3]" ?>" class="dropdown-item text-danger">Excluir</a></li>
+                                    <?php endif; ?>
                                 </ul>
                             </div>
                         </td>

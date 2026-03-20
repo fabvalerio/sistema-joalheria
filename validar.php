@@ -43,7 +43,8 @@ if (password_verify($_senha, $senha_armazenada)) {
     setcookie("id", $user['id'], time() + (3600 * 24 * 7), "/", "", false, true);
     setcookie("nome", $user['nome_completo'], time() + (3600 * 24 * 7), "/", "", false, true);
     setcookie("nivel_acesso", $user['nivel_acesso'], time() + (3600 * 24 * 7), "/", "", false, true);
-    $permissoesJson = json_encode($user['permissoes']);
+    // permissoes do banco já é JSON - NÃO aplicar json_encode novamente (evita double-encoding)
+    $permissoesJson = !empty($user['permissoes']) ? $user['permissoes'] : '{}';
     setcookie("permissoes", $permissoesJson, time() + (3600 * 24 * 7), "/", "", false, true);
     setcookie("loja_id", $user['loja_id'] ?? '', time() + (3600 * 24 * 7), "/", "", false, true);
     setcookie("loja_nome", $user['loja_nome'] ?? '', time() + (3600 * 24 * 7), "/", "", false, true);

@@ -24,7 +24,7 @@ $verificarUrlWWW =  @explode('.', $verificarUrl[2]);
 
 //explode link por "/" come�ando com o "0" .."1" .. "2" ... ... "20"
 if( !empty($_GET['page']) ){
-$link = explode('/', $_GET['page']);
+$link = explode('/', trim((string)$_GET['page'], '/'));
 }else{
    $link = [];
 }

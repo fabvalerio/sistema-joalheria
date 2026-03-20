@@ -249,7 +249,8 @@ class Controller
         $query = "SELECT 
                     SUM(CASE WHEN forma_pagamento = 'Dinheiro' THEN total ELSE 0 END) AS dinheiro,
                     SUM(CASE WHEN forma_pagamento LIKE '%Cartão%' OR forma_pagamento LIKE '%Crédito%' OR forma_pagamento LIKE '%Débito%' OR forma_pagamento LIKE '%Parcelado%' THEN total ELSE 0 END) AS cartao,
-                    SUM(CASE WHEN forma_pagamento = 'Cheque' THEN total ELSE 0 END) AS cheque,
+                    SUM(CASE WHEN forma_pagamento LIKE '%Cheque%' THEN total ELSE 0 END) AS cheque,
+                    SUM(CASE WHEN forma_pagamento LIKE '%Material%' THEN total ELSE 0 END) AS material,
                     SUM(CASE WHEN forma_pagamento LIKE '%Carnê%' THEN total ELSE 0 END) AS carne,
                     SUM(CASE WHEN forma_pagamento LIKE '%Pix%' OR forma_pagamento LIKE '%Depósito%' OR forma_pagamento LIKE '%Transferência%' THEN total ELSE 0 END) AS deposito,
                     SUM(total) AS total_geral
@@ -285,8 +286,9 @@ class Controller
                     c.nome_fantasia_pj,
                     u.nome_completo as vendedor_nome,
                     CASE WHEN p.forma_pagamento = 'Dinheiro' THEN p.total ELSE 0 END as dinheiro,
-                    CASE WHEN p.forma_pagamento = 'Cheque' THEN p.total ELSE 0 END as cheque,
+                    CASE WHEN p.forma_pagamento LIKE '%Cheque%' THEN p.total ELSE 0 END as cheque,
                     CASE WHEN p.forma_pagamento LIKE '%Cartão%' OR p.forma_pagamento LIKE '%Crédito%' OR p.forma_pagamento LIKE '%Débito%' OR p.forma_pagamento LIKE '%Parcelado%' THEN p.total ELSE 0 END as cartao,
+                    CASE WHEN p.forma_pagamento LIKE '%Material%' THEN p.total ELSE 0 END as material,
                     0 as ouro,
                     CASE WHEN p.forma_pagamento LIKE '%Carnê%' THEN p.total ELSE 0 END as carne,
                     CASE WHEN p.forma_pagamento LIKE '%Depósito%' OR p.forma_pagamento LIKE '%Pix%' OR p.forma_pagamento LIKE '%Transferência%' THEN p.total ELSE 0 END as deposito,

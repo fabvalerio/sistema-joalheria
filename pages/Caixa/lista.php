@@ -1,5 +1,11 @@
 <?php
 
+//erro de php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+//fim erro de php
+
 use App\Models\Caixa\Controller;
 
 $controller = new Controller();
@@ -24,6 +30,8 @@ if (!$caixa_drawer_id && !empty($caixas)) {
 // Parâmetros para lançar pedido vindo do cadastro (Pedidos/cadastro)
 $pedido_lancar_id = isset($_GET['pedido_lancar']) ? (int)$_GET['pedido_lancar'] : null;
 $pedido_lancar_data = isset($_GET['data_pedido']) ? $_GET['data_pedido'] : $data_inicio;
+$redirect_print = isset($_GET['redirect_print']) && $_GET['redirect_print'] === '1';
+$redirect_emitir_nota = !empty($_GET['redirect_emitir_nota']);
 
 // Carrega sessão e movimentações apenas para a data de operação (data_inicio)
 $sessao_aberta = ($caixa_drawer_id ? $controller->obterSessaoAberta($loja_id, $caixa_drawer_id, $data_inicio) : null);
@@ -56,6 +64,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
 
+        $quantidade_atual = count($caixas);
+        if ($quantidade_atual > 0 && $quantidade_caixas < $quantidade_atual) {
+            echo notify('danger', 'A quantidade deve ser maior ou igual à atual (' . $quantidade_atual . ').');
+            echo '<meta http-equiv="refresh" content="2; url=' . $redirectBase . '">';
+            exit;
+        }
+
         $ok = $controller->garantirCaixasPorLoja($loja_id, $quantidade_caixas);
         if (!$ok) {
             echo notify('danger', 'Não foi possível cadastrar as gavetas.');
@@ -72,15 +87,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($operacao === 'abrir_sessao') {
         $troco_abertura = (float)($_POST['troco_abertura'] ?? 0);
+        $loja_abertura = isset($_POST['loja_id_abertura']) ? (int)$_POST['loja_id_abertura'] : $loja_id;
+        if (!$loja_abertura) $loja_abertura = $loja_id;
         if (!$caixa_drawer_id_post) {
             echo notify('danger', 'Selecione uma gaveta para abrir o Caixa.');
-            echo '<meta http-equiv="refresh" content="1; url=' . $redirectBase . '">';
+            $redirUrl = $redirectBase;
+            if (!empty($_POST['manter_modal_pedido']) && !empty($_POST['pedido_lancar_id'])) {
+                $redirUrl .= (strpos($redirUrl, '?') !== false ? '&' : '?') . 'pedido_lancar=' . (int)$_POST['pedido_lancar_id'] . '&data_pedido=' . urlencode($_POST['data_pedido'] ?? $data_inicio);
+                if (!empty($_POST['redirect_print'])) $redirUrl .= '&redirect_print=1';
+                if (!empty($_POST['redirect_emitir_nota'])) $redirUrl .= '&redirect_emitir_nota=1';
+            }
+            echo '<meta http-equiv="refresh" content="1; url=' . $redirUrl . '">';
             exit;
         }
 
-        $controller->abrirSessao($loja_id, $caixa_drawer_id_post, $data_caixa, $troco_abertura, $operador_id, $observacoes);
+        $controller->abrirSessao($loja_abertura, $caixa_drawer_id_post, $data_caixa, $troco_abertura, $operador_id, $observacoes);
         echo notify('success', 'Sessão de caixa aberta com sucesso.');
-        echo '<meta http-equiv="refresh" content="1; url=' . $redirectBase . '">';
+        $redirUrl = $redirectBase;
+        if (!empty($_POST['manter_modal_pedido']) && !empty($_POST['pedido_lancar_id'])) {
+            $redirUrl .= (strpos($redirUrl, '?') !== false ? '&' : '?') . 'pedido_lancar=' . (int)$_POST['pedido_lancar_id'] . '&data_pedido=' . urlencode($_POST['data_pedido'] ?? $data_inicio);
+            if (!empty($_POST['redirect_print'])) $redirUrl .= '&redirect_print=1';
+            if (!empty($_POST['redirect_emitir_nota'])) $redirUrl .= '&redirect_emitir_nota=1';
+        }
+        echo '<meta http-equiv="refresh" content="1; url=' . $redirUrl . '">';
         exit;
     }
 
@@ -184,13 +213,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $obs
         );
         echo notify('success', 'Pedido #' . $pedido_id . ' lançado no caixa.');
-        $redir = ($url ?? '') . '!/Caixa/lista/' . $data_inicio . '/' . $data_fim . '?caixa_drawer_id=' . $caixa_drawer_id_lancar;
+        $redirect_print_post = !empty($_POST['redirect_print']);
+        $redirect_emitir_nota_post = !empty($_POST['redirect_emitir_nota']);
+        if ($redirect_print_post) {
+            $redir = $redirect_emitir_nota_post
+                ? (($url ?? '') . '!/Notas/emitir-nota/' . $pedido_id . '?vias=2')
+                : (($url ?? '') . 'pages/Pedidos/imprimir.php?id=' . $pedido_id);
+        } else {
+            $redir = ($url ?? '') . '!/Caixa/lista/' . $data_inicio . '/' . $data_fim . '?caixa_drawer_id=' . $caixa_drawer_id_lancar;
+        }
         echo '<meta http-equiv="refresh" content="1; url=' . $redir . '">';
         exit;
     }
 }
 
-// Tratar pedido_lancar vindo do cadastro (GET): 0 sessões = alerta; 1 sessão e não-dinheiro = lançar e redirecionar; dinheiro ou 2+ = exibir modal (troco + caixa)
+// Tratar pedido_lancar vindo do cadastro (GET): sempre exibir modal para dinheiro; 1 sessão e não-dinheiro = auto-lançar; 0 sessões = modal com aviso
 if ($pedido_lancar_id && $_SERVER['REQUEST_METHOD'] !== 'POST') {
     $pedido_lancar_info = $controller->obterPedidoParaCaixa($pedido_lancar_id);
     if ($pedido_lancar_info && ($pedido_lancar_info['status_pedido'] ?? '') === 'Pago' && (float)($pedido_lancar_info['valor_pago'] ?? 0) > 0) {
@@ -199,13 +236,7 @@ if ($pedido_lancar_id && $_SERVER['REQUEST_METHOD'] !== 'POST') {
         $n = count($sessoes_abertas_para_lancar);
         $pedido_eh_dinheiro = (stripos((string)($pedido_lancar_info['forma_pagamento'] ?? ''), 'dinheiro') !== false);
 
-        if ($n === 0) {
-            $data_fmt = date('d/m/Y', strtotime($pedido_lancar_data));
-            echo notify('warning', 'Nenhum caixa aberto para a data do pedido (' . $data_fmt . '). Abra um caixa para lançar a venda.');
-            echo '<meta http-equiv="refresh" content="3; url=' . ($url ?? '') . '!/Caixa/lista/' . $data_inicio . '/' . $data_fim . '">';
-            exit;
-        }
-        // Só faz auto-lançamento quando há 1 sessão e NÃO é dinheiro (dinheiro precisa do modal para troco)
+        // Só faz auto-lançamento quando há 1 sessão e NÃO é dinheiro (dinheiro sempre precisa do modal para troco)
         if ($n === 1 && !$pedido_eh_dinheiro) {
             $sessao_unica = $sessoes_abertas_para_lancar[0];
             $valor = (float)($pedido_lancar_info['valor_pago'] ?? 0);
@@ -223,10 +254,11 @@ if ($pedido_lancar_id && $_SERVER['REQUEST_METHOD'] !== 'POST') {
                 (int)$pedido_lancar_id,
                 null
             );
-            $redir = ($url ?? '') . '!/Caixa/lista/' . $data_inicio . '/' . $data_fim . '?caixa_drawer_id=' . (int)$sessao_unica['caixa_drawer_id'];
-            header('Location: ' . $redir);
+            $redir = ($url ?? '') . '!/Caixa/lista/' . $data_inicio . '/' . $data_fim . '&caixa_drawer_id=' . (int)$sessao_unica['caixa_drawer_id'];
+            echo '<meta http-equiv="refresh" content="0; url=' . htmlspecialchars($redir, ENT_QUOTES, 'UTF-8') . '"><script>window.location.replace("' . htmlspecialchars($redir, ENT_QUOTES, 'UTF-8') . '");</script>';
             exit;
         }
+        // Sempre exibir modal: dinheiro (troco), ou 2+ caixas (escolher), ou 0 sessões (aviso para abrir caixa)
         $mostrar_modal_pedido_lancar = true;
         $pedido_lancar_eh_dinheiro = $pedido_eh_dinheiro;
     }
@@ -397,6 +429,39 @@ if ($pedido_lancar_id && $_SERVER['REQUEST_METHOD'] !== 'POST') {
             <?php endif; ?>
         </div>
 
+        <?php if (!empty($caixas)): ?>
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="accordion" id="accordionGavetas">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGavetas" aria-expanded="false" aria-controls="collapseGavetas">
+                                Configurar quantidade de gavetas da loja
+                            </button>
+                        </h2>
+                        <div id="collapseGavetas" class="accordion-collapse collapse" data-bs-parent="#accordionGavetas">
+                            <div class="accordion-body">
+                                <p class="text-muted mb-3">Atualmente <?= count($caixas) ?> gaveta(s). Para adicionar mais, informe a quantidade total desejada.</p>
+                                <form method="POST" action="">
+                                    <input type="hidden" name="operacao" value="configurar_caixas">
+                                    <div class="row g-3 align-items-end">
+                                        <div class="col-md-4">
+                                            <label class="form-label">Quantidade total de gavetas</label>
+                                            <input type="number" name="quantidade_caixas" class="form-control" min="<?= count($caixas) ?>" step="1" value="<?= count($caixas) ?>" required>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <button type="submit" class="btn btn-outline-primary">Atualizar gavetas</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
+
         <div id="print">
 
             <div class="row">
@@ -409,7 +474,8 @@ if ($pedido_lancar_id && $_SERVER['REQUEST_METHOD'] !== 'POST') {
             </div>                    
 
             <!-- Tabela de Movimentação -->
-            <div class="table-responsive">
+            <div class="table-responsive" style="max-height: 350px; overflow-y: auto;">
+                <div class="card card-body">
                 <table class="table table-striped table-hover table-sm">
                     <thead class="bg-light">
                         <tr>
@@ -449,6 +515,7 @@ if ($pedido_lancar_id && $_SERVER['REQUEST_METHOD'] !== 'POST') {
                         <?php endforeach; ?>
                     </tbody>
                 </table>
+                </div>
             </div>
 
             <!-- Totais -->
@@ -498,19 +565,24 @@ if ($pedido_lancar_id && $_SERVER['REQUEST_METHOD'] !== 'POST') {
     </div>
 </div>
 
-<?php if ($mostrar_modal_pedido_lancar && $pedido_lancar_info && !empty($sessoes_abertas_para_lancar)): ?>
+<?php if ($mostrar_modal_pedido_lancar && $pedido_lancar_info): ?>
 <?php
 $total_pedido_modal = (float)($pedido_lancar_info['valor_pago'] ?? $pedido_lancar_info['total'] ?? 0);
-$caixas_abertos_numeros = array_map(function($s) { return 'Caixa #' . $s['numero']; }, (array)$sessoes_abertas_para_lancar);
+$tem_sessoes = !empty($sessoes_abertas_para_lancar);
+$caixas_abertos_numeros = $tem_sessoes ? array_map(function($s) { return 'Caixa #' . $s['numero']; }, (array)$sessoes_abertas_para_lancar) : [];
+$loja_id_modal = (int)($pedido_lancar_info['loja_id'] ?? $loja_id);
+$caixas_para_abrir = $controller->listarCaixasPorLoja($loja_id_modal);
 ?>
 <!-- Modal: lançar pedido no caixa (troco quando dinheiro + escolher gaveta) -->
 <div class="modal fade" id="modalPedidoLancar" tabindex="-1" aria-labelledby="modalPedidoLancarLabel" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form method="POST" action="" id="formPedidoLancar">
+            <form method="POST" action="<?= htmlspecialchars(($url ?? '') . '!/Caixa/lista/' . $data_inicio . '/' . $data_fim) ?>" id="formPedidoLancar" <?= !$tem_sessoes ? 'onsubmit="event.preventDefault(); return false;"' : '' ?>>
                 <input type="hidden" name="operacao" value="lancar_pedido">
                 <input type="hidden" name="pedido_id" value="<?= (int)$pedido_lancar_id ?>">
                 <input type="hidden" name="data_caixa" value="<?= htmlspecialchars($data_inicio) ?>">
+                <?php if ($redirect_print): ?><input type="hidden" name="redirect_print" value="1"><?php endif; ?>
+                <?php if ($redirect_emitir_nota): ?><input type="hidden" name="redirect_emitir_nota" value="1"><?php endif; ?>
                 <div class="modal-header">
                     <h5 class="modal-title" id="modalPedidoLancarLabel">Lançar pedido no caixa</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
@@ -519,9 +591,50 @@ $caixas_abertos_numeros = array_map(function($s) { return 'Caixa #' . $s['numero
                     <p class="mb-2">
                         Pedido <strong>#<?= (int)$pedido_lancar_id ?></strong> — Total: <strong>R$ <?= number_format($total_pedido_modal, 2, ',', '.') ?></strong>
                     </p>
+                    <?php if ($tem_sessoes): ?>
                     <p class="text-muted small mb-3">
                         <strong>Caixa(s) aberto(s) na data do pedido:</strong> <?= implode(', ', $caixas_abertos_numeros) ?>
                     </p>
+                    <?php else: ?>
+                    <div class="alert alert-warning py-2 mb-3">
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        Nenhum caixa aberto para a data do pedido (<?= date('d/m/Y', strtotime($pedido_lancar_data)) ?>). Abra um caixa para continuar:
+                    </div>
+                    <?php if (!empty($caixas_para_abrir)): ?>
+                    <form method="POST" action="<?= htmlspecialchars(($url ?? '') . '!/Caixa/lista/' . $pedido_lancar_data . '/' . $pedido_lancar_data) ?>" id="formAbrirCaixaModal" class="border rounded p-3 bg-light">
+                        <input type="hidden" name="operacao" value="abrir_sessao">
+                        <input type="hidden" name="data_caixa" value="<?= htmlspecialchars($pedido_lancar_data) ?>">
+                        <input type="hidden" name="manter_modal_pedido" value="1">
+                        <input type="hidden" name="pedido_lancar_id" value="<?= (int)$pedido_lancar_id ?>">
+                        <input type="hidden" name="data_pedido" value="<?= htmlspecialchars($pedido_lancar_data) ?>">
+                        <input type="hidden" name="loja_id_abertura" value="<?= (int)$loja_id_modal ?>">
+                        <?php if ($redirect_print): ?><input type="hidden" name="redirect_print" value="1"><?php endif; ?>
+                        <?php if ($redirect_emitir_nota): ?><input type="hidden" name="redirect_emitir_nota" value="1"><?php endif; ?>
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-5">
+                                <label class="form-label small mb-0">Selecione o caixa</label>
+                                <select name="caixa_drawer_id" class="form-select form-select-sm" required>
+                                    <option value="">Selecione...</option>
+                                    <?php foreach ($caixas_para_abrir as $cx): ?>
+                                        <option value="<?= (int)$cx['id'] ?>">Caixa #<?= htmlspecialchars($cx['numero']) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small mb-0">Troco de abertura (R$)</label>
+                                <input type="number" step="0.01" min="0" name="troco_abertura" class="form-control form-control-sm" value="0" required>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-primary btn-sm w-100">
+                                    <i class="fas fa-cash-register me-1"></i> Abrir caixa
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    <?php else: ?>
+                    <p class="text-muted small mb-0">Cadastre gavetas em Configurar Gavetas na página do Caixa.</p>
+                    <?php endif; ?>
+                    <?php endif; ?>
                     <?php if ($pedido_lancar_eh_dinheiro): ?>
                     <div class="alert alert-info py-2 mb-3">
                         <label for="valor_recebido_modal" class="form-label mb-1">Valor recebido do cliente (R$)</label>
@@ -531,6 +644,7 @@ $caixas_abertos_numeros = array_map(function($s) { return 'Caixa #' . $s['numero
                         </div>
                     </div>
                     <?php endif; ?>
+                    <?php if ($tem_sessoes): ?>
                     <div class="mb-0">
                         <label for="caixa_drawer_id_lancar" class="form-label">Lançar no caixa</label>
                         <select class="form-select" id="caixa_drawer_id_lancar" name="caixa_drawer_id" required>
@@ -542,10 +656,13 @@ $caixas_abertos_numeros = array_map(function($s) { return 'Caixa #' . $s['numero
                             <?php endforeach; ?>
                         </select>
                     </div>
+                    <?php endif; ?>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?= $tem_sessoes ? 'Cancelar' : 'Fechar' ?></button>
+                    <?php if ($tem_sessoes): ?>
                     <button type="submit" class="btn btn-primary">Lançar no caixa</button>
+                    <?php endif; ?>
                 </div>
             </form>
         </div>
@@ -554,7 +671,16 @@ $caixas_abertos_numeros = array_map(function($s) { return 'Caixa #' . $s['numero
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     var el = document.getElementById('modalPedidoLancar');
-    if (el && typeof bootstrap !== 'undefined') { new bootstrap.Modal(el).show(); }
+    if (el) {
+        setTimeout(function() {
+            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                var modal = new bootstrap.Modal(el, { backdrop: 'static', keyboard: false });
+                modal.show();
+            } else if (typeof $ !== 'undefined' && $.fn.modal) {
+                $('#modalPedidoLancar').modal({ backdrop: 'static', keyboard: false });
+            }
+        }, 150);
+    }
     var totalPedido = <?= json_encode($total_pedido_modal) ?>;
     var inputValor = document.getElementById('valor_recebido_modal');
     var spanTroco = document.getElementById('troco_devolver');

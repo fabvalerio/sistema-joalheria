@@ -20,7 +20,7 @@ $drawerSegment = $caixa_drawer_id ? '/' . $caixa_drawer_id : '';
 <div class="card">
   <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
     <h3 class="card-title">Lista de Orçamentos</h3>
-    <a href="<?php echo "{$url}!/{$link[1]}/cadastro"; ?>" class="btn btn-white text-primary">Adicionar Orçamento</a>
+    <?php if (isset($podeManipular) && $podeManipular($link[1])): ?><a href="<?php echo "{$url}!/{$link[1]}/cadastro"; ?>" class="btn btn-white text-primary">Adicionar Orçamento</a><?php endif; ?>
   </div>
 
   <div class="card-body">
@@ -83,6 +83,7 @@ $drawerSegment = $caixa_drawer_id ? '/' . $caixa_drawer_id : '';
                   Ação
                 </button>
                 <ul class="dropdown-menu">
+                  <?php if (isset($podeManipular) && $podeManipular($link[1])): ?>
                   <li>
                     <?php if ($pedido['status_pedido'] === 'Pendente') { ?>
                       <a href="<?= "{$url}!/{$link[1]}/mudarStatus/{$pedido['id']}/Pago" . $drawerSegment ?>"
@@ -91,6 +92,7 @@ $drawerSegment = $caixa_drawer_id ? '/' . $caixa_drawer_id : '';
                       </a>
                     <?php }  ?>
                   </li>
+                  <?php endif; ?>
                   <li>
                     <?php if (!empty($pedido['status_fabrica'])) { ?>
                       <a href="<?= "{$url}!/Fabrica/aberto/{$pedido['id']}" ?>"
@@ -105,9 +107,11 @@ $drawerSegment = $caixa_drawer_id ? '/' . $caixa_drawer_id : '';
                   <li>
                     <a href="<?= "{$url}!/{$link[1]}/ver/{$pedido['id']}" ?>" class="dropdown-item">Visualizar</a>
                   </li>
+                  <?php if (isset($podeManipular) && $podeManipular($link[1])): ?>
                   <li>
                     <a href="<?= "{$url}!/{$link[1]}/deletar/{$pedido['id']}" ?>" class="dropdown-item text-danger">Excluir</a>
                   </li>
+                  <?php endif; ?>
                 </ul>
               </div>
             </td>

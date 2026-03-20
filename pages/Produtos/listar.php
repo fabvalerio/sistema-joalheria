@@ -53,7 +53,7 @@ $materialController = new MaterialController();
 <div class="card">
     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
         <h3 class="card-title">Produtos</h3>
-        <a href="<?php echo "{$url}!/{$link[1]}/cadastro"; ?>" class="btn btn-white text-primary">Adicionar</a>
+        <?php if (isset($podeManipular) && $podeManipular($link[1])): ?><a href="<?php echo "{$url}!/{$link[1]}/cadastro"; ?>" class="btn btn-white text-primary">Adicionar</a><?php endif; ?>
     </div>
 
     <div class="card-body">
@@ -111,11 +111,12 @@ $materialController = new MaterialController();
                                 </button>
                                 <ul class="dropdown-menu">
                                     <li><a href="<?= "{$url}!/{$link[1]}/ver/{$produto['id']}" ?>" class="dropdown-item">Ver</a></li>
+                                    <?php if (isset($podeManipular) && $podeManipular($link[1])): ?>
                                     <li><a href="<?= "{$url}!/{$link[1]}/clone/{$produto['id']}" ?>" class="dropdown-item">Clonar</a></li>
                                     <li><a href="<?= "{$url}!/{$link[1]}/etiqueta/{$produto['id']}" ?>" class="dropdown-item">Imprimir Etiqueta Código</a></li>
                                     <li><a href="<?= "{$url}!/{$link[1]}/editar/{$produto['id']}" ?>" class="dropdown-item">Editar</a></li>
                                     <li><a href="<?= "{$url}!/{$link[1]}/deletar/{$produto['id']}" ?>" class="dropdown-item text-danger">Excluir</a></li>
-
+                                    <?php endif; ?>
                                 </ul>
                             </div>
                         </td>

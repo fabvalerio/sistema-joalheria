@@ -1,8 +1,14 @@
 <?php
 
+//err de php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 use App\Models\Home\Controller;
+use App\Models\Caixa\Controller as CaixaController;
 
 $controller = new Controller();
+$caixaController = new CaixaController();
 $financeiro = $controller->financeiro();
 $produtosMaisVendidos = $controller->produtosMaisVendidos();
 $desempenhoProdutos = $controller->desempenhoProdutos();
@@ -16,6 +22,12 @@ $is_admin = isset($_COOKIE['nivel_acesso']) && $_COOKIE['nivel_acesso'] === 'Adm
 $estoqueBaixoLoja = !empty($usuario_loja_id) ? $controller->countEstoqueBaixoLoja($usuario_loja_id) : 0;
 $estoqueBaixoCD = $is_admin ? $controller->countEstoqueBaixoCD() : 0;
 
+// Caixas abertos: admin vê todos; usuário de loja vê só da sua loja
+$caixasAbertos = $caixaController->listarSessoesAbertasParaDashboard($is_admin ? null : $usuario_loja_id);
+$totalCaixasAbertos = count($caixasAbertos);
+$valorTotalCaixasAbertos = array_sum(array_column($caixasAbertos, 'saldo_esperado'));
+$caixasPassaramDia = array_filter($caixasAbertos, fn($c) => !empty($c['passou_dia']));
+
 ?>
 
 <!-- Chart.js -->
@@ -25,6 +37,55 @@ $estoqueBaixoCD = $is_admin ? $controller->countEstoqueBaixoCD() : 0;
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
   <h1 class="h3 mb-0 text-gray-800">Painel Joalheria</h1>
 </div>
+
+<!-- Alerta: Caixas Abertos -->
+<?php if ($totalCaixasAbertos > 0): ?>
+<div class="row mb-4">
+  <div class="col-12">
+    <a href="<?= $url ?>!/Caixa/lista/<?= date('Y-m-d') ?>/<?= date('Y-m-d') ?>" class="text-decoration-none">
+      <div class="card shadow h-100 py-3 border-left-primary">
+        <div class="card-body py-2">
+          <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div class="d-flex align-items-center gap-3">
+              <div class="rounded-circle bg-primary bg-opacity-25 p-2">
+                <i class="fas fa-cash-register fa-lg text-primary"></i>
+              </div>
+              <div>
+                <h6 class="mb-0 text-gray-800">
+                  <strong><?= $totalCaixasAbertos ?></strong> caixa(s) aberto(s)
+                  — Valor total: <strong>R$ <?= number_format($valorTotalCaixasAbertos, 2, ',', '.') ?></strong>
+                </h6>
+                <small class="text-muted">
+                  <?php
+                  $partes = [];
+                  foreach ($caixasAbertos as $c):
+                    $txt = 'Loja ' . (int)$c['loja_id'] . ' • Caixa #' . (int)$c['numero'] . ' (' . date('d/m/Y', strtotime($c['data_caixa'])) . ')';
+                    if (!empty($c['passou_dia'])) $txt .= ' <span class="badge bg-danger">Precisa fechar</span>';
+                    $txt .= ' — R$ ' . number_format($c['saldo_esperado'] ?? 0, 2, ',', '.');
+                    $partes[] = $txt;
+                  endforeach;
+                  echo implode(' &nbsp;•&nbsp; ', $partes);
+                  ?>
+                </small>
+              </div>
+            </div>
+            <?php if (count($caixasPassaramDia) > 0): ?>
+            <div class="alert alert-danger py-2 mb-0">
+              <i class="fas fa-exclamation-triangle me-1"></i>
+              <strong>Alerta:</strong> <?= count($caixasPassaramDia) ?> caixa(s) com data anterior — feche para conferir o saldo.
+            </div>
+            <?php endif; ?>
+            <div>
+              <span class="btn btn-sm btn-primary">Ir ao Caixa <i class="fas fa-arrow-right ms-1"></i></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+<?php endif; ?>
+<!-- Fim Alerta Caixas -->
 
 <!-- Content Row (Primeira Linha de Indicadores) -->
 <div class="row">

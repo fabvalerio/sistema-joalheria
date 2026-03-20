@@ -73,6 +73,65 @@ class Controller
         return $db->single();
     }
 
+    // Obter sessão existente (qualquer status) para uma gaveta e data
+    public function obterSessaoExistente($loja_id, $caixa_drawer_id, $data_caixa)
+    {
+        $db = new db();
+        $db->query("
+            SELECT *
+            FROM caixa_sessoes
+            WHERE loja_id = :loja_id
+              AND caixa_drawer_id = :caixa_drawer_id
+              AND data_caixa = :data_caixa
+            LIMIT 1
+        ");
+        $db->bind(':loja_id', $loja_id);
+        $db->bind(':caixa_drawer_id', $caixa_drawer_id);
+        $db->bind(':data_caixa', $data_caixa);
+        return $db->single();
+    }
+
+    // Listar sessões abertas para o dashboard (quantidade, valor, alerta se passou o dia)
+    public function listarSessoesAbertasParaDashboard($loja_id = null)
+    {
+        $db = new db();
+        $sql = "
+            SELECT 
+                cs.id,
+                cs.loja_id,
+                cs.caixa_drawer_id,
+                cs.data_caixa,
+                cs.troco_abertura,
+                cd.numero,
+                COALESCE(
+                    (SELECT SUM(cm.valor) FROM caixa_movimentos cm 
+                     WHERE cm.caixa_sessao_id = cs.id AND cm.status = 'Ativo'),
+                    0
+                ) AS soma_movimentos,
+                CASE WHEN cs.data_caixa < CURDATE() THEN 1 ELSE 0 END AS passou_dia
+            FROM caixa_sessoes cs
+            INNER JOIN caixa_drawers cd ON cd.id = cs.caixa_drawer_id
+            WHERE cs.status = 'Aberta'
+        ";
+        $params = [];
+        if ($loja_id !== null && $loja_id !== '') {
+            $sql .= " AND cs.loja_id = :loja_id";
+            $params[':loja_id'] = (int)$loja_id;
+        }
+        $sql .= " ORDER BY cs.loja_id, cd.numero ASC";
+        $db->query($sql);
+        foreach ($params as $k => $v) {
+            $db->bind($k, $v);
+        }
+        $rows = $db->resultSet();
+        $hoje = date('Y-m-d');
+        foreach ($rows as &$r) {
+            $r['saldo_esperado'] = (float)($r['troco_abertura'] ?? 0) + (float)($r['soma_movimentos'] ?? 0);
+            $r['passou_dia'] = ($r['data_caixa'] ?? '') < $hoje;
+        }
+        return $rows;
+    }
+
     // Listar todas as sessões abertas para uma loja e data (para escolher gaveta ao lançar pedido)
     public function listarSessoesAbertasPorLojaData($loja_id, $data_caixa)
     {
@@ -113,6 +172,27 @@ class Controller
         $sessaoAberta = $this->obterSessaoAberta($loja_id, $caixa_drawer_id, $data_caixa);
         if ($sessaoAberta) {
             return (int)$sessaoAberta['id'];
+        }
+
+        // Verifica se já existe sessão fechada (evita erro de chave duplicada)
+        $sessaoExistente = $this->obterSessaoExistente($loja_id, $caixa_drawer_id, $data_caixa);
+        if ($sessaoExistente && ($sessaoExistente['status'] ?? '') === 'Fechada') {
+            // Reabre a sessão fechada
+            $db->query("
+                UPDATE caixa_sessoes
+                SET status = 'Aberta',
+                    troco_abertura = :troco_abertura,
+                    operador_id = :operador_id,
+                    observacoes = :observacoes,
+                    data_hora_fechamento = NULL
+                WHERE id = :id
+            ");
+            $db->bind(':troco_abertura', $troco_abertura);
+            $db->bind(':operador_id', $operador_id);
+            $db->bind(':observacoes', $observacoes);
+            $db->bind(':id', (int)$sessaoExistente['id']);
+            $db->execute();
+            return (int)$sessaoExistente['id'];
         }
 
         $db->beginTransaction();
@@ -434,6 +514,9 @@ class Controller
         if (strpos($fp, 'pix') !== false) {
             return 'VendaPix';
         }
+        if (strpos($fp, 'material') !== false) {
+            return 'VendaMaterial';
+        }
 
         // Cartão (crédito/débito) e parcelados ficam como VendaCartao
         if (strpos($fp, 'cart') !== false || strpos($fp, 'parcel') !== false) {
@@ -567,13 +650,17 @@ class Controller
                     ELSE 0
                 END as dinheiro,
                 CASE 
-                    WHEN p.forma_pagamento = 'Cheque' THEN p.valor_pago
+                    WHEN p.forma_pagamento LIKE '%Cheque%' THEN p.valor_pago
                     ELSE 0
                 END as cheque,
                 CASE 
                     WHEN p.forma_pagamento LIKE '%Cartão%' OR p.forma_pagamento LIKE '%Parcelado%' THEN p.valor_pago
                     ELSE 0
                 END as parc_cartao,
+                CASE 
+                    WHEN p.forma_pagamento LIKE '%Material%' THEN p.valor_pago
+                    ELSE 0
+                END as material,
                 -- Campos adicionais para controle
                 CASE 
                     WHEN p.forma_pagamento LIKE '%Parcelado%' THEN 
@@ -636,8 +723,9 @@ class Controller
                 COUNT(*) as total_pedidos,
                 SUM(p.total) as total_pedidos_valor,
                 SUM(CASE WHEN p.forma_pagamento = 'Dinheiro' THEN p.valor_pago ELSE 0 END) as total_dinheiro,
-                SUM(CASE WHEN p.forma_pagamento = 'Cheque' THEN p.valor_pago ELSE 0 END) as total_cheque,
+                SUM(CASE WHEN p.forma_pagamento LIKE '%Cheque%' THEN p.valor_pago ELSE 0 END) as total_cheque,
                 SUM(CASE WHEN p.forma_pagamento LIKE '%Cartão%' OR p.forma_pagamento LIKE '%Parcelado%' THEN p.valor_pago ELSE 0 END) as total_parc_cartao,
+                SUM(CASE WHEN p.forma_pagamento LIKE '%Material%' THEN p.valor_pago ELSE 0 END) as total_material,
                 SUM(CASE WHEN p.forma_pagamento LIKE '%Carnê%' THEN p.valor_pago ELSE 0 END) as total_carnes,
                 SUM(p.valor_pago) as total_liquido,
                 -- Valor vendido em ouro

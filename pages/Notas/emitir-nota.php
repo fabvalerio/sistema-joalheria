@@ -20,6 +20,10 @@ $id = $link[3] ?? null;
 $vias = (int)($_GET['vias'] ?? 1);
 if ($vias < 1) $vias = 1;
 
+$pedido_lancar = isset($_GET['pedido_lancar']) ? (int)$_GET['pedido_lancar'] : null;
+$pedido_lancar_data = $_GET['data_pedido'] ?? null;
+$mostrar_btn_caixa = ($pedido_lancar && $pedido_lancar_data);
+
 $dados = $controller->ver($id);
 $pedido = $dados['pedido'];
 $itens = $dados['itens'];
@@ -325,10 +329,15 @@ $url = ensureHttps($url ?? $baseUrl);
 
 </div>
 
-<div class="d-flex justify-content-center mt-3 mb-3">
+<div class="d-flex justify-content-center mt-3 mb-3 gap-2 flex-wrap">
     <button onclick="imprimirNota(<?= $vias ?>)" class="btn btn-primary">
         <i class="fas fa-print"></i> Imprimir Nota<?= $vias > 1 ? ' ('. $vias .' vias)' : '' ?>
     </button>
+    <?php if ($mostrar_btn_caixa && isset($url)): ?>
+    <a href="<?= htmlspecialchars($url . '!/Caixa/lista/' . $pedido_lancar_data . '/' . $pedido_lancar_data . '?pedido_lancar=' . $pedido_lancar . '&data_pedido=' . urlencode($pedido_lancar_data)) ?>" class="btn btn-success">
+        <i class="fas fa-cash-register me-1"></i>Concluir e ir ao Caixa
+    </a>
+    <?php endif; ?>
 </div>
 
 <script>

@@ -115,6 +115,11 @@ class Controller
             $tipo_loja = (is_array($loja_row) && isset($loja_row['tipo'])) ? $loja_row['tipo'] : null;
         }
 
+        $forma_pagamento = $dados['forma_pagamento'] ?? null;
+        if ($forma_pagamento === 'Cheque' && !empty($dados['numero_parcelas'])) {
+            $forma_pagamento = 'Cheque ' . (int)$dados['numero_parcelas'] . 'x Parcelas';
+        }
+
         $db->query("
             INSERT INTO pedidos (
                 cliente_id, data_pedido, forma_pagamento, acrescimo, desconto, 
@@ -128,7 +133,6 @@ class Controller
         $campos = [
             'cliente_id',
             'data_pedido',
-            'forma_pagamento',
             'acrescimo',
             'desconto',
             'observacoes',
@@ -144,9 +148,44 @@ class Controller
             $valor = isset($dados[$campo]) && $dados[$campo] !== '' ? $dados[$campo] : null;
             $db->bind(":$campo", $valor);
         }
+        $db->bind(":forma_pagamento", $forma_pagamento);
 
         if ($db->execute()) {
             $pedidoId = $db->lastInsertId();
+
+            if (!empty($dados['numero_cheque']) && is_array($dados['numero_cheque'])) {
+                foreach ($dados['numero_cheque'] as $parcela_numero => $numero_cheque) {
+                    $parcela_numero = (int)$parcela_numero;
+                    if ($parcela_numero > 0 && trim((string)$numero_cheque) !== '') {
+                        $db->query("INSERT INTO pedidos_cheques (pedido_id, parcela_numero, numero_cheque) VALUES (:pedido_id, :parcela_numero, :numero_cheque)");
+                        $db->bind(":pedido_id", $pedidoId);
+                        $db->bind(":parcela_numero", $parcela_numero);
+                        $db->bind(":numero_cheque", trim((string)$numero_cheque));
+                        $db->execute();
+                    }
+                }
+            }
+
+            if (!empty($dados['materiais']) && is_array($dados['materiais'])) {
+                foreach ($dados['materiais'] as $m) {
+                    $material_id = (int)($m['material_id'] ?? 0);
+                    $gramas = (float)($m['gramas'] ?? 0);
+                    if ($material_id > 0 && $gramas > 0) {
+                        $db->query("SELECT valor_por_grama FROM forma_pagamento_material WHERE id = :id");
+                        $db->bind(":id", $material_id);
+                        $mat = $db->single();
+                        $valor_por_grama = (float)($mat['valor_por_grama'] ?? 0);
+                        $valor_calculado = $gramas * $valor_por_grama;
+
+                        $db->query("INSERT INTO pedidos_materiais (pedido_id, forma_pagamento_material_id, gramas, valor_calculado) VALUES (:pedido_id, :forma_pagamento_material_id, :gramas, :valor_calculado)");
+                        $db->bind(":pedido_id", $pedidoId);
+                        $db->bind(":forma_pagamento_material_id", $material_id);
+                        $db->bind(":gramas", $gramas);
+                        $db->bind(":valor_calculado", $valor_calculado);
+                        $db->execute();
+                    }
+                }
+            }
 
             foreach ($dados['itens'] as $item) {
                 if (!isset($item['produto_id'], $item['quantidade'], $item['valor_unitario'])) {
@@ -389,6 +428,14 @@ class Controller
 
         // Excluir as movimentações de estoque relacionadas ao pedido
         $db->query("DELETE FROM movimentacao_estoque WHERE pedido_id = :pedido_id");
+        $db->bind(":pedido_id", $id);
+        $db->execute();
+
+        $db->query("DELETE FROM pedidos_cheques WHERE pedido_id = :pedido_id");
+        $db->bind(":pedido_id", $id);
+        $db->execute();
+
+        $db->query("DELETE FROM pedidos_materiais WHERE pedido_id = :pedido_id");
         $db->bind(":pedido_id", $id);
         $db->execute();
 

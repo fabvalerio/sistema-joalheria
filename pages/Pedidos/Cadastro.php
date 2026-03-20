@@ -2,6 +2,19 @@
 
 use App\Models\Pedidos\Controller;
 use App\Models\GrupoProdutos\Controller as GrupoController;
+use App\Models\Caixa\Controller as CaixaController;
+
+// Regra: só pode fazer venda se tiver caixa aberto do dia
+$caixaController = new CaixaController();
+$loja_id = $_COOKIE['loja_id'] ?? 1;
+$data_hoje = date('Y-m-d');
+$sessoes_abertas = $caixaController->listarSessoesAbertasPorLojaData($loja_id, $data_hoje);
+if (empty($sessoes_abertas)) {
+    echo notify('warning', 'É necessário ter um caixa aberto para o dia de hoje antes de realizar vendas. Redirecionando para o Caixa...');
+    $urlCaixa = ($url ?? '') . '!/Caixa/lista/' . $data_hoje . '/' . $data_hoje;
+    echo '<meta http-equiv="refresh" content="2; url=' . htmlspecialchars($urlCaixa) . '">';
+    exit;
+}
 
 $controller = new Controller();
 $clientes = $controller->listarClientes(); // Obter lista de clientes
@@ -24,6 +37,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         'loja_id' => $_COOKIE['loja_id'] ?? null,
         'itens' => []
     ];
+
+    // Dados de cheque (quando forma_pagamento é Cheque)
+    $dados['cheque_config_id'] = !empty($_POST['cheque_config_id']) ? (int)$_POST['cheque_config_id'] : null;
+    $dados['numero_parcelas'] = !empty($_POST['numero_parcelas']) ? (int)$_POST['numero_parcelas'] : null;
+    $dados['numero_cheque'] = [];
+    if (!empty($_POST['numero_cheque']) && is_array($_POST['numero_cheque'])) {
+        foreach ($_POST['numero_cheque'] as $i => $nc) {
+            if (!empty(trim((string)$nc))) {
+                $dados['numero_cheque'][(int)$i + 1] = trim((string)$nc);
+            }
+        }
+    }
+
+    // Dados de material (quando forma_pagamento é Material)
+    $dados['materiais'] = [];
+    if (!empty($_POST['materiais']) && is_array($_POST['materiais'])) {
+        foreach ($_POST['materiais'] as $m) {
+            if (!empty($m['material_id']) && isset($m['gramas']) && (float)($m['gramas'] ?? 0) > 0) {
+                $dados['materiais'][] = [
+                    'material_id' => (int)$m['material_id'],
+                    'gramas' => (float)$m['gramas'],
+                ];
+            }
+        }
+    }
 
     // Capturar os produtos enviados via POST
     if (!empty($_POST['produtos'])) {
@@ -58,24 +96,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if ($return) {
         $data_pedido = $dados['data_pedido'] ?? date('Y-m-d');
         $ehPagoComValor = ($dados['status_pedido'] ?? '') === 'Pago' && (float)($dados['valor_pago'] ?? 0) > 0;
-        $caixaUrl = $url . '!/Caixa/lista/' . $data_pedido . '/' . $data_pedido;
-        if ($ehPagoComValor) {
-            $caixaUrl .= '?pedido_lancar=' . (int)$return . '&data_pedido=' . $data_pedido;
-        }
+        $ehDinheiroPago = $ehPagoComValor && stripos((string)($dados['forma_pagamento'] ?? ''), 'dinheiro') !== false;
         $emitirNota = !empty($_POST['emitir_nota_fiscal']);
-        $printUrl = $emitirNota
-            ? ($url . '!/Notas/emitir-nota/' . $return . '?vias=2')
-            : ($url . 'pages/Pedidos/imprimir.php?id=' . $return);
-        echo notify('success', "Pedido cadastrado com sucesso! Escolha uma opção abaixo.");
-        echo '<div class="card mt-3"><div class="card-body">';
-        echo '<p class="mb-3">Para imprimir, use o botão (o navegador não bloqueia ao clicar):</p>';
-        echo '<div class="d-flex flex-wrap gap-2">';
-        echo '<a href="' . htmlspecialchars($printUrl) . '" target="_blank" rel="noopener" class="btn btn-primary"><i class="fas fa-print me-1"></i>Abrir impressão em nova aba</a>';
-        echo '<a href="' . htmlspecialchars($caixaUrl) . '" class="btn btn-success"><i class="fas fa-cash-register me-1"></i>Ir para o Caixa</a>';
-        echo '</div>';
-        echo '<p class="text-muted small mt-3 mb-0">Você será redirecionado ao Caixa em 10 segundos.</p>';
-        echo '</div></div>';
-        echo '<meta http-equiv="refresh" content="10; url=' . htmlspecialchars($caixaUrl) . '">';
+        if ($ehDinheiroPago) {
+            // Venda em dinheiro pago: ir para Caixa (modal) antes da impressão
+            $caixaUrl = $url . '!/Caixa/lista/' . $data_pedido . '/' . $data_pedido
+                . '&pedido_lancar=' . (int)$return
+                . '&data_pedido=' . urlencode($data_pedido)
+                . '&redirect_print=1'
+                . '&redirect_emitir_nota=' . ($emitirNota ? '1' : '0');
+            echo notify('success', "Pedido cadastrado com sucesso! Conclua o pagamento no caixa para imprimir.");
+            echo '<meta http-equiv="refresh" content="0; url=' . htmlspecialchars($caixaUrl) . '">';
+        } else {
+            $printUrl = $emitirNota
+                ? ($url . '!/Notas/emitir-nota/' . $return . '&vias=2')
+                : ($url . 'pages/Pedidos/imprimir.php?id=' . $return);
+            if ($ehPagoComValor) {
+                $printUrl .= (strpos($printUrl, '?') !== false ? '&' : '&') . 'pedido_lancar=' . (int)$return . '&data_pedido=' . urlencode($data_pedido);
+            }
+            echo notify('success', "Pedido cadastrado com sucesso! Redirecionando para impressão...");
+            echo '<meta http-equiv="refresh" content="0; url=' . htmlspecialchars($printUrl) . '">';
+        }
     } else {
         echo notify('danger', "Erro ao cadastrar o pedido.");
     }
@@ -262,6 +303,8 @@ $grupos = $grupoController->listarSelectTempo();
                         <option value="Dinheiro">Dinheiro</option>
                         <option value="Cartão de Crédito">Cartão de Crédito</option>
                         <option value="Cartão de Débito">Cartão de Débito</option>
+                        <option value="Cheque">Cheque</option>
+                        <option value="Material">Material</option>
                         <option value="Pix">Pix</option>
                     </select>
                 </div>
@@ -279,35 +322,161 @@ $grupos = $grupoController->listarSelectTempo();
                         const formaPagamento = document.getElementById('forma_pagamento');
                         const cartaoContainer = document.getElementById('cartao_container');
                         const cartaoTipo = document.getElementById('cartao_tipo');
+                        const parcelasContainer = document.getElementById('parcelas_container');
+                        const chequeContainer = document.getElementById('cheque_container');
+                        const materialContainer = document.getElementById('material_container');
+
+                        function hideAllPagamentoExtras() {
+                            cartaoContainer.style.display = 'none';
+                            parcelasContainer.style.display = 'none';
+                            chequeContainer.style.display = 'none';
+                            materialContainer.style.display = 'none';
+                        }
 
                         formaPagamento.addEventListener('change', async () => {
                             const selectedValue = formaPagamento.value;
+                            hideAllPagamentoExtras();
 
-                            // Mostrar o select de cartões apenas para Crédito ou Débito
                             if (selectedValue === 'Cartão de Crédito' || selectedValue === 'Cartão de Débito') {
                                 cartaoContainer.style.display = 'block';
-
-                                // Fazer uma chamada AJAX para buscar os cartões
                                 try {
                                     const response = await fetch(`<?php echo $url; ?>pages/Pedidos/listar_cartoes.php?tipo=${selectedValue === 'Cartão de Crédito' ? 'Crédito' : 'Débito'}`);
                                     const cartoes = await response.json();
-
-                                    // Limpar as opções do select
                                     cartaoTipo.innerHTML = '<option value="" disabled selected>Selecione um cartão</option>';
-
-                                    // Preencher o select com os cartões retornados
                                     cartoes.forEach(cartao => {
                                         const option = document.createElement('option');
-                                        option.value = cartao.id; // Ajuste conforme o nome do campo ID na tabela
-                                        option.textContent = cartao.bandeira; // Ajuste conforme o nome do campo nome na tabela
+                                        option.value = cartao.id;
+                                        option.textContent = cartao.bandeira;
                                         cartaoTipo.appendChild(option);
                                     });
                                 } catch (error) {
                                     console.error('Erro ao buscar cartões:', error);
                                 }
-                            } else {
-                                cartaoContainer.style.display = 'none';
-                                cartaoTipo.innerHTML = '<option value="" disabled selected>Selecione um cartão</option>'; // Resetar opções
+                            } else if (selectedValue === 'Cheque') {
+                                chequeContainer.style.display = 'block';
+                                try {
+                                    const response = await fetch('<?php echo $url; ?>pages/Pedidos/listar_cheques.php');
+                                    const cheques = await response.json();
+                                    const select = document.getElementById('cheque_config_id');
+                                    select.innerHTML = '<option value="" disabled selected>Selecione uma configuração</option>';
+                                    cheques.forEach(ch => {
+                                        const opt = document.createElement('option');
+                                        opt.value = ch.id;
+                                        opt.textContent = ch.nome_cheque + ' (' + (ch.max_parcelas || 0) + 'x)';
+                                        for (let i = 1; i <= 12; i++) opt.dataset['juros_parcela_' + i] = ch['juros_parcela_' + i] || 0;
+                                        opt.dataset.maxParcelas = ch.max_parcelas || 1;
+                                        select.appendChild(opt);
+                                    });
+                                    document.getElementById('numero_parcelas_cheque').innerHTML = '<option value="" disabled selected>Selecione as parcelas</option>';
+                                    document.getElementById('cheque_numero_container').innerHTML = '';
+                                } catch (error) {
+                                    console.error('Erro ao buscar cheques:', error);
+                                }
+                            } else if (selectedValue === 'Material') {
+                                materialContainer.style.display = 'block';
+                                carregarMateriaisPagamento();
+                                atualizarTotalMateriais();
+                            }
+                        });
+
+                        document.getElementById('cheque_config_id').addEventListener('change', function() {
+                            const opt = this.options[this.selectedIndex];
+                            const max = parseInt(opt?.dataset?.maxParcelas || 1, 10);
+                            const sel = document.getElementById('numero_parcelas_cheque');
+                            sel.innerHTML = '<option value="" disabled selected>Selecione as parcelas</option>';
+                            for (let i = 1; i <= max; i++) {
+                                const juros = opt?.dataset['juros_parcela_' + i] || 0;
+                                const o = document.createElement('option');
+                                o.value = i;
+                                o.textContent = i + 'x (Juros: ' + juros + '%)';
+                                o.dataset.juros = juros;
+                                sel.appendChild(o);
+                            }
+                            document.getElementById('cheque_numero_container').innerHTML = '';
+                        });
+
+                        document.getElementById('numero_parcelas_cheque').addEventListener('change', function() {
+                            const n = parseInt(this.value, 10) || 0;
+                            const container = document.getElementById('cheque_numero_container');
+                            container.innerHTML = '';
+                            for (let i = 1; i <= n; i++) {
+                                const div = document.createElement('div');
+                                div.className = 'col-lg-4';
+                                div.innerHTML = '<label class="form-label">Nº Cheque parcela ' + i + '</label><input type="text" class="form-control" name="numero_cheque[' + i + ']" placeholder="Número do cheque">';
+                                container.appendChild(div);
+                            }
+                            const opt = this.options[this.selectedIndex];
+                            const juros = parseFloat(opt?.dataset?.juros || 0);
+                            const totalField = document.getElementById('total');
+                            const jurosAplicado = document.getElementById('juros_aplicado');
+                            const totalSemJuros = parseFloat(totalField.value || 0) - parseFloat(jurosAplicado.value || 0);
+                            if (totalSemJuros > 0 && !isNaN(juros)) {
+                                const totalComJuros = totalSemJuros * (1 + juros / 100);
+                                totalField.value = totalComJuros.toFixed(2);
+                                jurosAplicado.value = (totalComJuros - totalSemJuros).toFixed(2);
+                            }
+                        });
+
+                        let materiaisPagamento = [];
+                        async function carregarMateriaisPagamento() {
+                            try {
+                                const r = await fetch('<?php echo $url; ?>pages/Pedidos/listar_materiais_pagamento.php');
+                                materiaisPagamento = await r.json();
+                            } catch (e) {
+                                console.error(e);
+                            }
+                        }
+
+                        let materialItemIndex = 0;
+                        document.getElementById('btn_add_material').addEventListener('click', function() {
+                            const list = document.getElementById('material_list');
+                            const item = document.createElement('div');
+                            item.className = 'row g-2 align-items-end material-item mb-2';
+                            item.dataset.index = materialItemIndex;
+                            const options = materiaisPagamento.map(m => '<option value="' + m.id + '" data-valor="' + (m.valor_por_grama || 0) + '">' + (m.tipo_material || '') + ' - R$ ' + parseFloat(m.valor_por_grama || 0).toFixed(2) + '/g</option>').join('');
+                            item.innerHTML = '<div class="col-4"><label class="form-label small">Material</label><select class="form-select form-select-sm material-select" name="materiais[' + materialItemIndex + '][material_id]"><option value="">Selecione</option>' + options + '</select></div>' +
+                                '<div class="col-3"><label class="form-label small">Gramas</label><input type="number" step="0.001" class="form-control form-control-sm material-gramas" name="materiais[' + materialItemIndex + '][gramas]" placeholder="0"></div>' +
+                                '<div class="col-2"><label class="form-label small">Valor</label><input type="text" class="form-control form-control-sm material-valor" readonly placeholder="R$ 0,00"></div>' +
+                                '<div class="col-2"><button type="button" class="btn btn-danger btn-sm btn-remove-material">Remover</button></div>';
+                            list.appendChild(item);
+                            materialItemIndex++;
+
+                            item.querySelector('.material-select').addEventListener('change', atualizarValorMaterialItem);
+                            item.querySelector('.material-gramas').addEventListener('input', atualizarValorMaterialItem);
+                            item.querySelector('.btn-remove-material').addEventListener('click', function() {
+                                item.remove();
+                                atualizarTotalMateriais();
+                            });
+                        });
+
+                        function atualizarValorMaterialItem(e) {
+                            const item = e.target.closest('.material-item');
+                            const sel = item.querySelector('.material-select');
+                            const gramas = parseFloat(item.querySelector('.material-gramas').value) || 0;
+                            const valorG = parseFloat(sel.options[sel.selectedIndex]?.dataset?.valor || 0);
+                            const valor = gramas * valorG;
+                            item.querySelector('.material-valor').value = 'R$ ' + valor.toFixed(2).replace('.', ',');
+                            atualizarTotalMateriais();
+                        }
+
+                        function atualizarTotalMateriais() {
+                            let total = 0;
+                            document.querySelectorAll('.material-item').forEach(item => {
+                                const sel = item.querySelector('.material-select');
+                                const gramas = parseFloat(item.querySelector('.material-gramas').value) || 0;
+                                const valorG = parseFloat(sel.options[sel.selectedIndex]?.dataset?.valor || 0);
+                                total += gramas * valorG;
+                            });
+                            document.getElementById('total_materiais').textContent = total.toFixed(2).replace('.', ',');
+                            const vp = document.getElementById('valor_pago');
+                            if (document.getElementById('forma_pagamento').value === 'Material') {
+                                vp.value = total.toFixed(2);
+                            }
+                        }
+
+                        document.addEventListener('input', function(e) {
+                            if (e.target.classList.contains('material-gramas') || e.target.classList.contains('material-select')) {
+                                atualizarTotalMateriais();
                             }
                         });
                     });
@@ -317,6 +486,39 @@ $grupos = $grupoController->listarSelectTempo();
                     <select class="form-select" id="numero_parcelas" name="numero_parcelas">
                         <option value="" disabled selected>Selecione o número de parcelas</option>
                     </select>
+                </div>
+
+                <!-- Container Cheque -->
+                <div class="col-12" id="cheque_container" style="display: none;">
+                    <div class="row g-3">
+                        <div class="col-lg-4">
+                            <label for="cheque_config_id" class="form-label">Configuração do Cheque</label>
+                            <select class="form-select" id="cheque_config_id" name="cheque_config_id">
+                                <option value="" disabled selected>Selecione uma configuração</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-4">
+                            <label for="numero_parcelas_cheque" class="form-label">Número de Parcelas</label>
+                            <select class="form-select" id="numero_parcelas_cheque" name="numero_parcelas">
+                                <option value="" disabled selected>Selecione as parcelas</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="cheque_numero_container" class="row g-3 mt-2"></div>
+                </div>
+
+                <!-- Container Material -->
+                <div class="col-12" id="material_container" style="display: none;">
+                    <div class="card card-body bg-light">
+                        <h6 class="card-title">Materiais para Pagamento</h6>
+                        <div id="material_list">
+                            <!-- Itens de material serão inseridos via JS -->
+                        </div>
+                        <button type="button" class="btn btn-success btn-sm mt-2 w-auto" id="btn_add_material">+ Adicionar material</button>
+                        <div class="mt-2">
+                            <strong>Total em materiais: R$ <span id="total_materiais">0,00</span></strong>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="col-12">
@@ -339,20 +541,17 @@ $grupos = $grupoController->listarSelectTempo();
                             if (selectedValue === 'Cartão de Crédito' || selectedValue === 'Cartão de Débito') {
                                 cartaoContainer.style.display = 'block';
 
-                                // Fazer uma chamada AJAX para buscar os cartões
                                 try {
                                     const response = await fetch(`<?php echo $url; ?>pages/Pedidos/listar_cartoes.php?tipo=${selectedValue === 'Cartão de Crédito' ? 'Crédito' : 'Débito'}`);
                                     const cartoes = await response.json();
 
-                                    // Limpar as opções do select
                                     cartaoTipo.innerHTML = '<option value="" disabled selected>Selecione um cartão</option>';
 
-                                    // Preencher o select com os cartões retornados
                                     cartoes.forEach(cartao => {
                                         const option = document.createElement('option');
-                                        option.value = cartao.id; // Ajuste conforme o nome do campo ID na tabela
-                                        option.dataset.maxParcelas = cartao.max_parcelas; // Adiciona max_parcelas como atributo de dados
-                                        option.textContent = cartao.bandeira; // Ajuste conforme o nome do campo nome na tabela
+                                        option.value = cartao.id;
+                                        option.dataset.maxParcelas = cartao.max_parcelas;
+                                        option.textContent = cartao.bandeira;
                                         cartaoTipo.appendChild(option);
                                         option.dataset.juros_parcela_1 = cartao.juros_parcela_1;
                                         option.dataset.juros_parcela_2 = cartao.juros_parcela_2;
@@ -372,8 +571,8 @@ $grupos = $grupoController->listarSelectTempo();
                                 }
                             } else {
                                 cartaoContainer.style.display = 'none';
-                                cartaoTipo.innerHTML = '<option value="" disabled selected>Selecione um cartão</option>'; // Resetar opções
-                                parcelasContainer.style.display = 'none'; // Esconde o select de parcelas se o cartão for ocultado
+                                cartaoTipo.innerHTML = '<option value="" disabled selected>Selecione um cartão</option>';
+                                parcelasContainer.style.display = 'none';
                                 numeroParcelas.innerHTML = '<option value="" disabled selected>Selecione o número de parcelas</option>';
                             }
                         });

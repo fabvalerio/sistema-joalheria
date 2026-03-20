@@ -48,6 +48,11 @@ $loja = [
 ];
 
 $soloCliente = ($via === 'cliente');
+
+$pedido_lancar = isset($_GET['pedido_lancar']) ? (int)$_GET['pedido_lancar'] : null;
+$pedido_lancar_data = $_GET['data_pedido'] ?? null;
+$mostrar_btn_caixa = ($pedido_lancar && $pedido_lancar_data);
+$caixaUrl = $mostrar_btn_caixa ? (($url ?? '') . '!/Caixa/lista/' . $pedido_lancar_data . '/' . $pedido_lancar_data . '&pedido_lancar=' . $pedido_lancar . '&data_pedido=' . urlencode($pedido_lancar_data)) : '';
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -238,7 +243,10 @@ $soloCliente = ($via === 'cliente');
         </div>
     </div>
 
-    <div class="no-print" style="text-align: center; margin-top: 20px;">
+    <div class="no-print" style="text-align: center; margin-top: 20px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+        <?php if ($mostrar_btn_caixa): ?>
+        <a href="<?= htmlspecialchars($caixaUrl) ?>" class="btn btn-success"><i class="fas fa-cash-register me-1"></i>Concluir e ir ao Caixa</a>
+        <?php endif; ?>
         <a href="<?= $url ?? '' ?>!/Pedidos/listar" class="btn btn-secondary">Voltar para Pedidos</a>
     </div>
 

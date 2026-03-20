@@ -4,7 +4,8 @@ use App\Models\Cargos\Controller;
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $dados = [
-        'cargo' => $_POST['cargo']
+        'cargo' => $_POST['cargo'],
+        'fabrica' => isset($_POST['fabrica']) ? 1 : 0
     ];
 
     $controller = new Controller();
@@ -33,6 +34,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <div class="col-lg-4">
                     <label for="cargo" class="form-label">Cargo</label>
                     <input type="text" class="form-control" id="cargo" name="cargo" required>
+                </div>
+                <div class="col-lg-4 d-flex align-items-end">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="fabrica" id="fabrica" value="1">
+                        <label class="form-check-label" for="fabrica">Cargo da fábrica</label>
+                    </div>
                 </div>
                 <div class="col-lg-12">
                     <button type="submit" class="btn btn-primary float-end">Salvar</button>

@@ -62,7 +62,7 @@ foreach ($cargos as $cargo) {
 
     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
         <h3 class="card-title">Usuários</h3>
-        <a href="<?php echo "{$url}!/{$link[1]}/cadastro" ?>" class="btn btn-white text-primary">Adicionar</a>
+        <?php if (isset($podeManipular) && $podeManipular($link[1])): ?><a href="<?php echo "{$url}!/{$link[1]}/cadastro" ?>" class="btn btn-white text-primary">Adicionar</a><?php endif; ?>
     </div>
 
     <div class="card-body">
@@ -104,8 +104,7 @@ foreach ($cargos as $cargo) {
                                 </button>
                                 <ul class=\"dropdown-menu\">
                                     <li><a href=\"{$url}!/{$link[1]}/ver/{$r['id']}\" class=\"dropdown-item\">Ver</a></li>
-                                    <li><a href=\"{$url}!/{$link[1]}/editar/{$r['id']}\" class=\"dropdown-item\">Editar</a></li>
-                                    <li><a href=\"{$url}!/{$link[1]}/deletar/{$r['id']}\" class=\"dropdown-item text-danger\">Excluir</a></li>
+                                    " . ((isset($podeManipular) && $podeManipular($link[1])) ? "<li><a href=\"{$url}!/{$link[1]}/editar/{$r['id']}\" class=\"dropdown-item\">Editar</a></li><li><a href=\"{$url}!/{$link[1]}/deletar/{$r['id']}\" class=\"dropdown-item text-danger\">Excluir</a></li>" : "") . "
                                 </ul>
                                 </div>
                         </td>";
