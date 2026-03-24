@@ -21,10 +21,10 @@ $clientes = $controller->listarClientes(); // Obter lista de clientes
 $cartaos = $controller->listarCartoes(); // Obter lista de cartões
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $pagamentosDecoded = json_decode((string)($_POST['pagamentos'] ?? ''), true);
     $dados = [
         'cliente_id' => $_POST['cliente_id'] ?? null,
         'data_pedido' => $_POST['data_pedido'] ?? null,
-        'forma_pagamento' => $_POST['forma_pagamento'] ?? null,
         'acrescimo' => $_POST['acrescimo'] ?? 0,
         'desconto' => $_POST['desconto'] ?? 0,
         'observacoes' => $_POST['observacoes'] ?? null,
@@ -35,10 +35,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         'data_entrega' => $_POST['data_entrega'] ?? null,
         'fabrica' => $_POST['fabrica'] ?? false,
         'loja_id' => $_COOKIE['loja_id'] ?? null,
-        'itens' => []
+        'itens' => [],
+        'pagamentos' => is_array($pagamentosDecoded) ? $pagamentosDecoded : [],
     ];
 
-    // Dados de cheque (quando forma_pagamento é Cheque)
+    // Dados de cheque (quando há linha de pagamento Cheque)
     $dados['cheque_config_id'] = !empty($_POST['cheque_config_id']) ? (int)$_POST['cheque_config_id'] : null;
     $dados['numero_parcelas'] = !empty($_POST['numero_parcelas']) ? (int)$_POST['numero_parcelas'] : null;
     $dados['numero_cheque'] = [];
@@ -50,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
 
-    // Dados de material (quando forma_pagamento é Material)
+    // Dados de material (linhas Material: campos hidden gerados em pedido-pagamento.js)
     $dados['materiais'] = [];
     if (!empty($_POST['materiais']) && is_array($_POST['materiais'])) {
         foreach ($_POST['materiais'] as $m) {
@@ -96,7 +97,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if ($return) {
         $data_pedido = $dados['data_pedido'] ?? date('Y-m-d');
         $ehPagoComValor = ($dados['status_pedido'] ?? '') === 'Pago' && (float)($dados['valor_pago'] ?? 0) > 0;
-        $ehDinheiroPago = $ehPagoComValor && stripos((string)($dados['forma_pagamento'] ?? ''), 'dinheiro') !== false;
+        $temDinheiro = false;
+        foreach ($dados['pagamentos'] as $pg) {
+            if (($pg['forma'] ?? '') === 'Dinheiro' && (float)($pg['valor'] ?? 0) > 0) {
+                $temDinheiro = true;
+                break;
+            }
+        }
+        $ehDinheiroPago = $ehPagoComValor && $temDinheiro;
         $emitirNota = !empty($_POST['emitir_nota_fiscal']);
         if ($ehDinheiroPago) {
             // Venda em dinheiro pago: ir para Caixa (modal) antes da impressão
@@ -118,7 +126,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             echo '<meta http-equiv="refresh" content="0; url=' . htmlspecialchars($printUrl) . '">';
         }
     } else {
-        echo notify('danger', "Erro ao cadastrar o pedido.");
+        $msgErro = $controller->cadastroErro ?: 'Erro ao cadastrar o pedido.';
+        echo notify('danger', $msgErro);
     }
 }
 
@@ -296,197 +305,91 @@ $grupos = $grupoController->listarSelectTempo();
                     <hr>
                     <h4 class="card-title">Pagamento</h4>
                 </div>
-                <div class="col-lg-4">
-                    <label for="forma_pagamento" class="form-label">Forma de Pagamento</label>
-                    <select class="form-select" id="forma_pagamento" name="forma_pagamento" required>
-                        <option value="" selected>Selecione uma forma de pagamento</option>
-                        <option value="Dinheiro">Dinheiro</option>
-                        <option value="Cartão de Crédito">Cartão de Crédito</option>
-                        <option value="Cartão de Débito">Cartão de Débito</option>
-                        <option value="Cheque">Cheque</option>
-                        <option value="Material">Material</option>
-                        <option value="Pix">Pix</option>
-                    </select>
+
+                <div class="col-12">
+                    <div class="card shadow-sm mb-3">
+                        <div class="card-header py-2 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <h6 class="mb-0 text-primary">Formas de pagamento</h6>
+                            <button type="button" class="btn btn-success btn-sm" id="btnAdicionarPagamento">
+                                <i class="fas fa-plus"></i> Adicionar forma
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted small mb-2">A soma dos valores deve ser igual ao total do pedido.</p>
+                            <div id="listaPagamentos"></div>
+                            <div class="row mt-3">
+                                <div class="col-md-6 ms-md-auto">
+                                    <table class="table table-sm table-borderless mb-0">
+                                        <tr>
+                                            <td class="text-end fw-bold">Total do pedido:</td>
+                                            <td class="text-end" id="exibeTotalPedido">R$ 0,00</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-end fw-bold">Total pago:</td>
+                                            <td class="text-end" id="exibeTotalPago">R$ 0,00</td>
+                                        </tr>
+                                        <tr id="trDiferencaPagamento">
+                                            <td class="text-end fw-bold text-danger">Diferença:</td>
+                                            <td class="text-end fw-bold text-danger" id="exibeDiferencaPagamento">R$ 0,00</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div id="alertaPagamento" class="alert alert-danger mt-2 d-none" role="alert">
+                                <span id="msgAlertaPagamento"></span>
+                            </div>
+                            <input type="hidden" name="pagamentos" id="inputPagamentos" value="[]">
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Select de cartões (inicialmente oculto) -->
-                <div class="col-lg-4" id="cartao_container" style="display: none;">
-                    <label for="cartao_tipo" class="form-label">Selecione o Cartão</label>
-                    <select class="form-select" id="cartao_tipo" name="cartao_tipo">
-                        <option value="" disabled selected>Selecione um cartão</option>
-                    </select>
-                </div>
-
-                <script>
-                    document.addEventListener('DOMContentLoaded', () => {
-                        const formaPagamento = document.getElementById('forma_pagamento');
-                        const cartaoContainer = document.getElementById('cartao_container');
-                        const cartaoTipo = document.getElementById('cartao_tipo');
-                        const parcelasContainer = document.getElementById('parcelas_container');
-                        const chequeContainer = document.getElementById('cheque_container');
-                        const materialContainer = document.getElementById('material_container');
-
-                        function hideAllPagamentoExtras() {
-                            cartaoContainer.style.display = 'none';
-                            parcelasContainer.style.display = 'none';
-                            chequeContainer.style.display = 'none';
-                            materialContainer.style.display = 'none';
-                        }
-
-                        formaPagamento.addEventListener('change', async () => {
-                            const selectedValue = formaPagamento.value;
-                            hideAllPagamentoExtras();
-
-                            if (selectedValue === 'Cartão de Crédito' || selectedValue === 'Cartão de Débito') {
-                                cartaoContainer.style.display = 'block';
-                                try {
-                                    const response = await fetch(`<?php echo $url; ?>pages/Pedidos/listar_cartoes.php?tipo=${selectedValue === 'Cartão de Crédito' ? 'Crédito' : 'Débito'}`);
-                                    const cartoes = await response.json();
-                                    cartaoTipo.innerHTML = '<option value="" disabled selected>Selecione um cartão</option>';
-                                    cartoes.forEach(cartao => {
-                                        const option = document.createElement('option');
-                                        option.value = cartao.id;
-                                        option.textContent = cartao.bandeira;
-                                        cartaoTipo.appendChild(option);
-                                    });
-                                } catch (error) {
-                                    console.error('Erro ao buscar cartões:', error);
-                                }
-                            } else if (selectedValue === 'Cheque') {
-                                chequeContainer.style.display = 'block';
-                                try {
-                                    const response = await fetch('<?php echo $url; ?>pages/Pedidos/listar_cheques.php');
-                                    const cheques = await response.json();
-                                    const select = document.getElementById('cheque_config_id');
-                                    select.innerHTML = '<option value="" disabled selected>Selecione uma configuração</option>';
-                                    cheques.forEach(ch => {
-                                        const opt = document.createElement('option');
-                                        opt.value = ch.id;
-                                        opt.textContent = ch.nome_cheque + ' (' + (ch.max_parcelas || 0) + 'x)';
-                                        for (let i = 1; i <= 12; i++) opt.dataset['juros_parcela_' + i] = ch['juros_parcela_' + i] || 0;
-                                        opt.dataset.maxParcelas = ch.max_parcelas || 1;
-                                        select.appendChild(opt);
-                                    });
-                                    document.getElementById('numero_parcelas_cheque').innerHTML = '<option value="" disabled selected>Selecione as parcelas</option>';
-                                    document.getElementById('cheque_numero_container').innerHTML = '';
-                                } catch (error) {
-                                    console.error('Erro ao buscar cheques:', error);
-                                }
-                            } else if (selectedValue === 'Material') {
-                                materialContainer.style.display = 'block';
-                                carregarMateriaisPagamento();
-                                atualizarTotalMateriais();
-                            }
-                        });
-
-                        document.getElementById('cheque_config_id').addEventListener('change', function() {
-                            const opt = this.options[this.selectedIndex];
-                            const max = parseInt(opt?.dataset?.maxParcelas || 1, 10);
-                            const sel = document.getElementById('numero_parcelas_cheque');
-                            sel.innerHTML = '<option value="" disabled selected>Selecione as parcelas</option>';
-                            for (let i = 1; i <= max; i++) {
-                                const juros = opt?.dataset['juros_parcela_' + i] || 0;
-                                const o = document.createElement('option');
-                                o.value = i;
-                                o.textContent = i + 'x (Juros: ' + juros + '%)';
-                                o.dataset.juros = juros;
-                                sel.appendChild(o);
-                            }
-                            document.getElementById('cheque_numero_container').innerHTML = '';
-                        });
-
-                        document.getElementById('numero_parcelas_cheque').addEventListener('change', function() {
-                            const n = parseInt(this.value, 10) || 0;
-                            const container = document.getElementById('cheque_numero_container');
-                            container.innerHTML = '';
-                            for (let i = 1; i <= n; i++) {
-                                const div = document.createElement('div');
-                                div.className = 'col-lg-4';
-                                div.innerHTML = '<label class="form-label">Nº Cheque parcela ' + i + '</label><input type="text" class="form-control" name="numero_cheque[' + i + ']" placeholder="Número do cheque">';
-                                container.appendChild(div);
-                            }
-                            const opt = this.options[this.selectedIndex];
-                            const juros = parseFloat(opt?.dataset?.juros || 0);
-                            const totalField = document.getElementById('total');
-                            const jurosAplicado = document.getElementById('juros_aplicado');
-                            const totalSemJuros = parseFloat(totalField.value || 0) - parseFloat(jurosAplicado.value || 0);
-                            if (totalSemJuros > 0 && !isNaN(juros)) {
-                                const totalComJuros = totalSemJuros * (1 + juros / 100);
-                                totalField.value = totalComJuros.toFixed(2);
-                                jurosAplicado.value = (totalComJuros - totalSemJuros).toFixed(2);
-                            }
-                        });
-
-                        let materiaisPagamento = [];
-                        async function carregarMateriaisPagamento() {
-                            try {
-                                const r = await fetch('<?php echo $url; ?>pages/Pedidos/listar_materiais_pagamento.php');
-                                materiaisPagamento = await r.json();
-                            } catch (e) {
-                                console.error(e);
-                            }
-                        }
-
-                        let materialItemIndex = 0;
-                        document.getElementById('btn_add_material').addEventListener('click', function() {
-                            const list = document.getElementById('material_list');
-                            const item = document.createElement('div');
-                            item.className = 'row g-2 align-items-end material-item mb-2';
-                            item.dataset.index = materialItemIndex;
-                            const options = materiaisPagamento.map(m => '<option value="' + m.id + '" data-valor="' + (m.valor_por_grama || 0) + '">' + (m.tipo_material || '') + ' - R$ ' + parseFloat(m.valor_por_grama || 0).toFixed(2) + '/g</option>').join('');
-                            item.innerHTML = '<div class="col-4"><label class="form-label small">Material</label><select class="form-select form-select-sm material-select" name="materiais[' + materialItemIndex + '][material_id]"><option value="">Selecione</option>' + options + '</select></div>' +
-                                '<div class="col-3"><label class="form-label small">Gramas</label><input type="number" step="0.001" class="form-control form-control-sm material-gramas" name="materiais[' + materialItemIndex + '][gramas]" placeholder="0"></div>' +
-                                '<div class="col-2"><label class="form-label small">Valor</label><input type="text" class="form-control form-control-sm material-valor" readonly placeholder="R$ 0,00"></div>' +
-                                '<div class="col-2"><button type="button" class="btn btn-danger btn-sm btn-remove-material">Remover</button></div>';
-                            list.appendChild(item);
-                            materialItemIndex++;
-
-                            item.querySelector('.material-select').addEventListener('change', atualizarValorMaterialItem);
-                            item.querySelector('.material-gramas').addEventListener('input', atualizarValorMaterialItem);
-                            item.querySelector('.btn-remove-material').addEventListener('click', function() {
-                                item.remove();
-                                atualizarTotalMateriais();
-                            });
-                        });
-
-                        function atualizarValorMaterialItem(e) {
-                            const item = e.target.closest('.material-item');
-                            const sel = item.querySelector('.material-select');
-                            const gramas = parseFloat(item.querySelector('.material-gramas').value) || 0;
-                            const valorG = parseFloat(sel.options[sel.selectedIndex]?.dataset?.valor || 0);
-                            const valor = gramas * valorG;
-                            item.querySelector('.material-valor').value = 'R$ ' + valor.toFixed(2).replace('.', ',');
-                            atualizarTotalMateriais();
-                        }
-
-                        function atualizarTotalMateriais() {
-                            let total = 0;
-                            document.querySelectorAll('.material-item').forEach(item => {
-                                const sel = item.querySelector('.material-select');
-                                const gramas = parseFloat(item.querySelector('.material-gramas').value) || 0;
-                                const valorG = parseFloat(sel.options[sel.selectedIndex]?.dataset?.valor || 0);
-                                total += gramas * valorG;
-                            });
-                            document.getElementById('total_materiais').textContent = total.toFixed(2).replace('.', ',');
-                            const vp = document.getElementById('valor_pago');
-                            if (document.getElementById('forma_pagamento').value === 'Material') {
-                                vp.value = total.toFixed(2);
-                            }
-                        }
-
-                        document.addEventListener('input', function(e) {
-                            if (e.target.classList.contains('material-gramas') || e.target.classList.contains('material-select')) {
-                                atualizarTotalMateriais();
-                            }
-                        });
-                    });
-                </script>
-                <div class="col-lg-4" id="parcelas_container" style="display: none;">
-                    <label for="numero_parcelas" class="form-label">Número de Parcelas</label>
-                    <select class="form-select" id="numero_parcelas" name="numero_parcelas">
-                        <option value="" disabled selected>Selecione o número de parcelas</option>
-                    </select>
-                </div>
+                <template id="templateLinhaPagamento">
+                    <div class="linha-pagamento row g-2 align-items-end mb-2 border rounded p-2 bg-light">
+                        <div class="col-md-2">
+                            <label class="form-label small mb-0">Forma <span class="text-danger">*</span></label>
+                            <select class="form-select form-select-sm pp-forma" required>
+                                <option value="">Selecione...</option>
+                                <option value="Dinheiro">Dinheiro</option>
+                                <option value="Pix">Pix</option>
+                                <option value="Cartão de Crédito">Cartão de Crédito</option>
+                                <option value="Cartão de Débito">Cartão de Débito</option>
+                                <option value="Cheque">Cheque</option>
+                                <option value="Material">Material</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 pp-material-select-wrap" style="display:none">
+                            <label class="form-label small mb-0">Material</label>
+                            <select class="form-select form-select-sm pp-material">
+                                <option value="">Selecione...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 pp-gramas-wrap" style="display:none">
+                            <label class="form-label small mb-0">Gramas (g)</label>
+                            <input type="number" step="0.001" min="0" class="form-control form-control-sm pp-gramas" placeholder="0">
+                        </div>
+                        <div class="col-md-2 pp-cartao-wrap" style="display:none">
+                            <label class="form-label small mb-0">Cartão</label>
+                            <select class="form-select form-select-sm pp-cartao">
+                                <option value="">...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 pp-parcelas-wrap" style="display:none">
+                            <label class="form-label small mb-0">Parcelas</label>
+                            <select class="form-select form-select-sm pp-parcelas"></select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small mb-0">Valor (R$) <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" min="0" class="form-control form-control-sm pp-valor" required placeholder="0,00">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small mb-0">Observação</label>
+                            <input type="text" class="form-control form-control-sm pp-obs" maxlength="255" placeholder="Opcional">
+                        </div>
+                        <div class="col-md-1 text-center">
+                            <button type="button" class="btn btn-outline-danger btn-sm pp-remove" title="Remover"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                </template>
 
                 <!-- Container Cheque -->
                 <div class="col-12" id="cheque_container" style="display: none;">
@@ -507,113 +410,9 @@ $grupos = $grupoController->listarSelectTempo();
                     <div id="cheque_numero_container" class="row g-3 mt-2"></div>
                 </div>
 
-                <!-- Container Material -->
-                <div class="col-12" id="material_container" style="display: none;">
-                    <div class="card card-body bg-light">
-                        <h6 class="card-title">Materiais para Pagamento</h6>
-                        <div id="material_list">
-                            <!-- Itens de material serão inseridos via JS -->
-                        </div>
-                        <button type="button" class="btn btn-success btn-sm mt-2 w-auto" id="btn_add_material">+ Adicionar material</button>
-                        <div class="mt-2">
-                            <strong>Total em materiais: R$ <span id="total_materiais">0,00</span></strong>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="col-12">
                     <hr>
                 </div>
-
-                <script>
-                    document.addEventListener('DOMContentLoaded', () => {
-                        const formaPagamento = document.getElementById('forma_pagamento');
-                        const cartaoContainer = document.getElementById('cartao_container');
-                        const cartaoTipo = document.getElementById('cartao_tipo');
-                        const parcelasContainer = document.getElementById('parcelas_container');
-                        const numeroParcelas = document.getElementById('numero_parcelas');
-
-                        // Evento para mostrar ou esconder os cartões
-                        formaPagamento.addEventListener('change', async () => {
-                            const selectedValue = formaPagamento.value;
-
-                            // Mostrar o select de cartões apenas para Crédito ou Débito
-                            if (selectedValue === 'Cartão de Crédito' || selectedValue === 'Cartão de Débito') {
-                                cartaoContainer.style.display = 'block';
-
-                                try {
-                                    const response = await fetch(`<?php echo $url; ?>pages/Pedidos/listar_cartoes.php?tipo=${selectedValue === 'Cartão de Crédito' ? 'Crédito' : 'Débito'}`);
-                                    const cartoes = await response.json();
-
-                                    cartaoTipo.innerHTML = '<option value="" disabled selected>Selecione um cartão</option>';
-
-                                    cartoes.forEach(cartao => {
-                                        const option = document.createElement('option');
-                                        option.value = cartao.id;
-                                        option.dataset.maxParcelas = cartao.max_parcelas;
-                                        option.textContent = cartao.bandeira;
-                                        cartaoTipo.appendChild(option);
-                                        option.dataset.juros_parcela_1 = cartao.juros_parcela_1;
-                                        option.dataset.juros_parcela_2 = cartao.juros_parcela_2;
-                                        option.dataset.juros_parcela_3 = cartao.juros_parcela_3;
-                                        option.dataset.juros_parcela_4 = cartao.juros_parcela_4;
-                                        option.dataset.juros_parcela_5 = cartao.juros_parcela_5;
-                                        option.dataset.juros_parcela_6 = cartao.juros_parcela_6;
-                                        option.dataset.juros_parcela_7 = cartao.juros_parcela_7;
-                                        option.dataset.juros_parcela_8 = cartao.juros_parcela_8;
-                                        option.dataset.juros_parcela_9 = cartao.juros_parcela_9;
-                                        option.dataset.juros_parcela_10 = cartao.juros_parcela_10;
-                                        option.dataset.juros_parcela_11 = cartao.juros_parcela_11;
-                                        option.dataset.juros_parcela_12 = cartao.juros_parcela_12;
-                                    });
-                                } catch (error) {
-                                    console.error('Erro ao buscar cartões:', error);
-                                }
-                            } else {
-                                cartaoContainer.style.display = 'none';
-                                cartaoTipo.innerHTML = '<option value="" disabled selected>Selecione um cartão</option>';
-                                parcelasContainer.style.display = 'none';
-                                numeroParcelas.innerHTML = '<option value="" disabled selected>Selecione o número de parcelas</option>';
-                            }
-                        });
-
-                        // Evento para mostrar o número de parcelas ao selecionar um cartão
-                        cartaoTipo.addEventListener('change', () => {
-                            const selectedCardOption = cartaoTipo.options[cartaoTipo.selectedIndex];
-                            const maxParcelas = selectedCardOption.dataset.maxParcelas;
-                            const juros_parcela_1 = selectedCardOption.dataset.juros_parcela_1;
-                            const juros_parcela_2 = selectedCardOption.dataset.juros_parcela_2;
-                            const juros_parcela_3 = selectedCardOption.dataset.juros_parcela_3;
-                            const juros_parcela_4 = selectedCardOption.dataset.juros_parcela_4;
-                            const juros_parcela_5 = selectedCardOption.dataset.juros_parcela_5;
-                            const juros_parcela_6 = selectedCardOption.dataset.juros_parcela_6;
-                            const juros_parcela_7 = selectedCardOption.dataset.juros_parcela_7;
-                            const juros_parcela_8 = selectedCardOption.dataset.juros_parcela_8;
-                            const juros_parcela_9 = selectedCardOption.dataset.juros_parcela_9;
-                            const juros_parcela_10 = selectedCardOption.dataset.juros_parcela_10;
-                            const juros_parcela_11 = selectedCardOption.dataset.juros_parcela_11;
-                            const juros_parcela_12 = selectedCardOption.dataset.juros_parcela_12;
-
-                            if (maxParcelas) {
-                                parcelasContainer.style.display = 'block';
-                                numeroParcelas.innerHTML = '<option value="" disabled selected>Selecione o número de parcelas</option>';
-
-                                // Preencher o select de parcelas
-                                for (let i = 1; i <= maxParcelas; i++) {
-                                    const option = document.createElement('option');
-                                    option.value = i;
-                                    option.textContent = i + (i > 1 ? ' Parcelas( Juros: ' + eval(`juros_parcela_${i}`) + '% )' : ' Parcela ( Juros: ' + eval(`juros_parcela_${i}`) + '% )');
-                                    // criar data-juros no option
-                                    option.dataset.juros_parcela_i = eval(`juros_parcela_${i}`);
-                                    numeroParcelas.appendChild(option);
-                                }
-                            } else {
-                                parcelasContainer.style.display = 'none';
-                                numeroParcelas.innerHTML = '<option value="" disabled selected>Selecione o número de parcelas</option>';
-                            }
-                        });
-                    });
-                </script>
 
                 <div class="col-lg-12">
                     <label for="total" class="form-label">Total do Pedido</label>
@@ -807,8 +606,9 @@ $grupos = $grupoController->listarSelectTempo();
                     totalField.value = total.toFixed(2);
 
                     // Atualiza o baseTotal e aplica juros
-                    if (typeof window.initializeBaseTotal === 'function') window.initializeBaseTotal();
-                    if (typeof window.applyJuros === 'function') window.applyJuros();
+                    if (typeof window.pedidoPagamentoRecalc === 'function') {
+                        window.pedidoPagamentoRecalc();
+                    }
                 }
 
                 // Abrir o modal ao clicar no input de produto
@@ -952,8 +752,9 @@ $grupos = $grupoController->listarSelectTempo();
                     totalField.value = total.toFixed(2);
 
                     // Atualiza o baseTotal e aplica juros
-                    if (typeof window.initializeBaseTotal === 'function') window.initializeBaseTotal();
-                    if (typeof window.applyJuros === 'function') window.applyJuros();
+                    if (typeof window.pedidoPagamentoRecalc === 'function') {
+                        window.pedidoPagamentoRecalc();
+                    }
                 }
 
                 // Eventos para recalcular o total ao alterar produtos, acréscimo ou desconto
@@ -973,113 +774,6 @@ $grupos = $grupoController->listarSelectTempo();
             });
 
 
-            ///juros cartao
-
-            document.addEventListener('DOMContentLoaded', () => {
-                const numeroParcelas = document.getElementById('numero_parcelas'); // Select de parcelas
-                const totalField = document.getElementById('total'); // Campo de total
-                let timeout; // Variável para controlar o delay
-                let previousTotalValue = totalField.value; // Armazena o valor anterior do total
-                const juros_aplicado = document.getElementById('juros_aplicado'); // Campo hidden para armazenar o juros aplicado
-
-                // Função para aplicar juros ao total
-                function applyJuros() {
-                    // Subtrai o valor do juros_aplicado do total
-                    const totalSemJuros = parseFloat(totalField.value || 0) - parseFloat(juros_aplicado.value || 0);
-                    const selectedOption = numeroParcelas.options[numeroParcelas.selectedIndex]; // Option selecionado
-                    const juros = parseFloat(selectedOption?.dataset?.juros_parcela_i || 0); // Obtém o valor do data-juros_parcela_i
-
-                    // Verifica se é possível aplicar o juros
-                    if (totalSemJuros && !isNaN(juros)) {
-                        const totalComJuros = totalSemJuros * (1 + juros / 100); // Aplica o juros
-                        const jurosAplicado = totalComJuros - totalSemJuros; // Calcula o valor do juros aplicado
-
-                        // Atualiza os campos
-                        totalField.value = totalComJuros.toFixed(2); // Atualiza o campo de total
-                        juros_aplicado.value = jurosAplicado.toFixed(2); // Atualiza o hidden com o novo valor de juros
-                    }
-                }
-
-                // Função para inicializar o valor base total
-                function initializeBaseTotal() {
-                    const baseTotal = parseFloat(totalField.value || 0); // Obtém o valor atual do total ou usa 0
-                    totalField.dataset.baseTotal = baseTotal; // Armazena o valor inicial do total como base
-                    juros_aplicado.value = '0'; // Reseta o campo de juros
-                }
-
-                // Inicializa o valor base do total ao carregar a página
-                initializeBaseTotal();
-
-                // Evento para atualizar os juros ao mudar o número de parcelas
-                numeroParcelas.addEventListener('change', () => {
-                    // Aplica o delay antes de recalcular os juros
-                    clearTimeout(timeout); // Cancela qualquer timeout anterior
-                    timeout = setTimeout(() => {
-                        applyJuros(); // Aplica os juros com base na parcela selecionada
-                    }, 1000); // Delay de 1 segundo
-                });
-
-                // Observa mudanças no valor do campo de total
-                const observer = new MutationObserver(() => {
-                    const currentTotalValue = totalField.value;
-
-                    // Verifica se o valor do total realmente mudou
-                    if (currentTotalValue !== previousTotalValue) {
-                        previousTotalValue = currentTotalValue; // Atualiza o valor anterior
-
-                        // Aplica o delay antes de recalcular os juros
-                        clearTimeout(timeout); // Cancela qualquer timeout anterior
-                        timeout = setTimeout(() => {
-                            applyJuros(); // Recalcula os juros com o novo total
-                        }, 1000); // Delay de 1 segundo
-                    }
-                });
-
-                // Configurar o observer para monitorar alterações no atributo 'value' do totalField
-                observer.observe(totalField, {
-                    attributes: true,
-                    attributeFilter: ['value']
-                });
-
-                // Tornando as funções globais
-                window.applyJuros = applyJuros; // Agora você pode chamar applyJuros() globalmente
-                window.initializeBaseTotal = initializeBaseTotal; // Para garantir que o baseTotal seja atualizado
-            });
-
-            // Botão para alterar cartão (opcional, botão comentado no HTML)
-            document.addEventListener('DOMContentLoaded', () => {
-                const alterarCartaoButton = document.getElementById('altera_cartao');
-                const formaPagamentoSelect = document.getElementById('forma_pagamento');
-                if (alterarCartaoButton) {
-                    alterarCartaoButton.addEventListener('click', () => {
-                        formaPagamentoSelect.selectedIndex = 0;
-                    });
-                }
-            });
-
-            document.addEventListener('DOMContentLoaded', () => {
-                const cartaoTipo = document.getElementById('cartao_tipo'); // Select de cartão
-                const formaPagamento = document.getElementById('forma_pagamento'); // Select de forma de pagamento
-                const jurosAplicado = document.getElementById('juros_aplicado'); // Campo hidden de juros aplicado
-                const totalField = document.getElementById('total'); // Campo de total
-
-                // Função para subtrair o valor de juros do total
-                function removeJurosFromTotal() {
-                    const juros = parseFloat(jurosAplicado.value || 0); // Obtém o valor do juros aplicado
-                    const total = parseFloat(totalField.value || 0); // Obtém o valor atual do total
-
-                    if (!isNaN(juros) && !isNaN(total)) {
-                        const newTotal = total - juros; // Subtrai o juros do total
-                        totalField.value = newTotal.toFixed(2); // Atualiza o total com o novo valor
-                        jurosAplicado.value = '0'; // Reseta o campo de juros aplicado
-                    }
-                }
-
-                // Adiciona os eventos de mudança nos selects
-                cartaoTipo.addEventListener('change', removeJurosFromTotal);
-                formaPagamento.addEventListener('change', removeJurosFromTotal);
-            });
-
             // Botão para copiar o total para o valor pago
             document.addEventListener('DOMContentLoaded', () => {
                 const totalCopyButton = document.getElementById('totalCopy');
@@ -1097,25 +791,8 @@ $grupos = $grupoController->listarSelectTempo();
                 });
             });
 
-            document.addEventListener('DOMContentLoaded', () => {
-                const formPedido = document.getElementById('formPedido');
-                
-                formPedido.addEventListener('submit', function(e) {
-                    e.preventDefault(); // Previne o envio padrão para debug
-                    
-                    // Validação dos campos obrigatórios
-                    const clienteId = document.getElementById('cliente_id').value;
-                    const dataPedido = document.getElementById('data_pedido').value;
-                    const formaPagamento = document.getElementById('forma_pagamento').value;
-                    const total = document.getElementById('total').value;
-                    
-                    if (!clienteId || !dataPedido || !formaPagamento || !total) {
-                        alert('Por favor, preencha todos os campos obrigatórios.');
-                        return;
-                    }
-                    
-                    // Se tudo estiver ok, envia o formulário
-                    this.submit();
-                });
-            });
         </script>
+        <script>
+            window.__pedidoPagamentoConfig = { baseUrl: <?= json_encode($url ?? '') ?> };
+        </script>
+        <script src="<?= htmlspecialchars($url ?? '') ?>assets/js/pedido-pagamento.js"></script>

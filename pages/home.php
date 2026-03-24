@@ -59,12 +59,15 @@ $caixasPassaramDia = array_filter($caixasAbertos, fn($c) => !empty($c['passou_di
                   <?php
                   $partes = [];
                   foreach ($caixasAbertos as $c):
-                    $txt = 'Loja ' . (int)$c['loja_id'] . ' • Caixa #' . (int)$c['numero'] . ' (' . date('d/m/Y', strtotime($c['data_caixa'])) . ')';
+                    $txt = '<div>';
+                    $txt .= 'Loja ' . (int)$c['loja_id'] . ' • Caixa #' . (int)$c['numero'] . ' (' . date('d/m/Y', strtotime($c['data_caixa'])) . ')';
                     if (!empty($c['passou_dia'])) $txt .= ' <span class="badge bg-danger">Precisa fechar</span>';
                     $txt .= ' — R$ ' . number_format($c['saldo_esperado'] ?? 0, 2, ',', '.');
+                    $txt .= '</div>';
+
                     $partes[] = $txt;
                   endforeach;
-                  echo implode(' &nbsp;•&nbsp; ', $partes);
+                  echo implode('', $partes);
                   ?>
                 </small>
               </div>

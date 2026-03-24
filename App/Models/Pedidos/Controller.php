@@ -6,6 +6,28 @@ use db; // Classe de conexão com o banco
 
 class Controller
 {
+    /** @var string|null Mensagem para exibir quando cadastro() retorna false */
+    public $cadastroErro = null;
+
+    private static function formasPagamentoPermitidas(): array
+    {
+        return ['Dinheiro', 'Pix', 'Cartão de Crédito', 'Cartão de Débito', 'Cheque', 'Material'];
+    }
+
+    /**
+     * Linhas de pagamento persistidas do pedido.
+     */
+    public function listarPagamentosPorPedido($pedidoId)
+    {
+        $db = new db();
+        $db->query(
+            'SELECT id, forma, valor, parcelas, observacao, cartao_id
+             FROM pedido_pagamentos WHERE pedido_id = :id ORDER BY id ASC'
+        );
+        $db->bind(':id', $pedidoId);
+        return $db->resultSet();
+    }
+
     // Listar todos os pedidos
     public function listar()
     {
@@ -90,10 +112,13 @@ class Controller
         $db->bind(':pedido_id', $id);
         $itens = $db->resultSet(); // Retorna uma lista de itens
 
+        $pagamentos = $this->listarPagamentosPorPedido($id);
+
         // Retorna os dados combinados
         return [
             'pedido' => $pedido,
-            'itens' => $itens
+            'itens' => $itens,
+            'pagamentos' => $pagamentos,
         ];
     }
 
@@ -104,7 +129,113 @@ class Controller
     // Cadastrar um novo pedido
     public function cadastro($dados)
     {
+        $this->cadastroErro = null;
         $db = new db();
+
+        $pagamentos = $dados['pagamentos'] ?? null;
+        if (!is_array($pagamentos) || count($pagamentos) === 0) {
+            $this->cadastroErro = 'Informe ao menos uma forma de pagamento.';
+            return false;
+        }
+
+        $permitidas = self::formasPagamentoPermitidas();
+        $totalPedido = round((float)($dados['total'] ?? 0), 2);
+        $totalPago = 0.0;
+        $linhasCheque = 0;
+        $somaLinhasMaterial = 0.0;
+
+        foreach ($pagamentos as $row) {
+            $forma = isset($row['forma']) ? (string)$row['forma'] : '';
+            if (!in_array($forma, $permitidas, true)) {
+                $this->cadastroErro = 'Forma de pagamento inválida.';
+                return false;
+            }
+            $valorLinha = round((float)($row['valor'] ?? 0), 2);
+            if ($valorLinha <= 0) {
+                $this->cadastroErro = 'Cada pagamento deve ter valor maior que zero.';
+                return false;
+            }
+            if ($forma === 'Cartão de Crédito') {
+                $parc = (int)($row['parcelas'] ?? 1);
+                if ($parc < 1) {
+                    $this->cadastroErro = 'Informe o número de parcelas do cartão de crédito.';
+                    return false;
+                }
+            }
+            if ($forma === 'Cheque') {
+                $linhasCheque++;
+            }
+            if ($forma === 'Material') {
+                $somaLinhasMaterial += $valorLinha;
+            }
+            $totalPago += $valorLinha;
+        }
+
+        if ($linhasCheque > 1) {
+            $this->cadastroErro = 'Permitido apenas um pagamento por cheque neste cadastro.';
+            return false;
+        }
+        if ($linhasCheque === 1 && empty($dados['numero_parcelas'])) {
+            $this->cadastroErro = 'Informe as parcelas do cheque.';
+            return false;
+        }
+
+        if (abs($totalPago - $totalPedido) > 0.01) {
+            $this->cadastroErro = 'A soma dos pagamentos (R$ '
+                . number_format($totalPago, 2, ',', '.')
+                . ') deve ser igual ao total do pedido (R$ '
+                . number_format($totalPedido, 2, ',', '.')
+                . ').';
+            return false;
+        }
+
+        $totalMateriaisCalculado = 0.0;
+        $temMateriaisPost = false;
+        if (!empty($dados['materiais']) && is_array($dados['materiais'])) {
+            foreach ($dados['materiais'] as $m) {
+                $material_id = (int)($m['material_id'] ?? 0);
+                $gramas = (float)($m['gramas'] ?? 0);
+                if ($material_id > 0 && $gramas > 0) {
+                    $temMateriaisPost = true;
+                    $db->query('SELECT valor_por_grama FROM forma_pagamento_material WHERE id = :id');
+                    $db->bind(':id', $material_id);
+                    $mat = $db->single();
+                    $valor_por_grama = (float)($mat['valor_por_grama'] ?? 0);
+                    $totalMateriaisCalculado += $gramas * $valor_por_grama;
+                }
+            }
+        }
+
+        if ($temMateriaisPost) {
+            if ($somaLinhasMaterial <= 0) {
+                $this->cadastroErro = 'Inclua uma linha de pagamento em Material compatível com os materiais informados.';
+                return false;
+            }
+            if (abs($somaLinhasMaterial - $totalMateriaisCalculado) > 0.01) {
+                $this->cadastroErro = 'O total nas linhas de Material deve coincidir com o valor calculado pelos materiais (gramas).';
+                return false;
+            }
+        }
+
+        $labelsResumo = [];
+        foreach ($pagamentos as $p) {
+            $f = $p['forma'];
+            if ($f === 'Cheque' && !empty($dados['numero_parcelas'])) {
+                $labelsResumo[] = 'Cheque ' . (int)$dados['numero_parcelas'] . 'x Parcelas';
+            } elseif ($f === 'Cartão de Crédito' && (int)($p['parcelas'] ?? 1) > 1) {
+                $labelsResumo[] = 'Cartão de Crédito ' . (int)$p['parcelas'] . 'x';
+            } else {
+                $labelsResumo[] = $f;
+            }
+        }
+        $labelsResumo = array_unique($labelsResumo);
+        $forma_pagamento = count($pagamentos) > 1
+            ? ('Misto: ' . implode('; ', $labelsResumo))
+            : ($labelsResumo[0] ?? '');
+
+        if (($dados['status_pedido'] ?? '') === 'Pago') {
+            $dados['valor_pago'] = $totalPedido;
+        }
 
         $loja_id = $dados['loja_id'] ?? null;
         $tipo_loja = null;
@@ -115,53 +246,83 @@ class Controller
             $tipo_loja = (is_array($loja_row) && isset($loja_row['tipo'])) ? $loja_row['tipo'] : null;
         }
 
-        $forma_pagamento = $dados['forma_pagamento'] ?? null;
-        if ($forma_pagamento === 'Cheque' && !empty($dados['numero_parcelas'])) {
-            $forma_pagamento = 'Cheque ' . (int)$dados['numero_parcelas'] . 'x Parcelas';
-        }
-
-        $db->query("
+        $db->beginTransaction();
+        try {
+            $db->query("
             INSERT INTO pedidos (
-                cliente_id, data_pedido, forma_pagamento, acrescimo, desconto, 
+                cliente_id, data_pedido, forma_pagamento, acrescimo, desconto,
                 observacoes, total, valor_pago, cod_vendedor, status_pedido, data_entrega, loja_id
             ) VALUES (
-                :cliente_id, :data_pedido, :forma_pagamento, :acrescimo, :desconto, 
+                :cliente_id, :data_pedido, :forma_pagamento, :acrescimo, :desconto,
                 :observacoes, :total, :valor_pago, :cod_vendedor, :status_pedido, :data_entrega, :loja_id
             )
         ");
 
-        $campos = [
-            'cliente_id',
-            'data_pedido',
-            'acrescimo',
-            'desconto',
-            'observacoes',
-            'total',
-            'valor_pago',
-            'cod_vendedor',
-            'status_pedido',
-            'data_entrega',
-            'loja_id'
-        ];
+            $campos = [
+                'cliente_id',
+                'data_pedido',
+                'acrescimo',
+                'desconto',
+                'observacoes',
+                'total',
+                'valor_pago',
+                'cod_vendedor',
+                'status_pedido',
+                'data_entrega',
+                'loja_id',
+            ];
 
-        foreach ($campos as $campo) {
-            $valor = isset($dados[$campo]) && $dados[$campo] !== '' ? $dados[$campo] : null;
-            $db->bind(":$campo", $valor);
-        }
-        $db->bind(":forma_pagamento", $forma_pagamento);
+            foreach ($campos as $campo) {
+                $valor = isset($dados[$campo]) && $dados[$campo] !== '' ? $dados[$campo] : null;
+                $db->bind(":$campo", $valor);
+            }
+            $db->bind(':forma_pagamento', $forma_pagamento);
 
-        if ($db->execute()) {
-            $pedidoId = $db->lastInsertId();
+            if (!$db->execute()) {
+                throw new \RuntimeException('insert_pedido');
+            }
+
+            $pedidoId = (int)$db->lastInsertId();
+
+            foreach ($pagamentos as $row) {
+                $cartaoId = isset($row['cartao_id']) && $row['cartao_id'] !== '' && $row['cartao_id'] !== null
+                    ? (int)$row['cartao_id'] : null;
+                if ($cartaoId !== null && $cartaoId <= 0) {
+                    $cartaoId = null;
+                }
+                $parc = (int)($row['parcelas'] ?? 1);
+                if ($parc < 1) {
+                    $parc = 1;
+                }
+                $obs = isset($row['observacao']) ? trim((string)$row['observacao']) : '';
+                $obs = $obs === '' ? null : substr($obs, 0, 255);
+
+                $db->query(
+                    'INSERT INTO pedido_pagamentos (pedido_id, forma, valor, parcelas, observacao, cartao_id)
+                     VALUES (:pedido_id, :forma, :valor, :parcelas, :observacao, :cartao_id)'
+                );
+                $db->bind(':pedido_id', $pedidoId);
+                $db->bind(':forma', $row['forma']);
+                $db->bind(':valor', round((float)$row['valor'], 2));
+                $db->bind(':parcelas', $parc);
+                $db->bind(':observacao', $obs);
+                $db->bind(':cartao_id', $cartaoId);
+                if (!$db->execute()) {
+                    throw new \RuntimeException('insert_pagamento');
+                }
+            }
 
             if (!empty($dados['numero_cheque']) && is_array($dados['numero_cheque'])) {
                 foreach ($dados['numero_cheque'] as $parcela_numero => $numero_cheque) {
                     $parcela_numero = (int)$parcela_numero;
                     if ($parcela_numero > 0 && trim((string)$numero_cheque) !== '') {
-                        $db->query("INSERT INTO pedidos_cheques (pedido_id, parcela_numero, numero_cheque) VALUES (:pedido_id, :parcela_numero, :numero_cheque)");
-                        $db->bind(":pedido_id", $pedidoId);
-                        $db->bind(":parcela_numero", $parcela_numero);
-                        $db->bind(":numero_cheque", trim((string)$numero_cheque));
-                        $db->execute();
+                        $db->query('INSERT INTO pedidos_cheques (pedido_id, parcela_numero, numero_cheque) VALUES (:pedido_id, :parcela_numero, :numero_cheque)');
+                        $db->bind(':pedido_id', $pedidoId);
+                        $db->bind(':parcela_numero', $parcela_numero);
+                        $db->bind(':numero_cheque', trim((string)$numero_cheque));
+                        if (!$db->execute()) {
+                            throw new \RuntimeException('insert_cheque');
+                        }
                     }
                 }
             }
@@ -171,18 +332,20 @@ class Controller
                     $material_id = (int)($m['material_id'] ?? 0);
                     $gramas = (float)($m['gramas'] ?? 0);
                     if ($material_id > 0 && $gramas > 0) {
-                        $db->query("SELECT valor_por_grama FROM forma_pagamento_material WHERE id = :id");
-                        $db->bind(":id", $material_id);
+                        $db->query('SELECT valor_por_grama FROM forma_pagamento_material WHERE id = :id');
+                        $db->bind(':id', $material_id);
                         $mat = $db->single();
                         $valor_por_grama = (float)($mat['valor_por_grama'] ?? 0);
                         $valor_calculado = $gramas * $valor_por_grama;
 
-                        $db->query("INSERT INTO pedidos_materiais (pedido_id, forma_pagamento_material_id, gramas, valor_calculado) VALUES (:pedido_id, :forma_pagamento_material_id, :gramas, :valor_calculado)");
-                        $db->bind(":pedido_id", $pedidoId);
-                        $db->bind(":forma_pagamento_material_id", $material_id);
-                        $db->bind(":gramas", $gramas);
-                        $db->bind(":valor_calculado", $valor_calculado);
-                        $db->execute();
+                        $db->query('INSERT INTO pedidos_materiais (pedido_id, forma_pagamento_material_id, gramas, valor_calculado) VALUES (:pedido_id, :forma_pagamento_material_id, :gramas, :valor_calculado)');
+                        $db->bind(':pedido_id', $pedidoId);
+                        $db->bind(':forma_pagamento_material_id', $material_id);
+                        $db->bind(':gramas', $gramas);
+                        $db->bind(':valor_calculado', $valor_calculado);
+                        if (!$db->execute()) {
+                            throw new \RuntimeException('insert_material');
+                        }
                     }
                 }
             }
@@ -199,14 +362,14 @@ class Controller
                         :pedido_id, :produto_id, :quantidade, :valor_unitario, :desconto_percentual
                     )
                 ");
-                $db->bind(":pedido_id", $pedidoId);
-                $db->bind(":produto_id", $item['produto_id']);
-                $db->bind(":quantidade", $item['quantidade']);
-                $db->bind(":valor_unitario", $item['valor_unitario']);
-                $db->bind(":desconto_percentual", $item['desconto_percentual'] ?? 0);
+                $db->bind(':pedido_id', $pedidoId);
+                $db->bind(':produto_id', $item['produto_id']);
+                $db->bind(':quantidade', $item['quantidade']);
+                $db->bind(':valor_unitario', $item['valor_unitario']);
+                $db->bind(':desconto_percentual', $item['desconto_percentual'] ?? 0);
 
                 if (!$db->execute()) {
-                    return false;
+                    throw new \RuntimeException('insert_item');
                 }
 
                 $db->query("
@@ -217,91 +380,85 @@ class Controller
                     )
                 ");
 
-                $db->bind(":produto_id", $item['produto_id']);
-                $db->bind(":descricao_produto", $item['descricao_produto']);
-                $db->bind(":quantidade", $item['quantidade']);
-                $db->bind(":tipo_movimentacao", 'Saida');
-                $db->bind(":data_movimentacao", date('Y-m-d'));
-                $db->bind(":motivo", 'pedido');
-                $db->bind(":estoque_antes", $item['estoque_antes']);
-                $db->bind(":estoque_atualizado", $item['quantidade']);
-                $db->bind(":pedido_id", $pedidoId);
-                $db->bind(":loja_id", $loja_id);
+                $db->bind(':produto_id', $item['produto_id']);
+                $db->bind(':descricao_produto', $item['descricao_produto']);
+                $db->bind(':quantidade', $item['quantidade']);
+                $db->bind(':tipo_movimentacao', 'Saida');
+                $db->bind(':data_movimentacao', date('Y-m-d'));
+                $db->bind(':motivo', 'pedido');
+                $db->bind(':estoque_antes', $item['estoque_antes']);
+                $db->bind(':estoque_atualizado', $item['quantidade']);
+                $db->bind(':pedido_id', $pedidoId);
+                $db->bind(':loja_id', $loja_id);
 
                 if (!$db->execute()) {
-                    return false;
+                    throw new \RuntimeException('insert_mov');
                 }
 
-                // Débito de estoque: Loja debita apenas estoque_loja; CD e admin debita estoque
                 if ($loja_id && $tipo_loja === 'Loja') {
-                    // Loja física: debitar apenas estoque_loja (produto já foi transferido do CD)
                     $db->query("
                         UPDATE estoque_loja
                         SET quantidade = quantidade - :quantidade
                         WHERE produto_id = :produto_id AND loja_id = :loja_id AND quantidade >= :quantidade_check
                     ");
-                    $db->bind(":quantidade", $item['quantidade']);
-                    $db->bind(":produto_id", $item['produto_id']);
-                    $db->bind(":loja_id", $loja_id);
-                    $db->bind(":quantidade_check", $item['quantidade']);
+                    $db->bind(':quantidade', $item['quantidade']);
+                    $db->bind(':produto_id', $item['produto_id']);
+                    $db->bind(':loja_id', $loja_id);
+                    $db->bind(':quantidade_check', $item['quantidade']);
                     $db->execute();
                     if ($db->rowCount() === 0) {
-                        return false; // Produto sem estoque na loja ou quantidade insuficiente
+                        throw new \RuntimeException('estoque_loja');
                     }
                 } else {
-                    // CD ou admin (sem loja): debitar da tabela estoque
                     $db->query("
                         UPDATE estoque
                         SET quantidade = quantidade - :quantidade
                         WHERE produtos_id = :produto_id
                     ");
-                    $db->bind(":quantidade", $item['quantidade']);
-                    $db->bind(":produto_id", $item['produto_id']);
+                    $db->bind(':quantidade', $item['quantidade']);
+                    $db->bind(':produto_id', $item['produto_id']);
                     if (!$db->execute() || $db->rowCount() === 0) {
-                        return false;
+                        throw new \RuntimeException('estoque');
                     }
-                    // Se for CD, também debitar estoque_loja do CD (mantém consistência)
                     if ($loja_id && $tipo_loja === 'CD') {
                         $db->query("
                             UPDATE estoque_loja
                             SET quantidade = quantidade - :quantidade
                             WHERE produto_id = :produto_id AND loja_id = :loja_id
                         ");
-                        $db->bind(":quantidade", $item['quantidade']);
-                        $db->bind(":produto_id", $item['produto_id']);
-                        $db->bind(":loja_id", $loja_id);
-                        $db->execute(); // Pode não afetar se CD não tiver estoque_loja para esse produto
+                        $db->bind(':quantidade', $item['quantidade']);
+                        $db->bind(':produto_id', $item['produto_id']);
+                        $db->bind(':loja_id', $loja_id);
+                        $db->execute();
                     }
                 }
 
-
-                /*
-                ** ----------------------------------------------------------------------------
-                ** FABRICA
-                ** ----------------------------------------------------------------------------
-                */
-
-                //ENVIAR PARA A FABRICA
-                if ($dados['fabrica'] == true) {
+                if (!empty($dados['fabrica']) && $dados['fabrica'] == true) {
                     $dbFabrica = new db();
                     $dbFabrica->query("
-                                        INSERT INTO fabrica (
-                                            pedido_id , data_solicitacao , data_entrega
-                                        ) VALUES (
-                                            :pedido_id, :data_solicitacao , :data_entrega
-                                        )
-                                    ");
-                    $dbFabrica->bind(":pedido_id", $pedidoId);
-                    $dbFabrica->bind(":data_solicitacao", $dados['data_pedido']);
-                    $dbFabrica->bind(":data_entrega", $dados['data_entrega']);
+                        INSERT INTO fabrica (
+                            pedido_id , data_solicitacao , data_entrega
+                        ) VALUES (
+                            :pedido_id, :data_solicitacao , :data_entrega
+                        )
+                    ");
+                    $dbFabrica->bind(':pedido_id', $pedidoId);
+                    $dbFabrica->bind(':data_solicitacao', $dados['data_pedido']);
+                    $dbFabrica->bind(':data_entrega', $dados['data_entrega']);
                     $dbFabrica->execute();
                 }
             }
 
-            return $pedidoId; // Retorna o ID real do pedido inserido
+            $db->endTransaction();
+            return $pedidoId;
+        } catch (\Throwable $e) {
+            if ($db->inTransaction()) {
+                $db->cancelTransaction();
+            }
+            $this->cadastroErro = 'Não foi possível concluir o cadastro. Verifique os dados e tente novamente.';
+            error_log('pedidos.cadastro: ' . $e->getMessage());
+            return false;
         }
-
-        return false; // Falha no cadastro do pedido
     }
 
     // Editar um pedido existente

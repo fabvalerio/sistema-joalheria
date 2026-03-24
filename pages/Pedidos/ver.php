@@ -14,6 +14,7 @@ if (!$id) {
 $dados = $controller->ver($id);
 $pedido = $dados['pedido'];
 $itens = $dados['itens'];
+$pagamentos = $dados['pagamentos'] ?? [];
 
 ?>
 
@@ -50,6 +51,31 @@ $itens = $dados['itens'];
                 <strong>Forma de Pagamento:</strong> 
                 <?= htmlspecialchars($pedido['forma_pagamento'] ?? 'Não informado') ?>
             </div>
+            <?php if (!empty($pagamentos)): ?>
+            <div class="col-12">
+                <strong>Composição do pagamento:</strong>
+                <table class="table table-sm table-bordered mt-2 mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Forma</th>
+                            <th class="text-end">Valor</th>
+                            <th>Parcelas</th>
+                            <th>Observação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($pagamentos as $pg): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($pg['forma'] ?? '') ?></td>
+                                <td class="text-end">R$ <?= number_format((float)($pg['valor'] ?? 0), 2, ',', '.') ?></td>
+                                <td><?= (int)($pg['parcelas'] ?? 1) ?></td>
+                                <td><?= htmlspecialchars($pg['observacao'] ?? '') ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+            <?php endif; ?>
             <div class="col-lg-6">
                 <strong>Status:</strong> 
                 <span class="badge bg-<?= $pedido['status_pedido'] == 'Pendente' ? 'warning' : 'success' ?>"><?= htmlspecialchars($pedido['status_pedido'] ?? 'Pendente') ?> </span>

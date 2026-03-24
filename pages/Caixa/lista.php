@@ -193,25 +193,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo '<meta http-equiv="refresh" content="2; url=' . $redirectBase . '">';
             exit;
         }
-        $tipo = $controller->mapearTipoPedidoParaCaixa($pedido['forma_pagamento']);
-        $obs = null;
-        if (stripos((string)($pedido['forma_pagamento'] ?? ''), 'dinheiro') !== false) {
-            $valor_recebido = (float)($_POST['valor_recebido'] ?? 0);
-            if ($valor_recebido > 0) {
-                $troco = $valor_recebido - $valor;
-                $obs = 'Valor recebido: R$ ' . number_format($valor_recebido, 2, ',', '.') . ' | Troco: R$ ' . number_format($troco, 2, ',', '.');
+
+        $linhasPg = $controller->listarPagamentosPedido($pedido_id);
+        if (!empty($linhasPg)) {
+            $somaDin = $controller->somaPagamentosDinheiro($linhasPg);
+            $obsTroco = null;
+            if ($somaDin > 0) {
+                $valor_recebido = (float)($_POST['valor_recebido'] ?? 0);
+                if ($valor_recebido > 0) {
+                    $troco = $valor_recebido - $somaDin;
+                    $obsTroco = 'Valor recebido: R$ ' . number_format($valor_recebido, 2, ',', '.')
+                        . ' | Troco: R$ ' . number_format($troco, 2, ',', '.');
+                }
             }
+            $obsTrocoUsado = false;
+            foreach ($linhasPg as $row) {
+                $tipoLinha = $controller->mapearTipoPedidoParaCaixa($row['forma']);
+                $valorLinha = (float)($row['valor'] ?? 0);
+                $obsLinha = null;
+                if (!$obsTrocoUsado && $somaDin > 0 && stripos((string)($row['forma'] ?? ''), 'dinheiro') !== false) {
+                    $obsLinha = $obsTroco;
+                    $obsTrocoUsado = true;
+                }
+                $controller->registrarMovimento(
+                    (int)$sessao['id'],
+                    $loja_id_pedido,
+                    $caixa_drawer_id_lancar,
+                    $tipoLinha,
+                    $valorLinha,
+                    'Pedido',
+                    (int)$pedido_id,
+                    $obsLinha
+                );
+            }
+        } else {
+            $tipo = $controller->mapearTipoPedidoParaCaixa($pedido['forma_pagamento']);
+            $obs = null;
+            if (stripos((string)($pedido['forma_pagamento'] ?? ''), 'dinheiro') !== false) {
+                $valor_recebido = (float)($_POST['valor_recebido'] ?? 0);
+                if ($valor_recebido > 0) {
+                    $troco = $valor_recebido - $valor;
+                    $obs = 'Valor recebido: R$ ' . number_format($valor_recebido, 2, ',', '.') . ' | Troco: R$ ' . number_format($troco, 2, ',', '.');
+                }
+            }
+            $controller->registrarMovimento(
+                (int)$sessao['id'],
+                $loja_id_pedido,
+                $caixa_drawer_id_lancar,
+                $tipo,
+                $valor,
+                'Pedido',
+                (int)$pedido_id,
+                $obs
+            );
         }
-        $controller->registrarMovimento(
-            (int)$sessao['id'],
-            $loja_id_pedido,
-            $caixa_drawer_id_lancar,
-            $tipo,
-            $valor,
-            'Pedido',
-            (int)$pedido_id,
-            $obs
-        );
         echo notify('success', 'Pedido #' . $pedido_id . ' lançado no caixa.');
         $redirect_print_post = !empty($_POST['redirect_print']);
         $redirect_emitir_nota_post = !empty($_POST['redirect_emitir_nota']);
@@ -234,26 +269,44 @@ if ($pedido_lancar_id && $_SERVER['REQUEST_METHOD'] !== 'POST') {
         $loja_id_pedido = (int)($pedido_lancar_info['loja_id'] ?? $loja_id);
         $sessoes_abertas_para_lancar = $controller->listarSessoesAbertasPorLojaData($loja_id_pedido, $pedido_lancar_data) ?: [];
         $n = count($sessoes_abertas_para_lancar);
-        $pedido_eh_dinheiro = (stripos((string)($pedido_lancar_info['forma_pagamento'] ?? ''), 'dinheiro') !== false);
+        $pagamentos_auto = $controller->listarPagamentosPedido($pedido_lancar_id);
+        $pedido_eh_dinheiro = $controller->pedidoTemDinheiro($pagamentos_auto, $pedido_lancar_info['forma_pagamento'] ?? '');
 
         // Só faz auto-lançamento quando há 1 sessão e NÃO é dinheiro (dinheiro sempre precisa do modal para troco)
         if ($n === 1 && !$pedido_eh_dinheiro) {
             $sessao_unica = $sessoes_abertas_para_lancar[0];
-            $valor = (float)($pedido_lancar_info['valor_pago'] ?? 0);
-            if ($valor <= 0) {
-                $valor = (float)($pedido_lancar_info['total'] ?? 0);
+            if (!empty($pagamentos_auto)) {
+                foreach ($pagamentos_auto as $row) {
+                    $tipoLinha = $controller->mapearTipoPedidoParaCaixa($row['forma']);
+                    $valorLinha = (float)($row['valor'] ?? 0);
+                    $controller->registrarMovimento(
+                        (int)$sessao_unica['id'],
+                        $loja_id_pedido,
+                        (int)$sessao_unica['caixa_drawer_id'],
+                        $tipoLinha,
+                        $valorLinha,
+                        'Pedido',
+                        (int)$pedido_lancar_id,
+                        null
+                    );
+                }
+            } else {
+                $valor = (float)($pedido_lancar_info['valor_pago'] ?? 0);
+                if ($valor <= 0) {
+                    $valor = (float)($pedido_lancar_info['total'] ?? 0);
+                }
+                $tipo = $controller->mapearTipoPedidoParaCaixa($pedido_lancar_info['forma_pagamento']);
+                $controller->registrarMovimento(
+                    (int)$sessao_unica['id'],
+                    $loja_id_pedido,
+                    (int)$sessao_unica['caixa_drawer_id'],
+                    $tipo,
+                    $valor,
+                    'Pedido',
+                    (int)$pedido_lancar_id,
+                    null
+                );
             }
-            $tipo = $controller->mapearTipoPedidoParaCaixa($pedido_lancar_info['forma_pagamento']);
-            $controller->registrarMovimento(
-                (int)$sessao_unica['id'],
-                $loja_id_pedido,
-                (int)$sessao_unica['caixa_drawer_id'],
-                $tipo,
-                $valor,
-                'Pedido',
-                (int)$pedido_lancar_id,
-                null
-            );
             $redir = ($url ?? '') . '!/Caixa/lista/' . $data_inicio . '/' . $data_fim . '&caixa_drawer_id=' . (int)$sessao_unica['caixa_drawer_id'];
             echo '<meta http-equiv="refresh" content="0; url=' . htmlspecialchars($redir, ENT_QUOTES, 'UTF-8') . '"><script>window.location.replace("' . htmlspecialchars($redir, ENT_QUOTES, 'UTF-8') . '");</script>';
             exit;
@@ -568,6 +621,9 @@ if ($pedido_lancar_id && $_SERVER['REQUEST_METHOD'] !== 'POST') {
 <?php if ($mostrar_modal_pedido_lancar && $pedido_lancar_info): ?>
 <?php
 $total_pedido_modal = (float)($pedido_lancar_info['valor_pago'] ?? $pedido_lancar_info['total'] ?? 0);
+$linhas_modal_pg = $controller->listarPagamentosPedido((int)$pedido_lancar_id);
+$soma_dinheiro_modal = $controller->somaPagamentosDinheiro($linhas_modal_pg);
+$valor_base_troco_modal = $soma_dinheiro_modal > 0 ? $soma_dinheiro_modal : $total_pedido_modal;
 $tem_sessoes = !empty($sessoes_abertas_para_lancar);
 $caixas_abertos_numeros = $tem_sessoes ? array_map(function($s) { return 'Caixa #' . $s['numero']; }, (array)$sessoes_abertas_para_lancar) : [];
 $loja_id_modal = (int)($pedido_lancar_info['loja_id'] ?? $loja_id);
@@ -638,7 +694,7 @@ $caixas_para_abrir = $controller->listarCaixasPorLoja($loja_id_modal);
                     <?php if ($pedido_lancar_eh_dinheiro): ?>
                     <div class="alert alert-info py-2 mb-3">
                         <label for="valor_recebido_modal" class="form-label mb-1">Valor recebido do cliente (R$)</label>
-                        <input type="number" step="0.01" min="0" class="form-control" id="valor_recebido_modal" name="valor_recebido" placeholder="0,00" value="<?= number_format($total_pedido_modal, 2, '.', '') ?>">
+                        <input type="number" step="0.01" min="0" class="form-control" id="valor_recebido_modal" name="valor_recebido" placeholder="0,00" value="<?= number_format($valor_base_troco_modal, 2, '.', '') ?>">
                         <div class="mt-2">
                             <strong>Troco a devolver:</strong> <span id="troco_devolver" class="fs-5">R$ 0,00</span>
                         </div>
@@ -681,7 +737,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }, 150);
     }
-    var totalPedido = <?= json_encode($total_pedido_modal) ?>;
+    var totalPedido = <?= json_encode($valor_base_troco_modal) ?>;
     var inputValor = document.getElementById('valor_recebido_modal');
     var spanTroco = document.getElementById('troco_devolver');
     if (inputValor && spanTroco) {

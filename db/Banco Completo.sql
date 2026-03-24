@@ -516,6 +516,22 @@ CREATE TABLE `pedidos` (
 -- --------------------------------------------------------
 
 --
+-- Estrutura da tabela `pedido_pagamentos`
+--
+
+CREATE TABLE `pedido_pagamentos` (
+  `id` int(11) NOT NULL,
+  `pedido_id` int(11) NOT NULL,
+  `forma` varchar(100) NOT NULL,
+  `valor` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `parcelas` int(11) DEFAULT 1,
+  `observacao` varchar(255) DEFAULT NULL,
+  `cartao_id` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Estrutura da tabela `pedidos_itens`
 --
 

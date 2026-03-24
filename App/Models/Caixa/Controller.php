@@ -164,6 +164,45 @@ class Controller
         return $db->single();
     }
 
+    /**
+     * Linhas de pagamento do pedido (tabela pedido_pagamentos). Vazio = pedido legado.
+     */
+    public function listarPagamentosPedido($pedido_id)
+    {
+        $db = new db();
+        $db->query(
+            'SELECT id, pedido_id, forma, valor, parcelas, observacao, cartao_id
+             FROM pedido_pagamentos WHERE pedido_id = :id ORDER BY id ASC'
+        );
+        $db->bind(':id', $pedido_id);
+        return $db->resultSet();
+    }
+
+    /**
+     * Soma valores das linhas cujo rótulo indica dinheiro (para troco no caixa).
+     */
+    public function somaPagamentosDinheiro(array $linhas)
+    {
+        $s = 0.0;
+        foreach ($linhas as $r) {
+            if (stripos((string)($r['forma'] ?? ''), 'dinheiro') !== false) {
+                $s += (float)($r['valor'] ?? 0);
+            }
+        }
+        return round($s, 2);
+    }
+
+    /**
+     * Indica se o pedido tem parte em dinheiro (linhas detalhadas ou legado pela string forma_pagamento).
+     */
+    public function pedidoTemDinheiro(array $linhas, $forma_pagamento_legacy)
+    {
+        if (!empty($linhas)) {
+            return $this->somaPagamentosDinheiro($linhas) > 0;
+        }
+        return stripos((string)$forma_pagamento_legacy, 'dinheiro') !== false;
+    }
+
     // Abrir sessão de caixa (troco de abertura)
     public function abrirSessao($loja_id, $caixa_drawer_id, $data_caixa, $troco_abertura, $operador_id = null, $observacoes = null)
     {
